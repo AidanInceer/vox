@@ -1,0 +1,68 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv
+venv/
+ENV/
+env/
+.env
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+*.cover
+
+# Distribution & Build
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# PEP 582
+__pypackages__/
+
+# Speckit - Exclude most .specify files, but track constitution.md
+.specify/
+!.specify/memory/
+!.specify/memory/constitution.md
+.specify/scripts/
+.specify/templates/
+
+# GitHub - Exclude agents subfolder (generated files)
+.github/agents/
+.github/prompts/*
+*.prompt.md

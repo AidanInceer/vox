@@ -1,0 +1,83 @@
+[project]
+name = "pagereader"
+version = "1.0.0"
+description = "Desktop application that reads any browser tab aloud using open-source neural text-to-speech"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [{name = "Aidan"}]
+license = {text = "MIT"}
+keywords = ["text-to-speech", "browser", "accessibility", "automation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "Pillow>=10.0.0",
+    "NumPy>=1.24.0",
+    "Pandas>=2.0.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "piper-tts>=1.2.0",
+    "pywinauto>=0.6.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.4.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/PageReader"
+Repository = "https://github.com/your-username/PageReader"
+Documentation = "https://github.com/your-username/PageReader/blob/main/README.md"
+Issues = "https://github.com/your-username/PageReader/issues"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = [
+    "tests/",
+    ".venv/",
+    "build/",
+    "dist/",
+    ".eggs/",
+    "*.egg-info/",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C", "I"]
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+    "E203",  # Whitespace before ':'
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--verbose --strict-markers --tb=short --cov=src --cov-report=term-missing --cov-report=html --cov-fail-under=80"
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+    "contract: contract/API tests",
+    "performance: performance and benchmark tests",
+]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
