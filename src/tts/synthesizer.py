@@ -7,10 +7,12 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional
 
+from src.extraction.content_filter import clean_text_for_tts
 from src.tts.piper_provider import get_available_voices, synthesize_piper
 from src.utils.errors import TTSError
 
 logger = logging.getLogger(__name__)
+
 
 
 # Cache directory for synthesized audio
@@ -121,6 +123,12 @@ class PiperSynthesizer(Synthesizer):
             raise TTSError(f"Speed must be 0.5-2.0, got {speed}")
 
         try:
+            # Clean text for TTS (removes problematic characters)
+            text = clean_text_for_tts(text)
+
+            if not text:
+                raise TTSError("Text is empty after cleaning")
+
             # Check cache first
             if self.use_cache:
                 cached_audio = self._get_cached_audio(text, speed)

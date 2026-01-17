@@ -4,9 +4,12 @@ This module provides functions to filter out noise elements (navigation,
 headers, footers, sidebars, ads) and extract the main article content.
 """
 
+import re
+import unicodedata
 from typing import Optional
 
 from bs4 import BeautifulSoup, NavigableString
+
 
 # Common IDs and classes for navigation elements
 NAV_SELECTORS = [
@@ -249,3 +252,85 @@ def extract_headings(soup: BeautifulSoup) -> list[tuple[int, str]]:
             headings.append((level, text))
 
     return headings
+
+
+def clean_text_for_tts(text: str) -> str:
+    """Clean text for text-to-speech synthesis.
+
+    Removes or normalizes problematic characters and formatting
+    that can cause issues with TTS engines like Piper.
+
+    Args:
+        text: Raw text to clean
+
+    Returns:
+        Cleaned text suitable for TTS
+
+    """
+    if not text:
+        return ""
+
+    # First, try to encode and decode as UTF-8 to catch surrogates
+    try:
+        text = text.encode("utf-8", errors="ignore").decode("utf-8", errors="ignore")
+    except Exception:
+        pass
+
+    # Normalize Unicode characters (decompose special characters)
+    try:
+        text = unicodedata.normalize("NFKD", text)
+    except Exception:
+        pass
+
+    # Remove control characters and invalid surrogates
+    try:
+        text = "".join(
+            char
+            for char in text
+            if unicodedata.category(char)[0] != "C" or char in "\n\t\r"
+        )
+    except Exception:
+        pass
+
+    # Replace common HTML entities and symbols with text equivalents
+    replacements = {
+        "&nbsp;": " ",
+        "&mdash;": " - ",
+        "&ndash;": " - ",
+        "&ldquo;": '"',
+        "&rdquo;": '"',
+        "&lsquo;": "'",
+        "&rsquo;": "'",
+        "©": "(c)",
+        "®": "(R)",
+        "™": "(TM)",
+        "…": "...",
+        "–": "-",
+        "—": "-",
+        """: '"',
+        """: '"',
+        "'": "'",
+        "'": "'",
+    }
+
+    for entity, replacement in replacements.items():
+        text = text.replace(entity, replacement)
+
+    # Remove multiple consecutive spaces
+    text = re.sub(r" +", " ", text)
+
+    # Remove multiple consecutive newlines
+    text = re.sub(r"\n\n+", "\n", text)
+
+    # Strip leading/trailing whitespace
+    text = text.strip()
+
+    # Final safety: encode to ASCII and replace unencoded chars
+    try:
+        # Try to encode as ASCII, replacing non-ASCII with "?"
+        text = text.encode("ascii", errors="ignore").decode("ascii")
+    except Exception:
+        # If that fails, just ensure it's valid UTF-8
+        text = text.encode("utf-8", errors="ignore").decode("utf-8", errors="ignore")
+
+    return text
