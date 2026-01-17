@@ -168,11 +168,11 @@ description: "Task breakdown for Web Reader AI feature implementation"
 
 ### Phase 3 Refactoring Checkpoint
 
-- [ ] T026a Format all Phase 3 code with `ruff format .`
-- [ ] T026b Lint all Phase 3 code with `ruff check --fix`
-- [ ] T026c Review Phase 3 code for SOLID violations, DRY patterns, readability
-- [ ] T026d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage (95%+ for extraction/TTS modules per Constitution)
-- [ ] T026e Commit Phase 3 with message: "Phase 3: Refactor (format, lint, coverage check)"
+- [X] T026a Format all Phase 3 code with `ruff format .`
+- [X] T026b Lint all Phase 3 code with `ruff check --fix`
+- [X] T026c Review Phase 3 code for SOLID violations, DRY patterns, readability
+- [X] T026d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage (95%+ for extraction/TTS modules per Constitution)
+- [X] T026e Commit Phase 3 with message: "Phase 3: Refactor (format, lint, coverage check)"
 
 ---
 
