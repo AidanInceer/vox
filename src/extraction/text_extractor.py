@@ -1,12 +1,11 @@
 """Abstract interface and concrete implementations for text extraction from various sources."""
 
-from abc import ABC, abstractmethod
-from typing import List, Optional
 import logging
+from abc import ABC, abstractmethod
+from typing import Optional
 
 from src.browser.tab_info import TabInfo
-from src.extraction.html_parser import parse_html, clean_html, extract_visible_text
-from src.extraction.dom_walker import walk_dom
+from src.extraction.html_parser import clean_html, extract_visible_text, parse_html
 from src.utils.errors import ExtractionError
 
 logger = logging.getLogger(__name__)

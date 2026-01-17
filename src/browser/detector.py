@@ -6,8 +6,8 @@ Chrome, Edge, Firefox, and other browsers running on Windows.
 Key requirement: Detects inactive background tabs without switching focus.
 """
 
-from typing import List, Dict, Optional
 import sys
+from typing import List, Optional
 
 # Optional dependency: psutil may not be installed in test environments.
 # Import lazily and fall back to None so the module can be imported
@@ -16,10 +16,10 @@ try:
     import psutil
 except Exception:
     psutil = None
-import re
+import logging
+
 from src.browser.tab_info import TabInfo
 from src.utils.errors import BrowserDetectionError
-import logging
 
 logger = logging.getLogger(__name__)
 

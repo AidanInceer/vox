@@ -4,9 +4,10 @@ This module provides functions to walk the DOM tree in reading order,
 preserving document structure and section boundaries.
 """
 
-from typing import List, Tuple, Optional
-from bs4 import Tag, NavigableString
 import logging
+from typing import List, Optional, Tuple
+
+from bs4 import NavigableString, Tag
 
 logger = logging.getLogger(__name__)
 

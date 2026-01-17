@@ -25,6 +25,7 @@ dependencies = [
     "beautifulsoup4>=4.12.0",
     "piper-tts>=1.2.0",
     "pywinauto>=0.6.9",
+    "black>=25.12.0",
 ]
 
 [project.optional-dependencies]
@@ -62,6 +63,8 @@ select = ["E", "F", "W", "C", "I"]
 ignore = [
     "E501",  # Line too long (handled by formatter)
     "E203",  # Whitespace before ':'
+    "F841",  # Local variable assigned but never used (intentional in tests with mocks)
+    "C901",  # COmplexity 
 ]
 
 [tool.pytest.ini_options]

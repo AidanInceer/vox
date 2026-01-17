@@ -5,18 +5,17 @@ Provides commands for reading browser tabs, URLs, and files aloud.
 """
 
 import argparse
-import sys
 import logging
+import sys
 from pathlib import Path
 
+from src.browser.detector import detect_all_browser_tabs
 from src.config import get_config
-from src.utils.logging import setup_logging
-from src.browser.detector import get_browser_tabs, detect_all_browser_tabs
-from src.browser.tab_info import TabInfo
 from src.extraction.text_extractor import ConcreteTextExtractor
-from src.tts.synthesizer import PiperSynthesizer
 from src.tts.playback import get_playback
-from src.utils.errors import ExtractionError, TTSError, BrowserDetectionError
+from src.tts.synthesizer import PiperSynthesizer
+from src.utils.errors import BrowserDetectionError, ExtractionError, TTSError
+from src.utils.logging import setup_logging
 
 logger = logging.getLogger(__name__)
 

@@ -36,6 +36,16 @@ description: "Task breakdown for Web Reader AI feature implementation"
 - [X] T006 [P] Create src/utils/logging.py with structured logging configuration
 - [X] T007 Create README.md with project overview, quick start, development instructions
 
+**Checkpoint Phase 1**: Foundation complete. Ready for next phase.
+
+### Phase 1 Refactoring Checkpoint
+
+- [ ] T007a Format all Phase 1 code with `ruff format .` to normalize formatting (120 char lines, conventions)
+- [ ] T007b Lint all Phase 1 code with `ruff check --fix` to auto-fix import ordering, unused variables, etc.
+- [ ] T007c Review Phase 1 code for SOLID violations, DRY/KISS breaches, docstring completeness
+- [ ] T007d Run `pytest tests/unit/test_errors.py tests/unit/test_models.py --cov=src --cov-report=term-missing` and verify ≥80% coverage
+- [ ] T007e Commit Phase 1 with message: "Phase 1: Refactor (format, lint, coverage check)"
+
 ---
 
 ## Phase 2: Foundational Components (Blocking Prerequisites)
@@ -49,7 +59,15 @@ description: "Task breakdown for Web Reader AI feature implementation"
 - [X] T012 Create tests/unit/test_errors.py validating all custom exception classes instantiate and format correctly
 - [X] T013 Create tests/unit/test_models.py validating dataclass serialization/deserialization for Tab, Page, Session models
 
-**Checkpoint**: Foundation complete - user story implementation can now begin in parallel
+**Checkpoint Phase 2**: Foundational components complete. User story implementation can now begin in parallel.
+
+### Phase 2 Refactoring Checkpoint
+
+- [ ] T013a Format all Phase 2 code with `ruff format .`
+- [ ] T013b Lint all Phase 2 code with `ruff check --fix`
+- [ ] T013c Review Phase 2 code for SOLID violations, docstring completeness, interface clarity
+- [ ] T013d Run `pytest tests/unit/test_config.py tests/unit/test_errors.py tests/unit/test_models.py --cov=src --cov-report=term-missing` and verify ≥80% coverage
+- [ ] T013e Commit Phase 2 with message: "Phase 2: Refactor (format, lint, coverage check)"
 
 ---
 
@@ -146,7 +164,15 @@ description: "Task breakdown for Web Reader AI feature implementation"
   - Output progress to console
   - File: src/main.py
 
-**Checkpoint**: User Story 1 complete and independently testable. Can be demoed as: "Select a browser tab, hit read button, hear content aloud from that tab without switching focus."
+**Checkpoint Phase 3**: User Story 1 complete and independently testable. Can be demoed as: "Select a browser tab, hit read button, hear content aloud from that tab without switching focus."
+
+### Phase 3 Refactoring Checkpoint
+
+- [ ] T026a Format all Phase 3 code with `ruff format .`
+- [ ] T026b Lint all Phase 3 code with `ruff check --fix`
+- [ ] T026c Review Phase 3 code for SOLID violations, DRY patterns, readability
+- [ ] T026d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage (95%+ for extraction/TTS modules per Constitution)
+- [ ] T026e Commit Phase 3 with message: "Phase 3: Refactor (format, lint, coverage check)"
 
 ---
 
@@ -209,7 +235,15 @@ description: "Task breakdown for Web Reader AI feature implementation"
   - `pagereader read --file local.html`
   - File: src/main.py (update CLI)
 
-**Checkpoint**: User Story 2 complete. Can be demoed as: "Provide a URL or file, application reads content aloud."
+**Checkpoint Phase 4**: User Story 2 complete. Can be demoed as: "Provide a URL or file, application reads content aloud."
+
+### Phase 4 Refactoring Checkpoint
+
+- [ ] T034a Format all Phase 4 code with `ruff format .`
+- [ ] T034b Lint all Phase 4 code with `ruff check --fix`
+- [ ] T034c Review Phase 4 code for SOLID violations, content filter accuracy, error handling consistency
+- [ ] T034d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage maintained
+- [ ] T034e Commit Phase 4 with message: "Phase 4: Refactor (format, lint, coverage check)"
 
 ---
 
@@ -250,7 +284,15 @@ description: "Task breakdown for Web Reader AI feature implementation"
   - `pagereader tabs` - List all open tabs
   - File: src/ui/cli.py
 
-**Checkpoint**: User Story 3 complete. Provides convenient tab picking UI.
+**Checkpoint Phase 5**: User Story 3 complete. Provides convenient tab picking UI.
+
+### Phase 5 Refactoring Checkpoint
+
+- [ ] T039a Format all Phase 5 code with `ruff format .`
+- [ ] T039b Lint all Phase 5 code with `ruff check --fix`
+- [ ] T039c Review Phase 5 code for SOLID violations, tab detection accuracy across browsers
+- [ ] T039d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage maintained
+- [ ] T039e Commit Phase 5 with message: "Phase 5: Refactor (format, lint, coverage check)"
 
 ---
 
@@ -301,7 +343,15 @@ description: "Task breakdown for Web Reader AI feature implementation"
   - Accept keypresses and adjust playback
   - File: src/main.py (update)
 
-**Checkpoint**: User Story 4 complete. Provides fine-grained control over playback.
+**Checkpoint Phase 6**: User Story 4 complete. Provides fine-grained control over playback.
+
+### Phase 6 Refactoring Checkpoint
+
+- [ ] T046a Format all Phase 6 code with `ruff format .`
+- [ ] T046b Lint all Phase 6 code with `ruff check --fix`
+- [ ] T046c Review Phase 6 code for SOLID violations, playback control state management
+- [ ] T046d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage maintained
+- [ ] T046e Commit Phase 6 with message: "Phase 6: Refactor (format, lint, coverage check)"
 
 ---
 
@@ -341,7 +391,15 @@ description: "Task breakdown for Web Reader AI feature implementation"
   - `pagereader sessions` - List all saved sessions
   - File: src/main.py (update)
 
-**Checkpoint**: User Story 5 complete. Enables multi-session reading workflows.
+**Checkpoint Phase 7**: User Story 5 complete. Enables multi-session reading workflows.
+
+### Phase 7 Refactoring Checkpoint
+
+- [ ] T051a Format all Phase 7 code with `ruff format .`
+- [ ] T051b Lint all Phase 7 code with `ruff check --fix`
+- [ ] T051c Review Phase 7 code for SOLID violations, session data integrity, storage layer abstraction
+- [ ] T051d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage maintained
+- [ ] T051e Commit Phase 7 with message: "Phase 7: Refactor (format, lint, coverage check)"
 
 ---
 
@@ -384,7 +442,15 @@ description: "Task breakdown for Web Reader AI feature implementation"
   - `pagereader settings --main-only` - Toggle main-content-only mode
   - File: src/main.py (update)
 
-**Checkpoint**: User Story 6 complete. Enables power-user customization.
+**Checkpoint Phase 8**: User Story 6 complete. Enables power-user customization.
+
+### Phase 8 Refactoring Checkpoint
+
+- [ ] T057a Format all Phase 8 code with `ruff format .`
+- [ ] T057b Lint all Phase 8 code with `ruff check --fix`
+- [ ] T057c Review Phase 8 code for SOLID violations, edge case handling consistency, error messages
+- [ ] T057d Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage maintained
+- [ ] T057e Commit Phase 8 with message: "Phase 8: Refactor (format, lint, coverage check)"
 
 ---
 

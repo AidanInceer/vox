@@ -190,3 +190,79 @@ README.md               # Project overview
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+
+## Development Phases
+
+Each phase includes implementation followed by **mandatory refactoring checkpoint** to maintain code quality per PageReader Constitution v1.1.0:
+
+**Phase 0: Research & Planning**
+- Clarify unknowns from specification
+- Research technology choices (Piper TTS, pywinauto, BeautifulSoup, etc.)
+- Document findings in research.md
+- *Refactoring Checkpoint*: Review research recommendations for consistency
+
+**Phase 1: Design & Contracts**
+- Extract data model entities (ReadingSession, Page, AudioSettings)
+- Generate API contracts for key services (browser detection, text extraction, TTS)
+- Create quickstart.md for developer setup
+- *Refactoring Checkpoint*: Format documentation, verify contract consistency
+
+**Phase 2: Foundation Implementation**
+- Implement Phase 1 source modules (config.py, custom errors, logging utilities)
+- Write unit tests for all foundation modules (≥80% coverage required)
+- Verify all tests pass and coverage gates met
+- *Refactoring Checkpoint*: **ruff check --fix**, **pytest**, ensure 80%+ coverage maintained
+
+**Phase 3: Core Feature - User Story 1 (Quick Page Reading)**
+- Implement browser detection (detector.py, accessibility.py)
+- Implement text extraction (html_parser.py, dom_walker.py, text_extractor.py)
+- Implement TTS synthesis (piper_provider.py, synthesizer.py, playback.py)
+- Implement CLI interface (main.py)
+- Write unit and integration tests (≥80% coverage, 95%+ for critical paths)
+- *Refactoring Checkpoint*: **ruff check --fix**, **ruff format**, **pytest --cov**, verify coverage gates and zero lint errors
+
+**Phase 4: URL/File Input - User Story 2**
+- Implement URL fetcher (url_fetcher.py)
+- Implement file loader (file_loader.py)
+- Implement content filter (content_filter.py)
+- Update text extractor with new source methods
+- Update CLI with URL/file arguments
+- Write unit and integration tests (≥80% coverage)
+- *Refactoring Checkpoint*: **ruff check --fix**, **ruff format**, **pytest --cov**, verify coverage gates and zero lint errors
+
+**Phase 5: Tab Detection UI - User Story 3**
+- Implement advanced tab detection across multiple browsers
+- Implement tab picker UI (CLI or GUI)
+- Write contract tests for OS API boundaries
+- Write integration tests for full tab detection flow
+- *Refactoring Checkpoint*: **ruff check --fix**, **ruff format**, **pytest --cov**, verify coverage gates and zero lint errors
+
+**Phase 6: Playback Controls - User Story 4**
+- Implement pause/resume/skip controls
+- Implement speed/volume adjustment
+- Implement section navigation
+- Write unit and integration tests for all controls
+- *Refactoring Checkpoint*: **ruff check --fix**, **ruff format**, **pytest --cov**, verify coverage gates and zero lint errors
+
+**Phase 7: Session Persistence - User Story 5**
+- Implement session manager (save/resume logic)
+- Implement storage layer (JSON/SQLite)
+- Write tests for session lifecycle
+- *Refactoring Checkpoint*: **ruff check --fix**, **ruff format**, **pytest --cov**, verify coverage gates and zero lint errors
+
+**Phase 8: Configuration & Edge Cases - User Story 6**
+- Implement settings/configuration module
+- Implement content filter configuration
+- Handle edge cases (no text, JS-rendered content, network errors, PDFs, multi-language)
+- Write tests for all edge cases
+- *Refactoring Checkpoint*: **ruff check --fix**, **ruff format**, **pytest --cov**, verify final 80%+ coverage, zero lint errors
+
+**Refactoring Checkpoint Details (Between All Phases)**:
+1. **Code Formatting**: Run `ruff format .` to normalize all code to project style (120 char lines, standard conventions)
+2. **Code Linting**: Run `ruff check --fix` to auto-fix fixable violations (import ordering, unused variables, etc.)
+3. **Manual Code Review**: Check for SOLID violations, DRY/KISS breaches, unclear variable names
+4. **Test Coverage**: Run `pytest tests/ --cov=src --cov-report=term-missing` and verify ≥80% coverage maintained
+5. **Documentation**: Update docstrings, inline comments, and README as needed
+6. **Commit**: Stage and commit all changes with message "Phase X: Refactor (format, lint, coverage check)"
+
+**Rationale**: Regular refactoring between phases prevents technical debt accumulation, maintains consistency with PageReader Constitution standards, and ensures code quality gates are enforced incrementally rather than addressed as cleanup at the end.

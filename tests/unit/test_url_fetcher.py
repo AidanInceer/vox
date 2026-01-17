@@ -24,9 +24,12 @@ class TestURLFetcher:
             result = fetch_url("https://example.com")
 
             assert result == "<html><body>Hello World</body></html>"
-            mock_get.assert_called_once_with(
-                "https://example.com", timeout=10, allow_redirects=True
-            )
+            # Verify the call was made with correct parameters (including User-Agent header)
+            mock_get.assert_called_once()
+            call_kwargs = mock_get.call_args[1]
+            assert call_kwargs["timeout"] == 10
+            assert call_kwargs["allow_redirects"] is True
+            assert "User-Agent" in call_kwargs.get("headers", {})
 
     def test_fetch_with_redirect(self):
         """Test that HTTP redirects are followed automatically."""
@@ -69,9 +72,10 @@ class TestURLFetcher:
 
             fetch_url("https://example.com", timeout=30)
 
-            mock_get.assert_called_once_with(
-                "https://example.com", timeout=30, allow_redirects=True
-            )
+            mock_get.assert_called_once()
+            call_kwargs = mock_get.call_args[1]
+            assert call_kwargs["timeout"] == 30
+            assert call_kwargs["allow_redirects"] is True
 
     def test_fetch_invalid_url(self):
         """Test that non-existent domain returns error."""

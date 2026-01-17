@@ -4,9 +4,10 @@ This module provides utilities for parsing HTML documents and
 preparing them for text extraction while preserving document structure.
 """
 
-from typing import Optional, Set
-from bs4 import BeautifulSoup, NavigableString, Tag
 import logging
+from typing import Optional
+
+from bs4 import BeautifulSoup, NavigableString, Tag
 
 logger = logging.getLogger(__name__)
 

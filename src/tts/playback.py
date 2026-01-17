@@ -4,12 +4,11 @@ This module provides audio playback functionality including pause/resume,
 volume control, and speed adjustment.
 """
 
-from typing import Optional
-import winsound
-import io
-from pathlib import Path
 import logging
 import threading
+import winsound
+from pathlib import Path
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 

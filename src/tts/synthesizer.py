@@ -1,13 +1,13 @@
 """Abstract interface and concrete implementations for text-to-speech synthesis."""
 
-from abc import ABC, abstractmethod
-from typing import List, Dict, Optional
 import hashlib
 import json
-from pathlib import Path
 import logging
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import List, Optional
 
-from src.tts.piper_provider import synthesize_piper, get_available_voices
+from src.tts.piper_provider import get_available_voices, synthesize_piper
 from src.utils.errors import TTSError
 
 logger = logging.getLogger(__name__)
@@ -125,7 +125,7 @@ class PiperSynthesizer(Synthesizer):
             if self.use_cache:
                 cached_audio = self._get_cached_audio(text, speed)
                 if cached_audio:
-                    logger.debug(f"Using cached audio for text (cache hit)")
+                    logger.debug("Using cached audio for text (cache hit)")
                     return cached_audio
 
             # Synthesize new audio

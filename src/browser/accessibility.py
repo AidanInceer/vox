@@ -7,8 +7,9 @@ The Accessibility API can provide more reliable tab detection,
 especially for newer browser versions.
 """
 
-from typing import List, Optional
 import logging
+from typing import List, Optional
+
 from src.browser.tab_info import TabInfo
 from src.utils.errors import BrowserDetectionError
 
@@ -87,8 +88,6 @@ def _detect_via_ui_automation(browser_name: str) -> List[TabInfo]:
     try:
         # Try to import UI Automation library
         # On Windows, we can use pywinauto's accessibility features
-        import pywinauto
-        from pywinauto import Application, ElementNotFoundError
 
         # Connect to browser application
         app = _connect_to_browser_app(browser_name)
@@ -207,7 +206,6 @@ def _detect_via_window_enum(browser_name: str) -> List[TabInfo]:
 
     try:
         import pygetwindow
-        import re
 
         # Get all windows
         windows = pygetwindow.getAllWindows()

@@ -6,13 +6,11 @@ offline without requiring API keys or internet access.
 Reference: https://github.com/rhasspy/piper
 """
 
-from typing import Optional, List, Dict
-import subprocess
-import os
 import json
 import logging
+import subprocess
 from pathlib import Path
-import hashlib
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -158,9 +156,9 @@ def _ensure_model_available(voice: str) -> None:
 
         # Download model and config from Piper repository
         model_url = (
-            f"https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/libritts/high/en_US-libritts-high.onnx"
+            "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/libritts/high/en_US-libritts-high.onnx"
         )
-        config_url = f"https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/libritts/high/en_US-libritts-high.onnx.json"
+        config_url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/libritts/high/en_US-libritts-high.onnx.json"
 
         # Note: This is simplified; real implementation would handle all voices
         # and check URLs dynamically
