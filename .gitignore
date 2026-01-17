@@ -51,6 +51,7 @@ htmlcov/
 *.egg-info/
 dist/
 build/
+*.spec
 
 # PEP 582
 __pypackages__/
