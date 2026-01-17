@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from src.browser.detector import detect_all_browser_tabs
-from src.config import get_config
+from src import config
 from src.extraction.text_extractor import ConcreteTextExtractor
 from src.tts.playback import get_playback
 from src.tts.synthesizer import PiperSynthesizer
@@ -26,7 +26,8 @@ def main():
     args = parser.parse_args()
 
     # Setup logging
-    setup_logging(verbose=args.verbose)
+    log_level = "DEBUG" if args.verbose else config.LOG_LEVEL
+    setup_logging(name="pagereader", level=log_level)
 
     # Dispatch to appropriate command
     try:
@@ -101,33 +102,33 @@ def command_read(args):
     Args:
         args: Parsed command-line arguments
     """
-    config = get_config()
-
     # Validate inputs
     if not any([args.tab, args.url, args.file, args.active]):
         print("Error: One of --tab, --url, --file, or --active must be provided")
         sys.exit(1)
 
-    if args.speed and not (0.5 <= args.speed <= 2.0):
-        print("Error: Speed must be between 0.5 and 2.0")
+    if args.speed and not (config.MIN_PLAYBACK_SPEED <= args.speed <= config.MAX_PLAYBACK_SPEED):
+        print(f"Error: Speed must be between {config.MIN_PLAYBACK_SPEED} and {config.MAX_PLAYBACK_SPEED}")
         sys.exit(1)
 
     # Step 1: Get content
-    print("🔍 Retrieving content...")
+    print("[*] Retrieving content...")
     content = _get_content(args)
 
     if not content:
         print("Error: Could not retrieve content")
         sys.exit(1)
 
-    print(f"✓ Retrieved {len(content)} characters")
+    print(f"[OK] Retrieved {len(content)} characters")
 
     # Step 2: Synthesize to speech
-    print("🎤 Synthesizing speech...")
+    print("[*] Synthesizing speech...")
     try:
-        synthesizer = PiperSynthesizer(voice=args.voice)
-        audio_bytes = synthesizer.synthesize(content, speed=args.speed)
-        print(f"✓ Generated {len(audio_bytes)} bytes of audio")
+        voice = args.voice or config.DEFAULT_TTS_VOICE
+        speed = args.speed or config.DEFAULT_TTS_SPEED
+        synthesizer = PiperSynthesizer(voice=voice)
+        audio_bytes = synthesizer.synthesize(content, speed=speed)
+        print(f"[OK] Generated {len(audio_bytes)} bytes of audio")
     except TTSError as e:
         print(f"Error: Failed to synthesize speech: {e}")
         sys.exit(1)
@@ -159,12 +160,11 @@ def command_config(args):
     Args:
         args: Parsed command-line arguments
     """
-    config = get_config()
-    print("\n📋 PageReader Configuration:")
-    print(f"  TTS Provider: {config.get('tts_provider', 'piper')}")
-    print(f"  Default Voice: {config.get('default_voice', 'en_US-libritts-high')}")
-    print(f"  Default Speed: {config.get('default_speed', 1.0)}")
-    print(f"  Cache Synthesis: {config.get('cache_synthesis', True)}")
+    print("\nPageReader Configuration:")
+    print(f"  TTS Provider: {config.DEFAULT_TTS_PROVIDER}")
+    print(f"  Default Voice: {config.DEFAULT_TTS_VOICE}")
+    print(f"  Default Speed: {config.DEFAULT_TTS_SPEED}")
+    print(f"  Cache Synthesis: {config.TTS_CACHE_ENABLED}")
 
 
 def _get_content(args) -> str:
