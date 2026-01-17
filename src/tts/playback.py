@@ -5,12 +5,14 @@ volume control, and speed adjustment.
 """
 
 import logging
+import time
 import threading
 import winsound
 from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
 
 
 class PlaybackState:
@@ -79,12 +81,14 @@ class AudioPlayback:
         """
         try:
             # Use winsound for Windows audio playback
-            # Play asynchronously so we can control playback
-            winsound.PlaySound(file_path, winsound.SND_FILENAME | winsound.SND_ASYNC)
+            # Play without any flags for blocking (synchronous) playback
+            winsound.PlaySound(file_path, winsound.SND_FILENAME)
 
-            logger.info(f"Playing audio: {file_path}")
+            logger.info(f"Finished playing audio: {file_path}")
+            self.state.is_playing = False
 
         except Exception as e:
+            self.state.is_playing = False
             raise RuntimeError(f"Failed to play audio file: {e}") from e
 
     def pause(self) -> None:

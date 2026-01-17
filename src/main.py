@@ -260,10 +260,10 @@ def _play_audio(audio_bytes: bytes):
         audio_bytes: Audio data to play
     """
     try:
-        print("🔊 Playing audio...")
+        print("[*] Playing audio...")
         playback = get_playback()
         playback.play_audio(audio_bytes)
-        print("✓ Audio playback complete")
+        print("[OK] Audio playback complete")
     except Exception as e:
         print(f"Error: Failed to play audio: {e}")
         sys.exit(1)
