@@ -97,60 +97,60 @@ python -m src.main read --url https://example.com
 
 ### PyPI Package Configuration
 
-- [ ] T201 Update pyproject.toml with package metadata:
+- [x] T201 Update pyproject.toml with package metadata:
   - Project name, version, description
   - Author, license, keywords
   - Homepage, repository URLs
   - Entry points: `[project.scripts]` with `pagereader = src.main:main`
-- [ ] T202 Create src/main.py entry point function (if not exists):
+- [x] T202 Create src/main.py entry point function (if not exists):
   - Ensure `main()` is callable and handles sys.exit properly
   - Verify works with: `python -m src.main read --url https://example.com`
-- [ ] T203 Test local PyPI installation:
+- [x] T203 Test local PyPI installation:
   - Run `pip install -e .` in development mode
   - Verify `pagereader --help` works globally
   - Verify `pagereader read --url https://example.com` works
-- [ ] T204 Create README.md with installation instructions:
+- [x] T204 Create README.md with installation instructions:
   - "Install via PyPI: `pip install pagereader`"
   - "Or download standalone exe from Releases"
   - Quick start examples
 
 ### Standalone Executable (PyInstaller)
 
-- [ ] T301 Add PyInstaller to dev dependencies in pyproject.toml
-- [ ] T302 Create build_exe.py script to generate standalone .exe:
+- [x] T301 Add PyInstaller to dev dependencies in pyproject.toml
+- [x] T302 Create build_exe.py script to generate standalone .exe:
   - Use PyInstaller to bundle Python + dependencies + app code
   - Single-file output: `dist/pagereader.exe`
   - Include all Piper TTS models in the exe
   - Icon: use simple PageReader icon
-- [ ] T303 Create build instructions in docs/BUILD.md:
+- [x] T303 Create build instructions in docs/BUILD.md:
   - Prerequisites (Python 3.13, pip, PyInstaller)
   - Commands: `python build_exe.py`
   - Output location: `dist/pagereader.exe`
   - Verify exe works: `dist/pagereader.exe --help`
-- [ ] T304 Test standalone exe on clean Windows system:
+- [x] T304 Test standalone exe on clean Windows system:
   - Verify no Python installation required
   - Verify `pagereader.exe read --url https://example.com` works
   - Verify audio plays correctly
   - Measure exe file size
-- [ ] T305 Create GitHub Actions workflow for automated exe generation:
+- [x] T305 Create GitHub Actions workflow for automated exe generation:
   - Trigger on releases or manual workflow_dispatch
   - Generate .exe artifact
   - Upload to GitHub Releases
 
 ### Documentation & Release
 
-- [ ] T401 Create INSTALLATION.md with two paths:
+- [x] T401 Create INSTALLATION.md with two paths:
   - Path A: "For Developers" (PyPI + source code)
   - Path B: "For End Users" (Standalone exe, no Python required)
-- [ ] T402 Create CHANGELOG.md documenting v1.0.0 features and known limitations
-- [ ] T403 Update README.md with:
+- [x] T402 Create CHANGELOG.md documenting v1.0.0 features and known limitations
+- [x] T403 Update README.md with:
   - Feature summary (URL → audio reading)
   - Installation instructions (both methods)
   - Usage examples
   - Troubleshooting section
   - Known limitations (URL-only, no browser tabs, offline Piper TTS)
 
-**Checkpoint**: Application ready for distribution
+**Checkpoint**: Application ready for distribution ✅
 
 ---
 

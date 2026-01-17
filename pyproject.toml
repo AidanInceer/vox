@@ -36,6 +36,7 @@ dev = [
     "ruff>=0.1.0",
     "pre-commit>=3.4.0",
     "commitizen>=3.0.0",
+    "pyinstaller>=6.0.0",
 ]
 test = [
     "pytest>=7.4.0",
@@ -43,10 +44,13 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/PageReader"
-Repository = "https://github.com/your-username/PageReader"
-Documentation = "https://github.com/your-username/PageReader/blob/main/README.md"
-Issues = "https://github.com/your-username/PageReader/issues"
+Homepage = "https://github.com/AidanInceer/PageReader"
+Repository = "https://github.com/AidanInceer/PageReader"
+Documentation = "https://github.com/AidanInceer/PageReader/blob/main/README.md"
+Issues = "https://github.com/AidanInceer/PageReader/issues"
+
+[project.scripts]
+pagereader = "src.main:main"
 
 [tool.ruff]
 line-length = 120
@@ -86,6 +90,9 @@ markers = [
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["src", "src.browser", "src.extraction", "src.tts", "src.session", "src.ui", "src.utils"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
