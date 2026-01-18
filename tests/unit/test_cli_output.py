@@ -211,7 +211,7 @@ class TestCLIHelpText:
 
         parser = create_parser()
         help_text = parser.format_help()
-        assert "text-to-speech" in help_text.lower()
+        assert "ai tts" in help_text.lower() or "tts" in help_text.lower()
 
     def test_read_command_has_help(self):
         """Test that read command has helpful descriptions."""
@@ -249,6 +249,7 @@ class TestProgressIndicators:
             no_play = False
             output = None
             verbose = False
+            save_session = None
 
         with capture_output() as output:
             try:
@@ -280,6 +281,7 @@ class TestProgressIndicators:
             no_play = False
             output = None
             verbose = False
+            save_session = None
 
         with capture_output() as output:
             try:

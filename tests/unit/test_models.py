@@ -105,10 +105,12 @@ class TestReadingSession:
         """Test creating a ReadingSession instance."""
         session = ReadingSession(
             session_id="session_001",
+            session_name="my-session",
             page_url="https://example.com",
             title="Example Page"
         )
         assert session.session_id == "session_001"
+        assert session.session_name == "my-session"
         assert session.page_url == "https://example.com"
         assert session.title == "Example Page"
         assert session.playback_position == 0
@@ -120,6 +122,7 @@ class TestReadingSession:
         
         session = ReadingSession(
             session_id="session_002",
+            session_name="python-docs",
             page_url="https://docs.python.org",
             title="Python Docs",
             playback_position=1500,
@@ -134,6 +137,7 @@ class TestReadingSession:
         """Test __str__ method."""
         session = ReadingSession(
             session_id="session_001",
+            session_name="my-session",
             page_url="https://example.com",
             title="Example"
         )
@@ -144,6 +148,7 @@ class TestReadingSession:
         """Test __repr__ method."""
         session = ReadingSession(
             session_id="session_001",
+            session_name="my-session",
             page_url="https://example.com",
             title="Example"
         )
@@ -156,6 +161,7 @@ class TestReadingSession:
         # Valid session
         valid_session = ReadingSession(
             session_id="session_001",
+            session_name="my-session",
             page_url="https://example.com",
             title="Example"
         )
@@ -164,6 +170,7 @@ class TestReadingSession:
         # Invalid session (missing title)
         invalid_session = ReadingSession(
             session_id="session_001",
+            session_name="my-session",
             page_url="https://example.com",
             title=""
         )
@@ -173,6 +180,7 @@ class TestReadingSession:
         """Test to_dict() serialization."""
         session = ReadingSession(
             session_id="session_001",
+            session_name="my-session",
             page_url="https://example.com",
             title="Example",
             playback_position=1000,
@@ -181,6 +189,7 @@ class TestReadingSession:
         session_dict = session.to_dict()
         
         assert session_dict["session_id"] == "session_001"
+        assert session_dict["session_name"] == "my-session"
         assert session_dict["page_url"] == "https://example.com"
         assert session_dict["title"] == "Example"
         assert session_dict["playback_position"] == 1000
@@ -192,6 +201,7 @@ class TestReadingSession:
         """Test from_dict() deserialization."""
         data = {
             "session_id": "session_001",
+            "session_name": "my-session",
             "page_url": "https://example.com",
             "title": "Example",
             "playback_position": 1000,
@@ -203,6 +213,7 @@ class TestReadingSession:
         session = ReadingSession.from_dict(data)
         
         assert session.session_id == "session_001"
+        assert session.session_name == "my-session"
         assert session.page_url == "https://example.com"
         assert session.title == "Example"
         assert session.playback_position == 1000
@@ -213,6 +224,7 @@ class TestReadingSession:
         """Test that session survives to_dict() -> from_dict() roundtrip."""
         original = ReadingSession(
             session_id="session_001",
+            session_name="my-session",
             page_url="https://example.com",
             title="Example",
             playback_position=2000,
@@ -226,6 +238,7 @@ class TestReadingSession:
         
         # Verify all fields are preserved
         assert restored.session_id == original.session_id
+        assert restored.session_name == original.session_name
         assert restored.page_url == original.page_url
         assert restored.title == original.title
         assert restored.playback_position == original.playback_position

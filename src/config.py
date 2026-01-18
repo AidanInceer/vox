@@ -16,9 +16,10 @@ TESTS_DIR: Final[Path] = BASE_DIR / "tests"
 DATA_DIR: Final[Path] = BASE_DIR / "data"
 CACHE_DIR: Final[Path] = DATA_DIR / "cache"
 LOGS_DIR: Final[Path] = BASE_DIR / "logs"
+SESSION_STORAGE_DIR: Final[Path] = Path(os.getenv("APPDATA", ".")) / "PageReader" / "sessions"
 
 # Ensure necessary directories exist
-for directory in [DATA_DIR, CACHE_DIR, LOGS_DIR]:
+for directory in [DATA_DIR, CACHE_DIR, LOGS_DIR, SESSION_STORAGE_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
 # TTS Configuration
@@ -49,6 +50,10 @@ DEFAULT_PLAYBACK_VOLUME: Final[float] = 1.0  # 0.0 - 1.0
 MIN_PLAYBACK_SPEED: Final[float] = 0.5
 MAX_PLAYBACK_SPEED: Final[float] = 2.0
 AUDIO_DEVICE_INDEX: Final[int] = -1  # -1 = default device
+
+# Chunking Configuration
+DEFAULT_CHUNK_SIZE: Final[int] = 150  # words per chunk
+MAX_BUFFER_SIZE: Final[int] = 10  # maximum chunks in buffer
 
 # Performance Targets
 PERFORMANCE_TARGETS: Final[dict] = {

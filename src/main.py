@@ -9,6 +9,7 @@ import logging
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 from colorama import Fore, Style
 from colorama import init as colorama_init
@@ -16,7 +17,10 @@ from colorama import init as colorama_init
 from src import config
 from src.browser.detector import detect_all_browser_tabs
 from src.extraction.text_extractor import ConcreteTextExtractor
-from src.tts.playback import get_playback
+from src.session.manager import SessionManager
+from src.tts.chunking import ChunkSynthesizer
+from src.tts.controller import PlaybackController
+from src.tts.playback import AudioPlayback, get_playback
 from src.tts.synthesizer import PiperSynthesizer
 from src.utils.errors import BrowserDetectionError, ExtractionError, TTSError
 from src.utils.logging import setup_logging
@@ -48,10 +52,51 @@ def print_warning(msg: str):
     print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} {msg}")
 
 
+class ColoredHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    """Custom help formatter with colored output."""
+
+    def _format_usage(self, usage, actions, groups, prefix):
+        """Format usage line with color."""
+        if prefix is None:
+            prefix = f"{Fore.CYAN}Usage:{Style.RESET_ALL} "
+        return super()._format_usage(usage, actions, groups, prefix)
+
+    def _format_action(self, action):
+        """Format individual action with colored option strings."""
+        # Get the formatted help
+        help_text = super()._format_action(action)
+
+        # Color the option strings (e.g., -h, --help)
+        if action.option_strings:
+            # Find and color option strings
+            for opt in action.option_strings:
+                help_text = help_text.replace(opt, f"{Fore.GREEN}{opt}{Style.RESET_ALL}", 1)
+
+        return help_text
+
+    def add_usage(self, usage, actions, groups, prefix=None):
+        """Override to add colored usage."""
+        if prefix is None:
+            prefix = f"{Fore.CYAN}Usage:{Style.RESET_ALL} "
+        super().add_usage(usage, actions, groups, prefix)
+
+    def start_section(self, heading):
+        """Format section headings with color."""
+        if heading:
+            # Color section headings
+            heading = f"{Fore.CYAN}{heading}:{Style.RESET_ALL}"
+        super().start_section(heading)
+
+
 def main():
     """Main entry point for PageReader CLI."""
     parser = create_parser()
     args = parser.parse_args()
+
+    # Handle version flag
+    if hasattr(args, "version") and args.version:
+        print("PageReader v1.0.0")
+        sys.exit(0)
 
     # Setup logging
     log_level = "DEBUG" if args.verbose else config.LOG_LEVEL
@@ -63,6 +108,12 @@ def main():
             command_read(args)
         elif args.command == "list":
             command_list(args)
+        elif args.command == "list-sessions":
+            command_list_sessions(args)
+        elif args.command == "resume":
+            command_resume(args)
+        elif args.command == "delete-session":
+            command_delete_session(args)
         elif args.command == "config":
             command_config(args)
         else:
@@ -83,36 +134,72 @@ def create_parser() -> argparse.ArgumentParser:
     Returns:
         ArgumentParser with all commands and options defined
     """
-    parser = argparse.ArgumentParser(
-        prog="pagereader",
-        description="Read web pages and browser tabs aloud using AI text-to-speech",
-        epilog="""
-Examples:
-  # Read from a URL
+    # Create colored description with ASCII art header
+    description = f"""
+{Fore.CYAN}╔═══════════════════════════════════════════════════════════════════╗
+║                          PageReader v1.0.0                        ║
+║          Read web pages and browser tabs aloud with AI TTS        ║
+╚═══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}
+
+{Fore.YELLOW}📚 Session Management:{Style.RESET_ALL}
+  Save reading sessions and resume later from where you left off
+
+{Fore.YELLOW}🎮 Interactive Controls:{Style.RESET_ALL}
+  Control playback with keyboard shortcuts during audio playback
+"""
+
+    epilog = f"""
+{Fore.CYAN}═══════════════════════════════════════════════════════════════════
+📖 Examples:
+═══════════════════════════════════════════════════════════════════{Style.RESET_ALL}
+
+  {Fore.GREEN}# Read from a URL{Style.RESET_ALL}
   pagereader read --url https://example.com
 
-  # Read from a local file
+  {Fore.GREEN}# Save a reading session{Style.RESET_ALL}
+  pagereader read --url https://example.com --save-session my-article
+
+  {Fore.GREEN}# List saved sessions{Style.RESET_ALL}
+  pagereader list-sessions
+
+  {Fore.GREEN}# Resume a session{Style.RESET_ALL}
+  pagereader resume my-article
+
+  {Fore.GREEN}# Read from a local file{Style.RESET_ALL}
   pagereader read --file article.html
 
-  # Read with custom voice and speed
+  {Fore.GREEN}# Read with custom voice and speed{Style.RESET_ALL}
   pagereader read --url https://example.com --voice en_US-libritts-high --speed 1.5
 
-  # Save audio to file instead of playing
+  {Fore.GREEN}# Save audio to file{Style.RESET_ALL}
   pagereader read --url https://example.com --output audio.wav
 
-  # List all open browser tabs
+  {Fore.GREEN}# List all open browser tabs{Style.RESET_ALL}
   pagereader list tabs
 
-  # List available voices
+  {Fore.GREEN}# List available voices{Style.RESET_ALL}
   pagereader list voices
 
-For more help on a specific command, use: pagereader <command> --help
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+{Fore.CYAN}═══════════════════════════════════════════════════════════════════{Style.RESET_ALL}
+💡 For more help on a specific command: {Fore.YELLOW}pagereader <command> --help{Style.RESET_ALL}
+"""
+
+    parser = argparse.ArgumentParser(
+        prog="pagereader",
+        description=description,
+        epilog=epilog,
+        formatter_class=ColoredHelpFormatter,
+        add_help=False,  # We'll add custom help
+    )
+
+    # Add custom help argument with color
+    parser.add_argument(
+        "-h", "--help", action="help", default=argparse.SUPPRESS, help="Show this help message and exit"
     )
 
     # Global options
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument("-v", "--version", action="store_true", help="Show version and exit")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     # Subcommands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -120,18 +207,15 @@ For more help on a specific command, use: pagereader <command> --help
     # READ command
     read_parser = subparsers.add_parser(
         "read",
-        help="Read content aloud",
-        description="Read content from a URL, file, or browser tab using text-to-speech",
+        help=f"{Fore.YELLOW}Read content aloud{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Read content from a URL, file, or browser tab using text-to-speech{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
     )
     read_group = read_parser.add_mutually_exclusive_group(required=True)
     read_group.add_argument("--tab", metavar="TAB_ID", help="Read a specific browser tab by ID")
-    read_group.add_argument(
-        "--url", metavar="URL", help="Read content from a URL (must start with http:// or https://)"
-    )
+    read_group.add_argument("--url", metavar="URL", help="Read content from a URL (http:// or https://)")
     read_group.add_argument("--file", metavar="FILE_PATH", help="Read content from a local HTML file")
-    read_group.add_argument(
-        "--active", action="store_true", help="Read the currently active browser tab (not yet implemented)"
-    )
+    read_group.add_argument("--active", action="store_true", help="Read the currently active browser tab")
 
     # TTS options
     read_parser.add_argument(
@@ -143,15 +227,58 @@ For more help on a specific command, use: pagereader <command> --help
     read_parser.add_argument("--no-play", action="store_true", help="Generate audio but do not play it")
     read_parser.add_argument("--output", metavar="FILE", help="Save audio to a file instead of playing")
 
+    # Session management
+    read_parser.add_argument(
+        "--save-session", metavar="NAME", help="Save this reading session with a name for later resume"
+    )
+
     # LIST command
-    list_parser = subparsers.add_parser("list", help="List available items")
+    list_parser = subparsers.add_parser(
+        "list",
+        help=f"{Fore.YELLOW}List available items{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
     list_subcommands = list_parser.add_subparsers(dest="list_type", help="What to list")
 
     list_subcommands.add_parser("tabs", help="List all open browser tabs")
     list_subcommands.add_parser("voices", help="List available TTS voices")
 
+    # SESSION MANAGEMENT commands
+    list_sessions_parser = subparsers.add_parser(
+        "list-sessions",
+        help=f"{Fore.YELLOW}List all saved reading sessions{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Display all saved reading sessions with their progress{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
+
+    resume_parser = subparsers.add_parser(
+        "resume",
+        help=f"{Fore.YELLOW}Resume a saved reading session{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Resume playback from a previously saved session{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
+    resume_parser.add_argument("session_name", help="Name of the session to resume")
+    resume_parser.add_argument(
+        "--voice",
+        default="en_US-libritts-high",
+        help="Voice to use for synthesis (default: en_US-libritts-high)",
+    )
+    resume_parser.add_argument("--speed", type=float, default=1.0, help="Speech speed (0.5-2.0, default: 1.0)")
+
+    delete_session_parser = subparsers.add_parser(
+        "delete-session",
+        help=f"{Fore.YELLOW}Delete a saved reading session{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Permanently delete a saved session{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
+    delete_session_parser.add_argument("session_name", help="Name of the session to delete")
+
     # CONFIG command
-    config_parser = subparsers.add_parser("config", help="Show configuration")
+    config_parser = subparsers.add_parser(
+        "config",
+        help=f"{Fore.YELLOW}Show configuration{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
 
     return parser
 
@@ -183,25 +310,114 @@ def command_read(args):
 
     print_success(f"Retrieved {len(content)} characters ({elapsed:.2f}s)")
 
-    # Step 2: Synthesize to speech
-    start_time = time.time()
-    print_status("Synthesizing speech...")
-    try:
-        voice = args.voice or config.DEFAULT_TTS_VOICE
-        speed = args.speed or config.DEFAULT_TTS_SPEED
-        synthesizer = PiperSynthesizer(voice=voice)
-        audio_bytes = synthesizer.synthesize(content, speed=speed)
-        elapsed = time.time() - start_time
-        print_success(f"Generated {len(audio_bytes)} bytes of audio ({elapsed:.2f}s)")
-    except TTSError as e:
-        print_error(f"Failed to synthesize speech: {e}")
-        sys.exit(1)
+    # Get URL for session saving
+    url = args.url or args.file or args.tab or "active-tab"
 
-    # Step 3: Handle output
+    # Step 2: Save session if requested
+    if args.save_session:
+        try:
+            print_status(f"Saving session '{args.save_session}'...")
+            manager = SessionManager()
+            session_id = manager.save_session(
+                session_name=args.save_session,
+                url=url,
+                extracted_text=content,
+                playback_position=0,
+                tts_settings={"voice": args.voice, "speed": args.speed},
+            )
+            print_success(f"Session saved (ID: {session_id})")
+        except ValueError as e:
+            print_error(f"Failed to save session: {e}")
+            sys.exit(1)
+
+    # Step 3: Synthesize to speech with chunking for faster feedback
+    start_time = time.time()
+
+    # Check if we should use chunking (for longer content)
+    word_count = len(content.split())
+    use_chunking = word_count > 200  # Use chunking for articles >200 words
+
+    if use_chunking:
+        print_status(f"Preparing text chunks ({word_count} words)...")
+        try:
+            voice = args.voice or config.DEFAULT_TTS_VOICE
+            speed = args.speed or config.DEFAULT_TTS_SPEED
+
+            # Create chunk synthesizer
+            chunk_synth = ChunkSynthesizer(voice=voice, speed=speed)
+
+            # Prepare chunks
+            chunk_synth.prepare_chunks(content)
+            chunk_count = chunk_synth.get_chunk_count()
+            print_success(f"Split into {chunk_count} chunks")
+
+            # Synthesize first chunk immediately
+            print_status("Synthesizing first chunk (this should be fast)...")
+            first_chunk_start = time.time()
+            chunk_synth.synthesize_first_chunk()
+            first_chunk_elapsed = time.time() - first_chunk_start
+            print_success(f"First chunk ready ({first_chunk_elapsed:.2f}s)")
+
+            # Start background synthesis of remaining chunks
+            if chunk_count > 1:
+                print_status(f"Synthesizing remaining {chunk_count - 1} chunks in background...")
+                chunk_synth.start_background_synthesis(num_workers=2)
+
+            elapsed = time.time() - start_time
+            print_success(f"Synthesis pipeline started ({elapsed:.2f}s)")
+
+        except Exception as e:
+            print_error(f"Failed to initialize chunked synthesis: {e}")
+            print_warning("Falling back to standard synthesis...")
+            use_chunking = False
+
+    # Fall back to standard synthesis if not using chunking or if chunking failed
+    if not use_chunking:
+        print_status("Synthesizing speech...")
+        try:
+            voice = args.voice or config.DEFAULT_TTS_VOICE
+            speed = args.speed or config.DEFAULT_TTS_SPEED
+            synthesizer = PiperSynthesizer(voice=voice)
+            audio_bytes = synthesizer.synthesize(content, speed=speed)
+            elapsed = time.time() - start_time
+            print_success(f"Generated {len(audio_bytes)} bytes of audio ({elapsed:.2f}s)")
+        except TTSError as e:
+            print_error(f"Failed to synthesize speech: {e}")
+            sys.exit(1)
+
+    # Step 4: Handle output
     if args.output:
-        _save_audio(audio_bytes, args.output)
+        # For file output, we need complete audio
+        if use_chunking:
+            print_status("Waiting for all chunks to synthesize for file output...")
+            # Wait for all chunks to complete
+            import time as time_module
+
+            while True:
+                status = chunk_synth.get_buffer_status()
+                completed = sum(1 for c in chunk_synth.chunks if c.synthesis_status.value == "completed")
+                if completed >= chunk_count:
+                    break
+                print(f"\r⏳ Synthesizing: {completed}/{chunk_count} chunks complete", end="", flush=True)
+                time_module.sleep(0.5)
+            print("\r" + " " * 60 + "\r", end="", flush=True)
+
+            # Combine all chunks into single audio file
+            print_status("Combining chunks into single file...")
+            all_audio = b"".join([c.audio_data for c in chunk_synth.chunks if c.audio_data])
+            _save_audio(all_audio, args.output)
+            chunk_synth.stop()
+        else:
+            _save_audio(audio_bytes, args.output)
     elif not args.no_play:
-        _play_audio(audio_bytes)
+        if use_chunking:
+            _play_audio_interactive_chunked(chunk_synth, session_name=args.save_session if args.save_session else None)
+            chunk_synth.stop()  # Clean up after playback
+        else:
+            _play_audio_interactive(audio_bytes, session_name=args.save_session if args.save_session else None)
+
+    # Exit successfully
+    sys.exit(0)
 
 
 def command_list(args):
@@ -329,7 +545,7 @@ def _list_voices():
 
 
 def _play_audio(audio_bytes: bytes):
-    """Play audio bytes.
+    """Play audio bytes without interactive controls.
 
     Args:
         audio_bytes: Audio data to play
@@ -339,6 +555,100 @@ def _play_audio(audio_bytes: bytes):
         playback = get_playback()
         playback.play_audio(audio_bytes)
         print_success("Audio playback complete")
+    except Exception as e:
+        print_error(f"Failed to play audio: {e}")
+        print_warning("Check your audio device settings")
+        sys.exit(1)
+
+
+def _play_audio_interactive(audio_bytes: bytes, session_name: Optional[str] = None):
+    """Play audio with interactive keyboard controls.
+
+    Args:
+        audio_bytes: Audio data to play
+        session_name: Optional session name for saving playback position
+    """
+    try:
+        print_status("Starting interactive playback...")
+        print()
+        print(f"{Fore.CYAN}🎮 Keyboard Controls:{Style.RESET_ALL}")
+        print(f"  {Fore.YELLOW}SPACE{Style.RESET_ALL}  Pause/Resume")
+        print(f"  {Fore.YELLOW}→{Style.RESET_ALL}      Seek forward 5 seconds")
+        print(f"  {Fore.YELLOW}←{Style.RESET_ALL}      Seek backward 5 seconds")
+        print(f"  {Fore.YELLOW}Q{Style.RESET_ALL}      Quit playback")
+        print()
+        print(f"{Fore.CYAN}💡 Note:{Style.RESET_ALL} Speed control not available during playback.")
+        print("   Use --speed flag when starting (e.g., --speed 1.5)")
+        print()
+
+        # Create audio playback instance
+        audio_playback = AudioPlayback()
+
+        # Create controller
+        controller = PlaybackController(audio_playback)
+
+        # Start playback (this blocks until playback completes or user quits)
+        controller.start(audio_bytes=audio_bytes, chunks=[])
+
+        # Save playback position if session provided
+        if session_name and controller.state.current_position_ms > 0:
+            try:
+                manager = SessionManager()
+                # Update the session's playback position
+                manager.update_session_position(session_name, controller.state.current_position_ms)
+                logger.info(f"Saved playback position: {controller.state.current_position_ms}ms")
+            except Exception as e:
+                logger.warning(f"Failed to save playback position: {e}")
+
+        print_success("Audio playback complete")
+
+    except Exception as e:
+        print_error(f"Failed to play audio: {e}")
+        print_warning("Check your audio device settings")
+        sys.exit(1)
+
+
+def _play_audio_interactive_chunked(chunk_synthesizer: ChunkSynthesizer, session_name: Optional[str] = None):
+    """Play audio with interactive keyboard controls using streaming chunks.
+
+    Args:
+        chunk_synthesizer: ChunkSynthesizer instance with prepared chunks
+        session_name: Optional session name for saving playback position
+    """
+    try:
+        print_status("Starting streaming playback...")
+        print()
+        print(f"{Fore.CYAN}🎮 Keyboard Controls:{Style.RESET_ALL}")
+        print(f"  {Fore.YELLOW}SPACE{Style.RESET_ALL}  Pause/Resume")
+        print(f"  {Fore.YELLOW}→{Style.RESET_ALL}      Seek forward 5 seconds (within current chunk)")
+        print(f"  {Fore.YELLOW}←{Style.RESET_ALL}      Seek backward 5 seconds (within current chunk)")
+        print(f"  {Fore.YELLOW}Q{Style.RESET_ALL}      Quit playback")
+        print()
+        print(f"{Fore.CYAN}💡 Note:{Style.RESET_ALL} Speed control not available during playback.")
+        print("   Use --speed flag when starting (e.g., --speed 1.5)")
+        print()
+
+        # Create audio playback instance
+        audio_playback = AudioPlayback()
+
+        # Create controller
+        controller = PlaybackController(audio_playback)
+
+        # Start playback with chunk synthesizer (this blocks until playback completes or user quits)
+        controller.start(chunk_synthesizer=chunk_synthesizer)
+
+        # Save playback position if session provided
+        if session_name and controller.state.current_position_ms > 0:
+            try:
+                manager = SessionManager()
+                # Update the session's playback position
+                manager.update_session_position(session_name, controller.state.current_position_ms)
+                logger.info(f"Saved playback position: {controller.state.current_position_ms}ms")
+            except Exception as e:
+                logger.warning(f"Failed to save playback position: {e}")
+
+        print_success("Audio playback complete")
+
     except Exception as e:
         print_error(f"Failed to play audio: {e}")
         print_warning("Check your audio device settings")
@@ -360,6 +670,127 @@ def _save_audio(audio_bytes: bytes, output_path: str):
     except Exception as e:
         print_error(f"Failed to save audio: {e}")
         print_warning("Check file path and permissions")
+        sys.exit(1)
+
+
+def command_list_sessions(args):
+    """Handle the 'list-sessions' command.
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    try:
+        manager = SessionManager()
+        sessions = manager.list_sessions()
+
+        if not sessions:
+            print_warning("No saved sessions found")
+            print("\nTo save a session, use: pagereader read --url <URL> --save-session <NAME>")
+            return
+
+        print(f"\n{Fore.CYAN}📚 Saved Reading Sessions:{Style.RESET_ALL}\n")
+
+        # Sort by last accessed (most recent first)
+        sessions.sort(key=lambda s: s["last_accessed"], reverse=True)
+
+        for session in sessions:
+            # Format session name in cyan
+            name = f"{Fore.CYAN}{session['session_name']}{Style.RESET_ALL}"
+
+            # Progress indicator
+            progress = session["progress_percent"]
+            if progress >= 100:
+                progress_str = f"{Fore.GREEN}✓ Complete{Style.RESET_ALL}"
+            elif progress > 0:
+                progress_str = f"{Fore.YELLOW}{progress:.1f}%{Style.RESET_ALL}"
+            else:
+                progress_str = f"{Fore.WHITE}0%{Style.RESET_ALL}"
+
+            # Display session info
+            print(f"  {name}")
+            print(f"    URL: {session['url']}")
+            print(
+                f"    Progress: {progress_str} ({session['playback_position']:,} / {session['total_characters']:,} chars)"
+            )
+            print(f"    Last accessed: {session['last_accessed']}")
+            print()
+
+        print(f"Total: {len(sessions)} session(s)")
+        print("\nTo resume a session, use: pagereader resume <session-name>")
+
+    except Exception as e:
+        print_error(f"Failed to list sessions: {e}")
+        sys.exit(1)
+
+
+def command_resume(args):
+    """Handle the 'resume' command.
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    try:
+        print_status(f"Resuming session '{args.session_name}'...")
+        manager = SessionManager()
+
+        # Load session
+        text, position = manager.resume_session(args.session_name)
+
+        if not text:
+            print_error("Session has no content to resume")
+            sys.exit(1)
+
+        # Calculate progress
+        progress_percent = (position / len(text)) * 100 if len(text) > 0 else 0
+
+        print_success(f"Loaded session at position {position:,} / {len(text):,} chars ({progress_percent:.1f}%)")
+
+        # Get the text from the position forward
+        remaining_text = text[position:]
+
+        if not remaining_text:
+            print_warning("Session is already complete!")
+            return
+
+        print_status(f"Synthesizing {len(remaining_text):,} characters...")
+
+        # Synthesize from resume position
+        voice = args.voice or config.DEFAULT_TTS_VOICE
+        speed = args.speed or config.DEFAULT_TTS_SPEED
+        synthesizer = PiperSynthesizer(voice=voice)
+        audio_bytes = synthesizer.synthesize(remaining_text, speed=speed)
+
+        print_success(f"Generated {len(audio_bytes)} bytes of audio")
+
+        # Play audio with interactive controls
+        _play_audio_interactive(audio_bytes, session_name=args.session_name)
+
+    except ValueError as e:
+        print_error(f"Session not found: {e}")
+        print("\nAvailable sessions:")
+        command_list_sessions(args)
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"Failed to resume session: {e}")
+        sys.exit(1)
+
+
+def command_delete_session(args):
+    """Handle the 'delete-session' command.
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    try:
+        print_status(f"Deleting session '{args.session_name}'...")
+        manager = SessionManager()
+        manager.delete_session(args.session_name)
+        print_success(f"Session '{args.session_name}' deleted")
+    except ValueError as e:
+        print_error(f"Session not found: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"Failed to delete session: {e}")
         sys.exit(1)
 
 
