@@ -159,9 +159,9 @@
 
 ### CLI Integration for User Story 2
 
-- [ ] T071 [US2] Update command_read() to use PlaybackController instead of direct playback in src/main.py
-- [ ] T072 [US2] Add keyboard controls help text to CLI output in src/main.py (display at playback start)
-- [ ] T073 [US2] Save playback position to session on quit (if --save-session used) in src/main.py
+- [X] T071 [US2] Update command_read() to use PlaybackController instead of direct playback in src/main.py
+- [X] T072 [US2] Add keyboard controls help text to CLI output in src/main.py (display at playback start)
+- [X] T073 [US2] Save playback position to session on quit (if --save-session used) in src/main.py
 
 **Manual Test**: `pagereader read --url https://example.com`, test all keyboard controls (space, Q, arrows)
 
@@ -179,40 +179,40 @@
 
 > **TDD Workflow**: Write these tests FIRST, ensure they FAIL, then implement to make them PASS
 
-- [ ] T074 [P] [US3] Unit test for ChunkSynthesizer.__init__() in tests/unit/test_chunking.py
-- [ ] T075 [P] [US3] Unit test for ChunkSynthesizer.prepare_chunks() with various text lengths in tests/unit/test_chunking.py
-- [ ] T076 [P] [US3] Unit test for ChunkSynthesizer.prepare_chunks() respects sentence boundaries in tests/unit/test_chunking.py
-- [ ] T077 [P] [US3] Unit test for ChunkSynthesizer.prepare_chunks() with text <50 words (single chunk) in tests/unit/test_chunking.py
-- [ ] T078 [P] [US3] Unit test for ChunkSynthesizer.synthesize_first_chunk() in tests/unit/test_chunking.py
-- [ ] T079 [P] [US3] Unit test for ChunkSynthesizer.start_background_synthesis() spawns threads in tests/unit/test_chunking.py
-- [ ] T080 [P] [US3] Unit test for ChunkSynthesizer.get_next_chunk() in tests/unit/test_chunking.py
-- [ ] T081 [P] [US3] Unit test for ChunkSynthesizer.synthesize_chunk_on_demand() in tests/unit/test_chunking.py
-- [ ] T082 [P] [US3] Unit test for ChunkSynthesizer buffer size limit (max 10 chunks) in tests/unit/test_chunking.py
-- [ ] T083 [P] [US3] Unit test for ChunkSynthesizer.stop() graceful shutdown in tests/unit/test_chunking.py
-- [ ] T084 [P] [US3] Integration test for chunked playback workflow (prepare → first chunk → background → playback) in tests/integration/test_chunked_playback.py
-- [ ] T085 [P] [US3] Performance test: Time to first audio <3s for 10,000 word article in tests/integration/test_chunked_playback.py
-- [ ] T086 [P] [US3] Performance test: Chunk transition gaps <50ms (95th percentile) in tests/integration/test_chunked_playback.py
+- [X] T074 [P] [US3] Unit test for ChunkSynthesizer.__init__() in tests/unit/test_chunking.py
+- [X] T075 [P] [US3] Unit test for ChunkSynthesizer.prepare_chunks() with various text lengths in tests/unit/test_chunking.py
+- [X] T076 [P] [US3] Unit test for ChunkSynthesizer.prepare_chunks() respects sentence boundaries in tests/unit/test_chunking.py
+- [X] T077 [P] [US3] Unit test for ChunkSynthesizer.prepare_chunks() with text <50 words (single chunk) in tests/unit/test_chunking.py
+- [X] T078 [P] [US3] Unit test for ChunkSynthesizer.synthesize_first_chunk() in tests/unit/test_chunking.py
+- [X] T079 [P] [US3] Unit test for ChunkSynthesizer.start_background_synthesis() spawns threads in tests/unit/test_chunking.py
+- [X] T080 [P] [US3] Unit test for ChunkSynthesizer.get_next_chunk() in tests/unit/test_chunking.py
+- [X] T081 [P] [US3] Unit test for ChunkSynthesizer.synthesize_chunk_on_demand() in tests/unit/test_chunking.py
+- [X] T082 [P] [US3] Unit test for ChunkSynthesizer buffer size limit (max 10 chunks) in tests/unit/test_chunking.py
+- [X] T083 [P] [US3] Unit test for ChunkSynthesizer.stop() graceful shutdown in tests/unit/test_chunking.py
+- [X] T084 [P] [US3] Integration test for chunked playback workflow (prepare → first chunk → background → playback) in tests/integration/test_chunked_playback.py
+- [X] T085 [P] [US3] Performance test: Time to first audio <3s for 10,000 word article in tests/integration/test_chunked_playback.py
+- [X] T086 [P] [US3] Performance test: Chunk transition gaps <50ms (95th percentile) in tests/integration/test_chunked_playback.py
 
 **Run tests** (should FAIL): `pytest tests/unit/test_chunking.py tests/integration/test_chunked_playback.py -v`
 
 ### Implementation for User Story 3
 
-- [ ] T087 [P] [US3] Create ChunkSynthesizer class skeleton in src/tts/chunking.py with __init__ method
-- [ ] T088 [US3] Implement ChunkSynthesizer._split_into_sentences() private method in src/tts/chunking.py (regex-based)
-- [ ] T089 [US3] Implement ChunkSynthesizer._group_sentences_into_chunks() private method in src/tts/chunking.py (target 150 words)
-- [ ] T090 [US3] Implement ChunkSynthesizer.prepare_chunks() method in src/tts/chunking.py (split text, create AudioChunk instances)
-- [ ] T091 [US3] Implement ChunkSynthesizer.synthesize_first_chunk() method in src/tts/chunking.py (blocking synthesis)
-- [ ] T092 [US3] Implement ChunkSynthesizer._synthesis_worker_thread() private method in src/tts/chunking.py (background synthesis loop)
-- [ ] T093 [US3] Implement ChunkSynthesizer.start_background_synthesis() method in src/tts/chunking.py (spawn threads)
-- [ ] T094 [US3] Implement ChunkSynthesizer.get_next_chunk() method in src/tts/chunking.py (pop from buffer)
-- [ ] T095 [US3] Implement ChunkSynthesizer.synthesize_chunk_on_demand() method in src/tts/chunking.py (on-demand synthesis)
-- [ ] T096 [US3] Implement ChunkSynthesizer.stop() method in src/tts/chunking.py (shutdown threads, clear buffer)
-- [ ] T097 [US3] Implement ChunkSynthesizer.get_chunk_count() method in src/tts/chunking.py
-- [ ] T098 [US3] Implement ChunkSynthesizer.get_buffer_status() method in src/tts/chunking.py
-- [ ] T099 [US3] Add buffer management with 10-chunk limit in src/tts/chunking.py
-- [ ] T100 [US3] Add error handling for synthesis failures (mark chunk FAILED, continue) in src/tts/chunking.py
-- [ ] T101 [US3] Add shutdown_event checking in synthesis threads in src/tts/chunking.py
-- [ ] T102 [US3] Add logging for chunking operations in src/tts/chunking.py
+- [X] T087 [P] [US3] Create ChunkSynthesizer class skeleton in src/tts/chunking.py with __init__ method
+- [X] T088 [US3] Implement ChunkSynthesizer._split_into_sentences() private method in src/tts/chunking.py (regex-based)
+- [X] T089 [US3] Implement ChunkSynthesizer._group_sentences_into_chunks() private method in src/tts/chunking.py (target 150 words)
+- [X] T090 [US3] Implement ChunkSynthesizer.prepare_chunks() method in src/tts/chunking.py (split text, create AudioChunk instances)
+- [X] T091 [US3] Implement ChunkSynthesizer.synthesize_first_chunk() method in src/tts/chunking.py (blocking synthesis)
+- [X] T092 [US3] Implement ChunkSynthesizer._synthesis_worker_thread() private method in src/tts/chunking.py (background synthesis loop)
+- [X] T093 [US3] Implement ChunkSynthesizer.start_background_synthesis() method in src/tts/chunking.py (spawn threads)
+- [X] T094 [US3] Implement ChunkSynthesizer.get_next_chunk() method in src/tts/chunking.py (pop from buffer)
+- [X] T095 [US3] Implement ChunkSynthesizer.synthesize_chunk_on_demand() method in src/tts/chunking.py (on-demand synthesis)
+- [X] T096 [US3] Implement ChunkSynthesizer.stop() method in src/tts/chunking.py (shutdown threads, clear buffer)
+- [X] T097 [US3] Implement ChunkSynthesizer.get_chunk_count() method in src/tts/chunking.py
+- [X] T098 [US3] Implement ChunkSynthesizer.get_buffer_status() method in src/tts/chunking.py
+- [X] T099 [US3] Add buffer management with 10-chunk limit in src/tts/chunking.py
+- [X] T100 [US3] Add error handling for synthesis failures (mark chunk FAILED, continue) in src/tts/chunking.py
+- [X] T101 [US3] Add shutdown_event checking in synthesis threads in src/tts/chunking.py
+- [X] T102 [US3] Add logging for chunking operations in src/tts/chunking.py
 
 **Run tests** (should PASS): `pytest tests/unit/test_chunking.py tests/integration/test_chunked_playback.py -v`
 

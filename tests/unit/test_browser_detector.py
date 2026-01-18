@@ -193,14 +193,16 @@ class TestBrowserDetectionErrors:
     def test_browser_tab_detection_timeout(self):
         """Handle detection timeout gracefully."""
         from src.browser.detector import get_browser_tabs
-        from src.utils.errors import BrowserDetectionError, TimeoutError
+        from src.utils.errors import BrowserDetectionError
         
-        # Patch the helper function that would timeout
-        with patch('src.browser.detector._detect_tabs_by_window_title') as mock_window:
-            with patch('src.browser.detector._detect_tabs_by_accessibility') as mock_accessibility:
-                # Simulate timeout in window title detection
+        # Patch the process check to return True so we reach the detection methods
+        with patch('src.browser.detector._is_process_running') as mock_process:
+            mock_process.return_value = True
+            
+            # Patch the helper function that would timeout
+            with patch('src.browser.detector._detect_tabs_by_window_title') as mock_window:
+                # Simulate timeout in window title detection - this will be caught and wrapped
                 mock_window.side_effect = TimeoutError("Detection timeout")
-                mock_accessibility.return_value = []
                 
                 # get_browser_tabs wraps exceptions in BrowserDetectionError
                 with pytest.raises(BrowserDetectionError):

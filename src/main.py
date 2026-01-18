@@ -9,6 +9,7 @@ import logging
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 from colorama import Fore, Style
 from colorama import init as colorama_init
@@ -17,7 +18,8 @@ from src import config
 from src.browser.detector import detect_all_browser_tabs
 from src.extraction.text_extractor import ConcreteTextExtractor
 from src.session.manager import SessionManager
-from src.tts.playback import get_playback
+from src.tts.controller import PlaybackController
+from src.tts.playback import AudioPlayback, get_playback
 from src.tts.synthesizer import PiperSynthesizer
 from src.utils.errors import BrowserDetectionError, ExtractionError, TTSError
 from src.utils.logging import setup_logging
@@ -354,7 +356,7 @@ def command_read(args):
     if args.output:
         _save_audio(audio_bytes, args.output)
     elif not args.no_play:
-        _play_audio(audio_bytes)
+        _play_audio_interactive(audio_bytes, session_name=args.save_session if args.save_session else None)
     
     # Exit successfully
     sys.exit(0)
@@ -485,7 +487,7 @@ def _list_voices():
 
 
 def _play_audio(audio_bytes: bytes):
-    """Play audio bytes.
+    """Play audio bytes without interactive controls.
 
     Args:
         audio_bytes: Audio data to play
@@ -495,6 +497,52 @@ def _play_audio(audio_bytes: bytes):
         playback = get_playback()
         playback.play_audio(audio_bytes)
         print_success("Audio playback complete")
+    except Exception as e:
+        print_error(f"Failed to play audio: {e}")
+        print_warning("Check your audio device settings")
+        sys.exit(1)
+
+
+def _play_audio_interactive(audio_bytes: bytes, session_name: Optional[str] = None):
+    """Play audio with interactive keyboard controls.
+
+    Args:
+        audio_bytes: Audio data to play
+        session_name: Optional session name for saving playback position
+    """
+    try:
+        print_status("Starting interactive playback...")
+        print()
+        print(f"{Fore.CYAN}🎮 Keyboard Controls:{Style.RESET_ALL}")
+        print(f"  {Fore.YELLOW}SPACE{Style.RESET_ALL}  Pause/Resume")
+        print(f"  {Fore.YELLOW}→{Style.RESET_ALL}      Seek forward 5 seconds")
+        print(f"  {Fore.YELLOW}←{Style.RESET_ALL}      Seek backward 5 seconds")
+        print(f"  {Fore.YELLOW}↑{Style.RESET_ALL}      Increase speed by 0.25x")
+        print(f"  {Fore.YELLOW}↓{Style.RESET_ALL}      Decrease speed by 0.25x")
+        print(f"  {Fore.YELLOW}Q{Style.RESET_ALL}      Quit playback")
+        print()
+        
+        # Create audio playback instance
+        audio_playback = AudioPlayback()
+        
+        # Create controller
+        controller = PlaybackController(audio_playback)
+        
+        # Start playback (this blocks until playback completes or user quits)
+        controller.start(audio_bytes, [])
+        
+        # Save playback position if session provided
+        if session_name and controller.state.current_position_ms > 0:
+            try:
+                manager = SessionManager()
+                # Update the session's playback position
+                manager.update_session_position(session_name, controller.state.current_position_ms)
+                logger.info(f"Saved playback position: {controller.state.current_position_ms}ms")
+            except Exception as e:
+                logger.warning(f"Failed to save playback position: {e}")
+        
+        print_success("Audio playback complete")
+        
     except Exception as e:
         print_error(f"Failed to play audio: {e}")
         print_warning("Check your audio device settings")
@@ -606,11 +654,8 @@ def command_resume(args):
         
         print_success(f"Generated {len(audio_bytes)} bytes of audio")
         
-        # Play audio
-        _play_audio(audio_bytes)
-        
-        # TODO: Update session position after playback completes
-        # This would require tracking playback progress during playback
+        # Play audio with interactive controls
+        _play_audio_interactive(audio_bytes, session_name=args.session_name)
         
     except ValueError as e:
         print_error(f"Session not found: {e}")

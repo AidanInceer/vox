@@ -18,10 +18,13 @@ from src.main import main, create_parser
 class TestEndToEndURLReading:
     """Test complete URL reading workflow from CLI to audio output."""
 
+    @patch("src.main.PlaybackController")
+    @patch("src.main.AudioPlayback")
     @patch("src.main.PiperSynthesizer")
-    @patch("src.main.get_playback")
     @patch("src.main.ConcreteTextExtractor")
-    def test_read_url_complete_flow(self, mock_extractor_class, mock_get_playback, mock_synth_class):
+    def test_read_url_complete_flow(
+        self, mock_extractor_class, mock_synth_class, mock_audio_playback_class, mock_controller_class
+    ):
         """Test reading a URL from start to finish."""
         # Setup mocks
         mock_extractor = MagicMock()
@@ -33,9 +36,16 @@ class TestEndToEndURLReading:
         mock_synth.is_available.return_value = True
         mock_synth_class.return_value = mock_synth
 
-        mock_player = MagicMock()
-        mock_player.play_audio.return_value = None
-        mock_get_playback.return_value = mock_player
+        mock_audio_playback = MagicMock()
+        mock_audio_playback.state = MagicMock()
+        mock_audio_playback.state.current_position_ms = 0
+        mock_audio_playback_class.return_value = mock_audio_playback
+
+        mock_controller = MagicMock()
+        mock_controller.state = MagicMock()
+        mock_controller.state.current_position_ms = 0
+        mock_controller.start.return_value = None
+        mock_controller_class.return_value = mock_controller
 
         # Simulate CLI arguments
         test_args = ["pagereader", "read", "--url", "https://example.com/test"]
@@ -50,7 +60,7 @@ class TestEndToEndURLReading:
         # Verify workflow
         mock_extractor.extract_from_url.assert_called_once_with("https://example.com/test")
         assert mock_synth.synthesize.called
-        assert mock_player.play_audio.called
+        assert mock_controller.start.called
 
 
     def test_url_validation_error_handling(self):

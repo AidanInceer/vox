@@ -436,3 +436,71 @@ class SessionManager:
         except Exception as e:
             logger.error(f"Failed to check session existence: {e}")
             return False
+
+    def _read_session_data(self, session_name: str) -> dict:
+        """Read raw session data from disk.
+
+        Args:
+            session_name: Name of the session to read
+
+        Returns:
+            Session data dictionary
+
+        Raises:
+            ValueError: If session not found
+            OSError: If unable to read session file
+            json.JSONDecodeError: If session file corrupted
+        """
+        if not self.session_exists(session_name):
+            raise ValueError(f"Session '{session_name}' not found")
+
+        slug = self._slugify(session_name)
+        session_file = self.storage_dir / f"{slug}.json"
+
+        try:
+            with open(session_file, "r") as f:
+                return json.load(f)
+        except OSError as e:
+            logger.error(f"Failed to read session file: {e}")
+            raise
+        except json.JSONDecodeError as e:
+            logger.error(f"Corrupted session file: {e}")
+            raise
+
+    def update_session_position(self, session_name: str, playback_position: int) -> None:
+        """Update the playback position for a session.
+
+        Args:
+            session_name: Name of the session to update
+            playback_position: New playback position in characters
+
+        Raises:
+            ValueError: If session not found or position out of bounds
+            OSError: If unable to update session file
+        """
+        # Read current session data
+        data = self._read_session_data(session_name)
+
+        # Validate position
+        text_length = len(data.get("extracted_text", ""))
+        if playback_position < 0 or playback_position > text_length:
+            raise ValueError(f"Playback position {playback_position} out of bounds (0-{text_length})")
+
+        # Update position and timestamp
+        now = datetime.now()
+        data["playback_position"] = playback_position
+        data["last_accessed"] = now.isoformat()
+
+        # Write updated data
+        self._write_session_file(session_name, data)
+
+        # Update index
+        index = self._read_index()
+        for entry in index:
+            if entry["session_name"] == session_name:
+                entry["playback_position"] = playback_position
+                entry["last_accessed"] = now.isoformat()
+                break
+        self._write_index(index)
+
+        logger.info(f"Updated session '{session_name}' position to {playback_position}")
