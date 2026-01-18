@@ -517,9 +517,10 @@ def _play_audio_interactive(audio_bytes: bytes, session_name: Optional[str] = No
         print(f"  {Fore.YELLOW}SPACE{Style.RESET_ALL}  Pause/Resume")
         print(f"  {Fore.YELLOW}→{Style.RESET_ALL}      Seek forward 5 seconds")
         print(f"  {Fore.YELLOW}←{Style.RESET_ALL}      Seek backward 5 seconds")
-        print(f"  {Fore.YELLOW}↑{Style.RESET_ALL}      Increase speed by 0.25x")
-        print(f"  {Fore.YELLOW}↓{Style.RESET_ALL}      Decrease speed by 0.25x")
         print(f"  {Fore.YELLOW}Q{Style.RESET_ALL}      Quit playback")
+        print()
+        print(f"{Fore.CYAN}💡 Note:{Style.RESET_ALL} Speed control not available during playback.")
+        print(f"   Use --speed flag when starting (e.g., --speed 1.5)")
         print()
         
         # Create audio playback instance

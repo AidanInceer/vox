@@ -73,16 +73,34 @@ class PlaybackController:
             )
             self._keyboard_thread.start()
 
-            # Start audio playback
-            self.audio_playback.play_audio(audio_bytes)
+            # Start audio playback in background thread
+            playback_thread = threading.Thread(
+                target=self._playback_thread, args=(audio_bytes,), daemon=True
+            )
+            playback_thread.start()
 
-            # Process commands until shutdown
+            # Process commands in main thread (this blocks until quit)
             self._process_commands()
+
+            # Wait for playback to complete or quit
+            playback_thread.join(timeout=1.0)
 
         except Exception as e:
             logger.error(f"Failed to start playback: {e}")
             self.shutdown_event.set()
             raise RuntimeError(f"Playback failed: {e}") from e
+
+    def _playback_thread(self, audio_bytes: bytes) -> None:
+        """Background thread for audio playback.
+
+        Args:
+            audio_bytes: Audio data to play
+        """
+        try:
+            self.audio_playback.play_audio(audio_bytes)
+        except Exception as e:
+            logger.error(f"Playback thread error: {e}")
+            self.shutdown_event.set()
 
     def pause(self) -> None:
         """Pause playback.
@@ -146,22 +164,32 @@ class PlaybackController:
     def adjust_speed(self, delta: float) -> None:
         """Adjust playback speed.
 
+        Note: Speed adjustment is not supported during playback.
+        Speed must be set before playback starts using the --speed flag.
+
         Args:
             delta: Speed adjustment amount (positive=faster, negative=slower)
 
         Raises:
             RuntimeError: If not currently playing
+            NotImplementedError: Speed control not supported during playback
         """
         with self._lock:
             if not (self.state.is_playing or self.state.is_paused):
                 raise RuntimeError("Cannot adjust speed: not playing")
 
-            # Calculate new speed with clamping
-            new_speed = self.state.playback_speed + delta
-            new_speed = max(0.5, min(2.0, new_speed))
-
-            self.audio_playback.set_speed(new_speed)
-            logger.info(f"Speed adjusted to {new_speed}x")
+            # pygame.mixer doesn't support runtime speed control
+            # Inform the user about the limitation
+            logger.warning(
+                "Speed adjustment during playback is not supported. "
+                "Use --speed flag when starting playback."
+            )
+            print(
+                "\n⚠️  Speed control not available during playback.\n"
+                "   Use the --speed flag when starting (e.g., --speed 1.5)\n"
+            )
+            
+            # Don't call set_speed as it will raise NotImplementedError
 
     def _keyboard_input_thread(self) -> None:
         """Background thread for capturing keyboard input."""
@@ -253,6 +281,10 @@ class PlaybackController:
                         logger.warning(f"Speed adjust failed: {e}")
 
             except queue.Empty:
+                # Check if playback has finished naturally
+                if not self.state.is_playing and not self.state.is_paused:
+                    logger.debug("Playback completed, stopping command processing")
+                    break
                 # No command available, continue loop
                 continue
             except Exception as e:

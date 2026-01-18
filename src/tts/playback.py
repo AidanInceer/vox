@@ -192,24 +192,26 @@ class AudioPlayback:
     def set_speed(self, speed: float) -> None:
         """Set playback speed.
 
+        Note: pygame.mixer.music does not support runtime speed adjustment.
+        Speed must be set during audio synthesis, not during playback.
+        This method updates the state for tracking purposes only.
+
         Args:
             speed: Speed multiplier (0.5 to 2.0)
 
         Raises:
             ValueError: If speed is out of range
-            RuntimeError: If not currently playing
+            NotImplementedError: Always raised as pygame.mixer doesn't support speed control
         """
         if not 0.5 <= speed <= 2.0:
             raise ValueError(f"Speed must be 0.5-2.0, got {speed}")
         
-        if not (self.state.is_playing or self.state.is_paused):
-            raise RuntimeError("Cannot set speed: no audio is playing")
-
-        # Note: pygame.mixer doesn't directly support speed control
-        # This would require audio processing (e.g., using pydub or librosa)
-        # For now, we just update the state
-        self.state.playback_speed = speed
-        logger.warning(f"Speed set to {speed}x (note: pygame.mixer doesn't support speed control natively)")
+        # pygame.mixer.music doesn't support runtime speed control
+        # Speed must be set during synthesis, not during playback
+        raise NotImplementedError(
+            "Speed adjustment during playback is not supported. "
+            "Use the --speed flag when starting playback to synthesize audio at the desired speed."
+        )
 
 
     def is_playing(self) -> bool:
