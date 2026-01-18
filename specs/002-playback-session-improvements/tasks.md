@@ -55,48 +55,49 @@
 
 > **TDD Workflow**: Write these tests FIRST, ensure they FAIL, then implement to make them PASS
 
-- [ ] T010 [P] [US1] Unit test for SessionManager.__init__() in tests/unit/test_session_manager.py (creates storage dir)
-- [ ] T011 [P] [US1] Unit test for SessionManager.save_session() with valid inputs in tests/unit/test_session_manager.py
-- [ ] T012 [P] [US1] Unit test for SessionManager.save_session() with invalid session_name (ValueError) in tests/unit/test_session_manager.py
-- [ ] T013 [P] [US1] Unit test for SessionManager.save_session() with duplicate name (ValueError) in tests/unit/test_session_manager.py
-- [ ] T014 [P] [US1] Unit test for SessionManager.load_session() with existing session in tests/unit/test_session_manager.py
-- [ ] T015 [P] [US1] Unit test for SessionManager.load_session() with non-existent session (ValueError) in tests/unit/test_session_manager.py
-- [ ] T016 [P] [US1] Unit test for SessionManager.list_sessions() with multiple sessions in tests/unit/test_session_manager.py
-- [ ] T017 [P] [US1] Unit test for SessionManager.delete_session() in tests/unit/test_session_manager.py
-- [ ] T018 [P] [US1] Unit test for SessionManager.session_exists() in tests/unit/test_session_manager.py
-- [ ] T019 [P] [US1] Integration test for full session workflow (save → list → resume) in tests/integration/test_session_workflow.py
+- [X] T010 [P] [US1] Unit test for SessionManager.__init__() in tests/unit/test_session_manager.py (creates storage dir)
+- [X] T011 [P] [US1] Unit test for SessionManager.save_session() with valid inputs in tests/unit/test_session_manager.py
+- [X] T012 [P] [US1] Unit test for SessionManager.save_session() with invalid session_name (ValueError) in tests/unit/test_session_manager.py
+- [X] T013 [P] [US1] Unit test for SessionManager.save_session() with duplicate name (ValueError) in tests/unit/test_session_manager.py
+- [X] T014 [P] [US1] Unit test for SessionManager.load_session() with existing session in tests/unit/test_session_manager.py
+- [X] T015 [P] [US1] Unit test for SessionManager.load_session() with non-existent session (ValueError) in tests/unit/test_session_manager.py
+- [X] T016 [P] [US1] Unit test for SessionManager.list_sessions() with multiple sessions in tests/unit/test_session_manager.py
+- [X] T017 [P] [US1] Unit test for SessionManager.delete_session() in tests/unit/test_session_manager.py
+- [X] T018 [P] [US1] Unit test for SessionManager.session_exists() in tests/unit/test_session_manager.py
+- [X] T019 [P] [US1] Integration test for full session workflow (save → list → resume) in tests/integration/test_session_workflow.py
 
 **Run tests** (should FAIL): `pytest tests/unit/test_session_manager.py tests/integration/test_session_workflow.py -v`
 
 ### Implementation for User Story 1
 
-- [ ] T020 [P] [US1] Create SessionManager class skeleton in src/session/manager.py with __init__ method
-- [ ] T021 [US1] Implement SessionManager._validate_session_name() private method in src/session/manager.py
-- [ ] T022 [US1] Implement SessionManager._slugify() private method in src/session/manager.py
-- [ ] T023 [US1] Implement SessionManager._write_session_file() atomic write method in src/session/manager.py
-- [ ] T024 [US1] Implement SessionManager._write_index() and _read_index() methods in src/session/manager.py
-- [ ] T025 [US1] Implement SessionManager.save_session() method in src/session/manager.py (validation, JSON write, index update)
-- [ ] T026 [US1] Implement SessionManager.load_session() method in src/session/manager.py (read JSON, deserialize, update timestamp)
-- [ ] T027 [US1] Implement SessionManager.list_sessions() method in src/session/manager.py (read index, return list)
-- [ ] T028 [US1] Implement SessionManager.resume_session() method in src/session/manager.py (wrapper around load_session)
-- [ ] T029 [US1] Implement SessionManager.delete_session() method in src/session/manager.py (delete file, update index)
-- [ ] T030 [US1] Implement SessionManager.session_exists() method in src/session/manager.py (check index)
-- [ ] T031 [US1] Add error handling for file I/O errors in src/session/manager.py
-- [ ] T032 [US1] Add logging for session operations in src/session/manager.py
+- [X] T020 [P] [US1] Create SessionManager class skeleton in src/session/manager.py with __init__ method
+- [X] T021 [US1] Implement SessionManager._validate_session_name() private method in src/session/manager.py
+- [X] T022 [US1] Implement SessionManager._slugify() private method in src/session/manager.py
+- [X] T023 [US1] Implement SessionManager._write_session_file() atomic write method in src/session/manager.py
+- [X] T024 [US1] Implement SessionManager._write_index() and _read_index() methods in src/session/manager.py
+- [X] T025 [US1] Implement SessionManager.save_session() method in src/session/manager.py (validation, JSON write, index update)
+- [X] T026 [US1] Implement SessionManager.load_session() method in src/session/manager.py (read JSON, deserialize, update timestamp)
+- [X] T027 [US1] Implement SessionManager.list_sessions() method in src/session/manager.py (read index, return list)
+- [X] T028 [US1] Implement SessionManager.resume_session() method in src/session/manager.py (wrapper around load_session)
+- [X] T029 [US1] Implement SessionManager.delete_session() method in src/session/manager.py (delete file, update index)
+- [X] T030 [US1] Implement SessionManager.session_exists() method in src/session/manager.py (check index)
+- [X] T031 [US1] Add error handling for file I/O errors in src/session/manager.py
+- [X] T032 [US1] Add logging for session operations in src/session/manager.py
 
 **Run tests** (should PASS): `pytest tests/unit/test_session_manager.py tests/integration/test_session_workflow.py -v`
 
 ### CLI Integration for User Story 1
 
-- [ ] T033 [US1] Add --save-session argument to read command in src/main.py create_parser()
-- [ ] T034 [US1] Add list-sessions subcommand to parser in src/main.py create_parser()
-- [ ] T035 [US1] Add resume subcommand with session_name arg to parser in src/main.py create_parser()
-- [ ] T036 [US1] Implement command_list_sessions() handler in src/main.py (calls SessionManager.list_sessions, formats output)
-- [ ] T037 [US1] Implement command_resume() handler in src/main.py (calls SessionManager.resume_session, starts playback)
-- [ ] T038 [US1] Update command_read() to save session if --save-session flag provided in src/main.py
-- [ ] T039 [US1] Add colorized output for session listing in src/main.py (cyan for name, normal for details)
+- [X] T033 [US1] Add --save-session argument to read command in src/main.py create_parser()
+- [X] T034 [US1] Add list-sessions subcommand to parser in src/main.py create_parser()
+- [X] T035 [US1] Add resume subcommand with session_name arg to parser in src/main.py create_parser()
+- [X] T036 [US1] Implement command_list_sessions() handler in src/main.py (calls SessionManager.list_sessions, formats output)
+- [X] T037 [US1] Implement command_resume() handler in src/main.py (calls SessionManager.resume_session, starts playback)
+- [X] T038 [US1] Update command_read() to save session if --save-session flag provided in src/main.py
+- [X] T039 [US1] Add colorized output for session listing in src/main.py (cyan for name, normal for details)
 
 **Manual Test**: `pagereader read --url https://example.com --save-session test-article`, `pagereader list-sessions`, `pagereader resume test-article`
+
 
 **Checkpoint**: User Story 1 complete - session management fully functional and independently testable (Coverage target: >80%)
 

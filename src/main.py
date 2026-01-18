@@ -16,6 +16,7 @@ from colorama import init as colorama_init
 from src import config
 from src.browser.detector import detect_all_browser_tabs
 from src.extraction.text_extractor import ConcreteTextExtractor
+from src.session.manager import SessionManager
 from src.tts.playback import get_playback
 from src.tts.synthesizer import PiperSynthesizer
 from src.utils.errors import BrowserDetectionError, ExtractionError, TTSError
@@ -63,6 +64,12 @@ def main():
             command_read(args)
         elif args.command == "list":
             command_list(args)
+        elif args.command == "list-sessions":
+            command_list_sessions(args)
+        elif args.command == "resume":
+            command_resume(args)
+        elif args.command == "delete-session":
+            command_delete_session(args)
         elif args.command == "config":
             command_config(args)
         else:
@@ -142,6 +149,13 @@ For more help on a specific command, use: pagereader <command> --help
     read_parser.add_argument("--speed", type=float, default=1.0, help="Speech speed (0.5-2.0, default: 1.0)")
     read_parser.add_argument("--no-play", action="store_true", help="Generate audio but do not play it")
     read_parser.add_argument("--output", metavar="FILE", help="Save audio to a file instead of playing")
+    
+    # Session management
+    read_parser.add_argument(
+        "--save-session",
+        metavar="NAME",
+        help="Save this reading session with a name for later resume"
+    )
 
     # LIST command
     list_parser = subparsers.add_parser("list", help="List available items")
@@ -149,6 +163,33 @@ For more help on a specific command, use: pagereader <command> --help
 
     list_subcommands.add_parser("tabs", help="List all open browser tabs")
     list_subcommands.add_parser("voices", help="List available TTS voices")
+
+    # SESSION MANAGEMENT commands
+    list_sessions_parser = subparsers.add_parser(
+        "list-sessions",
+        help="List all saved reading sessions",
+        description="Display all saved reading sessions with their progress"
+    )
+    
+    resume_parser = subparsers.add_parser(
+        "resume",
+        help="Resume a saved reading session",
+        description="Resume playback from a previously saved session"
+    )
+    resume_parser.add_argument("session_name", help="Name of the session to resume")
+    resume_parser.add_argument(
+        "--voice",
+        default="en_US-libritts-high",
+        help="Voice to use for synthesis (default: en_US-libritts-high)",
+    )
+    resume_parser.add_argument("--speed", type=float, default=1.0, help="Speech speed (0.5-2.0, default: 1.0)")
+    
+    delete_session_parser = subparsers.add_parser(
+        "delete-session",
+        help="Delete a saved reading session",
+        description="Permanently delete a saved session"
+    )
+    delete_session_parser.add_argument("session_name", help="Name of the session to delete")
 
     # CONFIG command
     config_parser = subparsers.add_parser("config", help="Show configuration")
@@ -182,8 +223,28 @@ def command_read(args):
         sys.exit(1)
 
     print_success(f"Retrieved {len(content)} characters ({elapsed:.2f}s)")
+    
+    # Get URL for session saving
+    url = args.url or args.file or args.tab or "active-tab"
 
-    # Step 2: Synthesize to speech
+    # Step 2: Save session if requested
+    if args.save_session:
+        try:
+            print_status(f"Saving session '{args.save_session}'...")
+            manager = SessionManager()
+            session_id = manager.save_session(
+                session_name=args.save_session,
+                url=url,
+                extracted_text=content,
+                playback_position=0,
+                tts_settings={"voice": args.voice, "speed": args.speed}
+            )
+            print_success(f"Session saved (ID: {session_id})")
+        except ValueError as e:
+            print_error(f"Failed to save session: {e}")
+            sys.exit(1)
+
+    # Step 3: Synthesize to speech
     start_time = time.time()
     print_status("Synthesizing speech...")
     try:
@@ -197,7 +258,7 @@ def command_read(args):
         print_error(f"Failed to synthesize speech: {e}")
         sys.exit(1)
 
-    # Step 3: Handle output
+    # Step 4: Handle output
     if args.output:
         _save_audio(audio_bytes, args.output)
     elif not args.no_play:
@@ -360,6 +421,128 @@ def _save_audio(audio_bytes: bytes, output_path: str):
     except Exception as e:
         print_error(f"Failed to save audio: {e}")
         print_warning("Check file path and permissions")
+        sys.exit(1)
+
+
+def command_list_sessions(args):
+    """Handle the 'list-sessions' command.
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    try:
+        manager = SessionManager()
+        sessions = manager.list_sessions()
+
+        if not sessions:
+            print_warning("No saved sessions found")
+            print("\nTo save a session, use: pagereader read --url <URL> --save-session <NAME>")
+            return
+
+        print(f"\n{Fore.CYAN}📚 Saved Reading Sessions:{Style.RESET_ALL}\n")
+
+        # Sort by last accessed (most recent first)
+        sessions.sort(key=lambda s: s["last_accessed"], reverse=True)
+
+        for session in sessions:
+            # Format session name in cyan
+            name = f"{Fore.CYAN}{session['session_name']}{Style.RESET_ALL}"
+            
+            # Progress indicator
+            progress = session["progress_percent"]
+            if progress >= 100:
+                progress_str = f"{Fore.GREEN}✓ Complete{Style.RESET_ALL}"
+            elif progress > 0:
+                progress_str = f"{Fore.YELLOW}{progress:.1f}%{Style.RESET_ALL}"
+            else:
+                progress_str = f"{Fore.WHITE}0%{Style.RESET_ALL}"
+
+            # Display session info
+            print(f"  {name}")
+            print(f"    URL: {session['url']}")
+            print(f"    Progress: {progress_str} ({session['playback_position']:,} / {session['total_characters']:,} chars)")
+            print(f"    Last accessed: {session['last_accessed']}")
+            print()
+
+        print(f"Total: {len(sessions)} session(s)")
+        print(f"\nTo resume a session, use: pagereader resume <session-name>")
+
+    except Exception as e:
+        print_error(f"Failed to list sessions: {e}")
+        sys.exit(1)
+
+
+def command_resume(args):
+    """Handle the 'resume' command.
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    try:
+        print_status(f"Resuming session '{args.session_name}'...")
+        manager = SessionManager()
+        
+        # Load session
+        text, position = manager.resume_session(args.session_name)
+        
+        if not text:
+            print_error("Session has no content to resume")
+            sys.exit(1)
+        
+        # Calculate progress
+        progress_percent = (position / len(text)) * 100 if len(text) > 0 else 0
+        
+        print_success(f"Loaded session at position {position:,} / {len(text):,} chars ({progress_percent:.1f}%)")
+        
+        # Get the text from the position forward
+        remaining_text = text[position:]
+        
+        if not remaining_text:
+            print_warning("Session is already complete!")
+            return
+        
+        print_status(f"Synthesizing {len(remaining_text):,} characters...")
+        
+        # Synthesize from resume position
+        voice = args.voice or config.DEFAULT_TTS_VOICE
+        speed = args.speed or config.DEFAULT_TTS_SPEED
+        synthesizer = PiperSynthesizer(voice=voice)
+        audio_bytes = synthesizer.synthesize(remaining_text, speed=speed)
+        
+        print_success(f"Generated {len(audio_bytes)} bytes of audio")
+        
+        # Play audio
+        _play_audio(audio_bytes)
+        
+        # TODO: Update session position after playback completes
+        # This would require tracking playback progress during playback
+        
+    except ValueError as e:
+        print_error(f"Session not found: {e}")
+        print("\nAvailable sessions:")
+        command_list_sessions(args)
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"Failed to resume session: {e}")
+        sys.exit(1)
+
+
+def command_delete_session(args):
+    """Handle the 'delete-session' command.
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    try:
+        print_status(f"Deleting session '{args.session_name}'...")
+        manager = SessionManager()
+        manager.delete_session(args.session_name)
+        print_success(f"Session '{args.session_name}' deleted")
+    except ValueError as e:
+        print_error(f"Session not found: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"Failed to delete session: {e}")
         sys.exit(1)
 
 
