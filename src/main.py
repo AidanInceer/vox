@@ -49,6 +49,42 @@ def print_warning(msg: str):
     print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} {msg}")
 
 
+class ColoredHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    """Custom help formatter with colored output."""
+
+    def _format_usage(self, usage, actions, groups, prefix):
+        """Format usage line with color."""
+        if prefix is None:
+            prefix = f"{Fore.CYAN}Usage:{Style.RESET_ALL} "
+        return super()._format_usage(usage, actions, groups, prefix)
+
+    def _format_action(self, action):
+        """Format individual action with colored option strings."""
+        # Get the formatted help
+        help_text = super()._format_action(action)
+        
+        # Color the option strings (e.g., -h, --help)
+        if action.option_strings:
+            # Find and color option strings
+            for opt in action.option_strings:
+                help_text = help_text.replace(opt, f"{Fore.GREEN}{opt}{Style.RESET_ALL}", 1)
+        
+        return help_text
+
+    def add_usage(self, usage, actions, groups, prefix=None):
+        """Override to add colored usage."""
+        if prefix is None:
+            prefix = f"{Fore.CYAN}Usage:{Style.RESET_ALL} "
+        super().add_usage(usage, actions, groups, prefix)
+
+    def start_section(self, heading):
+        """Format section headings with color."""
+        if heading:
+            # Color section headings
+            heading = f"{Fore.CYAN}{heading}:{Style.RESET_ALL}"
+        super().start_section(heading)
+
+
 def main():
     """Main entry point for PageReader CLI."""
     parser = create_parser()
@@ -90,32 +126,70 @@ def create_parser() -> argparse.ArgumentParser:
     Returns:
         ArgumentParser with all commands and options defined
     """
-    parser = argparse.ArgumentParser(
-        prog="pagereader",
-        description="Read web pages and browser tabs aloud using AI text-to-speech",
-        epilog="""
-Examples:
-  # Read from a URL
+    # Create colored description with ASCII art header
+    description = f"""
+{Fore.CYAN}╔═══════════════════════════════════════════════════════════════════╗
+║                          PageReader v1.0.0                        ║
+║          Read web pages and browser tabs aloud with AI TTS        ║
+╚═══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}
+
+{Fore.YELLOW}📚 Session Management:{Style.RESET_ALL}
+  Save reading sessions and resume later from where you left off
+  
+{Fore.YELLOW}🎮 Interactive Controls:{Style.RESET_ALL}
+  Control playback with keyboard shortcuts during audio playback
+"""
+
+    epilog = f"""
+{Fore.CYAN}═══════════════════════════════════════════════════════════════════
+📖 Examples:
+═══════════════════════════════════════════════════════════════════{Style.RESET_ALL}
+
+  {Fore.GREEN}# Read from a URL{Style.RESET_ALL}
   pagereader read --url https://example.com
 
-  # Read from a local file
+  {Fore.GREEN}# Save a reading session{Style.RESET_ALL}
+  pagereader read --url https://example.com --save-session my-article
+
+  {Fore.GREEN}# List saved sessions{Style.RESET_ALL}
+  pagereader list-sessions
+
+  {Fore.GREEN}# Resume a session{Style.RESET_ALL}
+  pagereader resume my-article
+
+  {Fore.GREEN}# Read from a local file{Style.RESET_ALL}
   pagereader read --file article.html
 
-  # Read with custom voice and speed
+  {Fore.GREEN}# Read with custom voice and speed{Style.RESET_ALL}
   pagereader read --url https://example.com --voice en_US-libritts-high --speed 1.5
 
-  # Save audio to file instead of playing
+  {Fore.GREEN}# Save audio to file{Style.RESET_ALL}
   pagereader read --url https://example.com --output audio.wav
 
-  # List all open browser tabs
+  {Fore.GREEN}# List all open browser tabs{Style.RESET_ALL}
   pagereader list tabs
 
-  # List available voices
+  {Fore.GREEN}# List available voices{Style.RESET_ALL}
   pagereader list voices
 
-For more help on a specific command, use: pagereader <command> --help
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+{Fore.CYAN}═══════════════════════════════════════════════════════════════════{Style.RESET_ALL}
+💡 For more help on a specific command: {Fore.YELLOW}pagereader <command> --help{Style.RESET_ALL}
+"""
+
+    parser = argparse.ArgumentParser(
+        prog="pagereader",
+        description=description,
+        epilog=epilog,
+        formatter_class=ColoredHelpFormatter,
+        add_help=False,  # We'll add custom help
+    )
+
+    # Add custom help argument with color
+    parser.add_argument(
+        "-h", "--help",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="Show this help message and exit"
     )
 
     # Global options
@@ -127,17 +201,18 @@ For more help on a specific command, use: pagereader <command> --help
     # READ command
     read_parser = subparsers.add_parser(
         "read",
-        help="Read content aloud",
-        description="Read content from a URL, file, or browser tab using text-to-speech",
+        help=f"{Fore.YELLOW}Read content aloud{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Read content from a URL, file, or browser tab using text-to-speech{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
     )
     read_group = read_parser.add_mutually_exclusive_group(required=True)
     read_group.add_argument("--tab", metavar="TAB_ID", help="Read a specific browser tab by ID")
     read_group.add_argument(
-        "--url", metavar="URL", help="Read content from a URL (must start with http:// or https://)"
+        "--url", metavar="URL", help="Read content from a URL (http:// or https://)"
     )
     read_group.add_argument("--file", metavar="FILE_PATH", help="Read content from a local HTML file")
     read_group.add_argument(
-        "--active", action="store_true", help="Read the currently active browser tab (not yet implemented)"
+        "--active", action="store_true", help="Read the currently active browser tab"
     )
 
     # TTS options
@@ -158,7 +233,11 @@ For more help on a specific command, use: pagereader <command> --help
     )
 
     # LIST command
-    list_parser = subparsers.add_parser("list", help="List available items")
+    list_parser = subparsers.add_parser(
+        "list",
+        help=f"{Fore.YELLOW}List available items{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
     list_subcommands = list_parser.add_subparsers(dest="list_type", help="What to list")
 
     list_subcommands.add_parser("tabs", help="List all open browser tabs")
@@ -167,14 +246,16 @@ For more help on a specific command, use: pagereader <command> --help
     # SESSION MANAGEMENT commands
     list_sessions_parser = subparsers.add_parser(
         "list-sessions",
-        help="List all saved reading sessions",
-        description="Display all saved reading sessions with their progress"
+        help=f"{Fore.YELLOW}List all saved reading sessions{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Display all saved reading sessions with their progress{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
     )
     
     resume_parser = subparsers.add_parser(
         "resume",
-        help="Resume a saved reading session",
-        description="Resume playback from a previously saved session"
+        help=f"{Fore.YELLOW}Resume a saved reading session{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Resume playback from a previously saved session{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
     )
     resume_parser.add_argument("session_name", help="Name of the session to resume")
     resume_parser.add_argument(
@@ -186,13 +267,18 @@ For more help on a specific command, use: pagereader <command> --help
     
     delete_session_parser = subparsers.add_parser(
         "delete-session",
-        help="Delete a saved reading session",
-        description="Permanently delete a saved session"
+        help=f"{Fore.YELLOW}Delete a saved reading session{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Permanently delete a saved session{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
     )
     delete_session_parser.add_argument("session_name", help="Name of the session to delete")
 
     # CONFIG command
-    config_parser = subparsers.add_parser("config", help="Show configuration")
+    config_parser = subparsers.add_parser(
+        "config",
+        help=f"{Fore.YELLOW}Show configuration{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
 
     return parser
 
