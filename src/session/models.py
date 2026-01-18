@@ -10,6 +10,7 @@ class ReadingSession:
 
     Attributes:
         session_id: Unique identifier for the session
+        session_name: Human-readable name for the session (unique)
         page_url: URL or file path of the page being read
         title: Title of the page (from HTML <title> or filename)
         playback_position: Current position in text (character offset)
@@ -20,6 +21,7 @@ class ReadingSession:
     """
 
     session_id: str
+    session_name: str
     page_url: str
     title: str
     playback_position: int = 0
@@ -35,9 +37,19 @@ class ReadingSession:
     def __repr__(self) -> str:
         """Detailed representation of session."""
         return (
-            f"ReadingSession(id={self.session_id!r}, url={self.page_url!r}, "
+            f"ReadingSession(id={self.session_id!r}, "
+            f"name={self.session_name!r}, url={self.page_url!r}, "
             f"title={self.title!r}, position={self.playback_position})"
         )
+
+    def update_position(self, position: int) -> None:
+        """Update playback position and last accessed timestamp.
+
+        Args:
+            position: New playback position (character offset)
+        """
+        self.playback_position = position
+        self.last_accessed = datetime.now()
 
     def is_valid(self) -> bool:
         """Check if session is valid.
@@ -45,7 +57,9 @@ class ReadingSession:
         Returns:
             True if all required fields are present and non-empty
         """
-        return all([self.session_id, self.page_url, self.title])
+        return all(
+            [self.session_id, self.session_name, self.page_url, self.title]
+        )
 
     def to_dict(self) -> dict:
         """Convert session to dictionary for serialization.
@@ -55,6 +69,7 @@ class ReadingSession:
         """
         return {
             "session_id": self.session_id,
+            "session_name": self.session_name,
             "page_url": self.page_url,
             "title": self.title,
             "playback_position": self.playback_position,
@@ -76,11 +91,16 @@ class ReadingSession:
         """
         return cls(
             session_id=data["session_id"],
+            session_name=data["session_name"],
             page_url=data["page_url"],
             title=data["title"],
             playback_position=data.get("playback_position", 0),
-            created_at=datetime.fromisoformat(data.get("created_at", datetime.now().isoformat())),
-            last_accessed=datetime.fromisoformat(data.get("last_accessed", datetime.now().isoformat())),
+            created_at=datetime.fromisoformat(
+                data.get("created_at", datetime.now().isoformat())
+            ),
+            last_accessed=datetime.fromisoformat(
+                data.get("last_accessed", datetime.now().isoformat())
+            ),
             extraction_settings=data.get("extraction_settings", {}),
             tts_settings=data.get("tts_settings", {}),
         )

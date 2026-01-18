@@ -5,27 +5,33 @@ volume control, and speed adjustment.
 """
 
 import logging
-import time
-import threading
 import winsound
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 
-
+@dataclass
 class PlaybackState:
-    """Tracks playback state and position."""
+    """Tracks playback state and position.
 
-    def __init__(self):
-        self.is_playing = False
-        self.is_paused = False
-        self.position_ms = 0  # Current position in milliseconds
-        self.duration_ms = 0  # Total duration in milliseconds
-        self.volume = 100  # 0-100%
-        self.speed = 1.0  # 0.5-2.0x
-        self.playback_thread: Optional[threading.Thread] = None
+    Attributes:
+        is_playing: Whether audio is currently playing
+        is_paused: Whether playback is paused
+        current_position_ms: Current position in milliseconds
+        playback_speed: Playback speed multiplier (0.5 - 2.0)
+        current_chunk_index: Index of the current audio chunk
+        chunk_buffer: List of buffered audio chunks
+    """
+
+    is_playing: bool = False
+    is_paused: bool = False
+    current_position_ms: int = 0
+    playback_speed: float = 1.0
+    current_chunk_index: int = 0
+    chunk_buffer: list = field(default_factory=list)
 
 
 class AudioPlayback:
@@ -54,7 +60,10 @@ class AudioPlayback:
             # Save to temporary file for playback
             import tempfile
 
-            with tempfile.NamedTemporaryFile(suffix=f".{format}", delete=False) as tmp:
+            suffix = f".{format}"
+            with tempfile.NamedTemporaryFile(
+                suffix=suffix, delete=False
+            ) as tmp:
                 tmp.write(audio_bytes)
                 tmp_path = tmp.name
 

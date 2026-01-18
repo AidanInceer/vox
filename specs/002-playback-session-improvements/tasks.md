@@ -36,12 +36,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Enhance ReadingSession model in src/session/models.py with session_name field (unique identifier)
-- [ ] T007 [P] Add update_position() method to ReadingSession model in src/session/models.py
-- [ ] T008 [P] Create PlaybackState dataclass in src/tts/playback.py with fields: is_playing, is_paused, current_position_ms, playback_speed, current_chunk_index, chunk_buffer
-- [ ] T009 [P] Create AudioChunk dataclass in src/tts/chunking.py with fields: chunk_index, text_content, audio_data, duration_ms, synthesis_status
+- [X] T006 Enhance ReadingSession model in src/session/models.py with session_name field (unique identifier)
+- [X] T007 [P] Add update_position() method to ReadingSession model in src/session/models.py
+- [X] T008 [P] Create PlaybackState dataclass in src/tts/playback.py with fields: is_playing, is_paused, current_position_ms, playback_speed, current_chunk_index, chunk_buffer
+- [X] T009 [P] Create AudioChunk dataclass in src/tts/chunking.py with fields: chunk_index, text_content, audio_data, duration_ms, synthesis_status
 
-**Checkpoint**: All data models defined and tested - user story implementation can begin
+**Checkpoint**: ✅ All data models defined and tested - user story implementation can begin
 
 ---
 
