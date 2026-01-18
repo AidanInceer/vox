@@ -24,7 +24,7 @@
 - [X] T002 [P] Update pyproject.toml to add pygame to dependencies list
 - [X] T003 [P] Add session storage path constant to src/config.py: `SESSION_STORAGE_DIR = Path(os.getenv("APPDATA")) / "PageReader" / "sessions"`
 - [X] T004 [P] Add chunking constants to src/config.py: `DEFAULT_CHUNK_SIZE = 150`, `MAX_BUFFER_SIZE = 10`
-- [X] T005 Verify pygame.mixer initialization works on Windows 11 with test script
+- [X] T005 Verify pygame.mixer initialization works on Windows 11: `pytest tests/unit/test_pygame_init.py tests/unit/test_pygame_mixer.py -v`
 
 **Checkpoint**: ✅ Dependencies installed, config updated - ready for module development
 
@@ -248,7 +248,7 @@
 - [ ] T120 Verify test coverage ≥80% for all new modules: `pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=80`
 - [ ] T121 Run full test suite: `pytest tests/ -v`
 - [ ] T122 [P] Create example session files for documentation/testing
-- [ ] T123 [P] Test PyInstaller build with new pygame dependency: `python build_exe.py`
+- [ ] T123 [P] Test PyInstaller build with new pygame dependency: `python scripts/build_exe.py`
 - [ ] T124 Manual testing: Complete all acceptance scenarios from spec.md for US1, US2, US3
 - [ ] T125 Performance validation: Verify all success criteria from spec.md (SC-001 through SC-008)
 
