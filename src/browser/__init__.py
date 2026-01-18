@@ -1,1 +1,1 @@
-"""Browser tab detection and window management module."""
+"""Browser tab detection and window management module for vox."""

@@ -4,7 +4,7 @@
 **Date**: 2026-01-17  
 **Target Audience**: Developers implementing this feature
 
-This guide provides step-by-step instructions for implementing session management, playback controls, and streaming chunking for PageReader.
+This guide provides step-by-step instructions for implementing session management, playback controls, and streaming chunking for vox.
 
 ---
 
@@ -161,10 +161,10 @@ class SessionManager:
     def __init__(self, storage_dir: Optional[Path] = None):
         """Initialize with storage directory."""
         if storage_dir is None:
-            # Default: %APPDATA%/PageReader/sessions
+            # Default: %APPDATA%/vox/sessions
             import os
             appdata = os.getenv("APPDATA", ".")
-            storage_dir = Path(appdata) / "PageReader" / "sessions"
+            storage_dir = Path(appdata) / "vox" / "sessions"
         
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
@@ -370,13 +370,13 @@ def command_read(args):
 **Test manually**:
 ```bash
 # Save a session
-pagereader read --url https://example.com --save-session my-article
+vox read --url https://example.com --save-session my-article
 
 # List sessions
-pagereader list-sessions
+vox list-sessions
 
 # Resume session
-pagereader resume my-article
+vox resume my-article
 ```
 
 ---
@@ -526,7 +526,7 @@ pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=80
 ## Debugging Tips
 
 ### Session Management
-- **Sessions not saving**: Check `%APPDATA%/PageReader/sessions/` exists and is writable
+- **Sessions not saving**: Check `%APPDATA%/vox/sessions/` exists and is writable
 - **Corrupted JSON**: Delete `sessions.json` and restart (auto-rebuilds)
 - **Duplicate names**: Use unique session names or delete old session first
 

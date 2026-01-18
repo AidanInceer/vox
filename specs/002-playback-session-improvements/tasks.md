@@ -22,7 +22,7 @@
 
 - [X] T001 Install pygame dependency: `uv pip install pygame>=2.6.0`
 - [X] T002 [P] Update pyproject.toml to add pygame to dependencies list
-- [X] T003 [P] Add session storage path constant to src/config.py: `SESSION_STORAGE_DIR = Path(os.getenv("APPDATA")) / "PageReader" / "sessions"`
+- [X] T003 [P] Add session storage path constant to src/config.py: `SESSION_STORAGE_DIR = Path(os.getenv("APPDATA")) / "vox" / "sessions"`
 - [X] T004 [P] Add chunking constants to src/config.py: `DEFAULT_CHUNK_SIZE = 150`, `MAX_BUFFER_SIZE = 10`
 - [X] T005 Verify pygame.mixer initialization works on Windows 11: `pytest tests/unit/test_pygame_init.py tests/unit/test_pygame_mixer.py -v`
 
@@ -49,7 +49,7 @@
 
 **Goal**: Enable users to save reading sessions with custom names, list all sessions, resume from saved position, and delete sessions
 
-**Independent Test**: Run `pagereader read --url https://example.com --save-session my-test`, verify session saved, run `pagereader list-sessions`, verify listed, run `pagereader resume my-test`, verify playback resumes
+**Independent Test**: Run `vox read --url https://example.com --save-session my-test`, verify session saved, run `vox list-sessions`, verify listed, run `vox resume my-test`, verify playback resumes
 
 ### Tests for User Story 1 (TDD - Write First)
 
@@ -96,7 +96,7 @@
 - [X] T038 [US1] Update command_read() to save session if --save-session flag provided in src/main.py
 - [X] T039 [US1] Add colorized output for session listing in src/main.py (cyan for name, normal for details)
 
-**Manual Test**: `pagereader read --url https://example.com --save-session test-article`, `pagereader list-sessions`, `pagereader resume test-article`
+**Manual Test**: `vox read --url https://example.com --save-session test-article`, `vox list-sessions`, `vox resume test-article`
 
 
 **Checkpoint**: User Story 1 complete - session management fully functional and independently testable (Coverage target: >80%)
@@ -107,7 +107,7 @@
 
 **Goal**: Enable users to control audio playback in real-time with keyboard shortcuts (spacebar=pause/resume, Q=quit, arrows=navigate/speed)
 
-**Independent Test**: Start playback with `pagereader read --url https://example.com`, press spacebar (pauses), press spacebar (resumes), press right arrow (skips forward), press up arrow (speed up), press Q (quits cleanly)
+**Independent Test**: Start playback with `vox read --url https://example.com`, press spacebar (pauses), press spacebar (resumes), press right arrow (skips forward), press up arrow (speed up), press Q (quits cleanly)
 
 ### Tests for User Story 2 (TDD - Write First)
 
@@ -163,7 +163,7 @@
 - [X] T072 [US2] Add keyboard controls help text to CLI output in src/main.py (display at playback start)
 - [X] T073 [US2] Save playback position to session on quit (if --save-session used) in src/main.py
 
-**Manual Test**: `pagereader read --url https://example.com`, test all keyboard controls (space, Q, arrows)
+**Manual Test**: `vox read --url https://example.com`, test all keyboard controls (space, Q, arrows)
 
 **Checkpoint**: User Story 2 complete - playback controls fully functional and independently testable (Coverage target: >80%)
 
@@ -173,7 +173,7 @@
 
 **Goal**: Provide faster feedback by chunking text (~150 words), synthesizing first chunk immediately (<3s), and synthesizing remaining chunks in background for seamless playback
 
-**Independent Test**: Run `pagereader read --url <long-article-url>` (5000+ words), verify audio begins within 3 seconds, verify seamless transitions between chunks
+**Independent Test**: Run `vox read --url <long-article-url>` (5000+ words), verify audio begins within 3 seconds, verify seamless transitions between chunks
 
 ### Tests for User Story 3 (TDD - Write First)
 
@@ -225,7 +225,7 @@
 - [X] T107 [US3] Update command_read() to use ChunkSynthesizer for text synthesis in src/main.py
 - [X] T108 [US3] Add progress display during chunking (e.g., "Synthesizing chunk 3/8...") in src/main.py
 
-**Manual Test**: `pagereader read --url <long-article-url>` (find article with 5000+ words), verify first audio <3s, verify smooth playback
+**Manual Test**: `vox read --url <long-article-url>` (find article with 5000+ words), verify first audio <3s, verify smooth playback
 
 **Checkpoint**: User Story 3 complete - streaming chunking fully functional and independently testable (Coverage target: >80%)
 

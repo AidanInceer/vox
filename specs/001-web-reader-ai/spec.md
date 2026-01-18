@@ -18,7 +18,7 @@
 
 - Q: Should application support reading from browser tabs or just URLs/files? → A: **URL-only MVP (Option A).** Simplify to core functionality: URL input only. Remove browser tab detection, file path support. Users pass URL via CLI, application fetches, extracts text, synthesizes to speech. Browser tabs and file support deferred to P2/future phases.
 - Q: How should the CLI frontend be styled for better usability? → A: **Colorized with Progress (Option B).** Use colored output (green/cyan for success, red for errors) with progress indicators for long operations. Clear section dividers. Balances visual clarity with minimal dependencies (no full TUI framework).
-- Q: Which packaging/distribution model for standalone CLI tool? → A: **Both PyPI + Standalone Exe (Option C).** Support: (1) PyPI publication for developer installation (`pip install pagereader`); (2) PyInstaller-generated standalone `.exe` for end users without Python. Both entry points named `pagereader`.
+- Q: Which packaging/distribution model for standalone CLI tool? → A: **Both PyPI + Standalone Exe (Option C).** Support: (1) PyPI publication for developer installation (`pip install vox`); (2) PyInstaller-generated standalone `.exe` for end users without Python. Both entry points named `vox`.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -32,7 +32,7 @@ User provides a URL to the application via CLI, and the application automaticall
 
 **Acceptance Scenarios**:
 
-1. **Given** user runs `pagereader read --url https://example.com`, **When** the command executes, **Then** the application fetches the page within 3 seconds, extracts visible text, and begins audio playback
+1. **Given** user runs `vox read --url https://example.com`, **When** the command executes, **Then** the application fetches the page within 3 seconds, extracts visible text, and begins audio playback
 2. **Given** text is extracted from a web page, **When** audio is synthesized, **Then** audio is output with clear, natural-sounding speech at default speed (1.0x)
 3. **Given** a complex web page is provided, **When** text is extracted, **Then** content is presented in logical reading order (main content prioritized over navigation/footer)
 4. **Given** an invalid or inaccessible URL is provided, **When** the application processes it, **Then** a clear error message is displayed (e.g., "URL fetch failed: check internet connection")
@@ -51,23 +51,23 @@ User can easily understand what the application is doing via colorized, progress
 
 1. **Given** user runs a read command, **When** the application is fetching/synthesizing, **Then** colored status messages appear (e.g., cyan "[*] Fetching URL...", green "[OK] Generated 500KB audio")
 2. **Given** an error occurs, **When** the application displays it, **Then** the error message is in red with helpful context (e.g., red "[ERROR] URL fetch failed - check internet connection")
-3. **Given** user runs `pagereader --help`, **When** help is displayed, **Then** examples are shown with clear descriptions of available commands
+3. **Given** user runs `vox --help`, **When** help is displayed, **Then** examples are shown with clear descriptions of available commands
 
 ---
 
 ### User Story 3 - Packaged Distribution (Priority: P1)
 
-User can install and run PageReader as a global CLI tool either via `pip install pagereader` or by downloading a standalone `.exe` file.
+User can install and run vox as a global CLI tool either via `pip install vox` or by downloading a standalone `.exe` file.
 
 **Why this priority**: P1 - Required for real-world usage. Users should not need Python knowledge to run the application.
 
-**Independent Test**: Can be fully tested by: (1) Installing via PyPI and verifying `pagereader` works globally; (2) Running standalone exe on a clean system without Python and verifying it works.
+**Independent Test**: Can be fully tested by: (1) Installing via PyPI and verifying `vox` works globally; (2) Running standalone exe on a clean system without Python and verifying it works.
 
 **Acceptance Scenarios**:
 
-1. **Given** user has Python installed, **When** user runs `pip install pagereader`, **Then** the command completes and `pagereader --help` works globally from any directory
-2. **Given** user downloads `pagereader.exe` standalone, **When** user runs it from PowerShell/CMD without Python installed, **Then** the application works and can read URLs
-3. **Given** user runs `pagereader read --url https://example.com`, **Then** both the pip-installed and exe versions produce identical behavior and output
+1. **Given** user has Python installed, **When** user runs `pip install vox`, **Then** the command completes and `vox --help` works globally from any directory
+2. **Given** user downloads `vox.exe` standalone, **When** user runs it from PowerShell/CMD without Python installed, **Then** the application works and can read URLs
+3. **Given** user runs `vox read --url https://example.com`, **Then** both the pip-installed and exe versions produce identical behavior and output
 
 ---
 
@@ -85,7 +85,7 @@ The following are removed from v1.0 MVP scope and deferred to v2.0+:
 
 ### Functional Requirements
 
-- **FR-001**: Application MUST accept a URL as CLI argument (`pagereader read --url <URL>`)
+- **FR-001**: Application MUST accept a URL as CLI argument (`vox read --url <URL>`)
 - **FR-002**: Application MUST fetch HTML content from provided URL within 3 seconds (or timeout with error)
 - **FR-003**: Application MUST extract visible text content from fetched HTML with ≥95% accuracy
 - **FR-004**: Application MUST extract text in logical reading order (prioritizing main content over navigation/footer)
@@ -94,7 +94,7 @@ The following are removed from v1.0 MVP scope and deferred to v2.0+:
 - **FR-007**: Application MUST display colorized CLI output with status messages and progress indicators
 - **FR-008**: Application MUST handle errors gracefully with clear, user-friendly error messages
 - **FR-009**: Application MUST run as standalone desktop application on Windows 11 with no web server required
-- **FR-010**: Application MUST be distributable via PyPI (`pip install pagereader`) with CLI entry point
+- **FR-010**: Application MUST be distributable via PyPI (`pip install vox`) with CLI entry point
 - **FR-011**: Application MUST be buildable as standalone `.exe` using PyInstaller with zero Python dependencies required to run
 
 ### Non-Functional Requirements
@@ -121,7 +121,7 @@ The following are removed from v1.0 MVP scope and deferred to v2.0+:
 - **SC-003**: Audio narration is intelligible and natural-sounding
 - **SC-004**: CLI output is colorized and easy to understand
 - **SC-005**: Application works as standalone `.exe` with no Python required
-- **SC-006**: Application works via PyPI with `pip install pagereader`
+- **SC-006**: Application works via PyPI with `pip install vox`
 - **SC-007**: All 185+ existing tests continue to pass
 - **SC-008**: No regressions in existing functionality (tabs, file input removed but existing tests remain for removed features)
 

@@ -1,6 +1,6 @@
 # Build Instructions
 
-This document provides instructions for building PageReader from source, including creating the standalone Windows executable.
+This document provides instructions for building vox from source, including creating the standalone Windows executable.
 
 ---
 
@@ -22,8 +22,8 @@ This document provides instructions for building PageReader from source, includi
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/AidanInceer/PageReader.git
-cd PageReader
+git clone https://github.com/AidanInceer/vox.git
+cd vox
 ```
 
 ### 2. Create Virtual Environment
@@ -56,10 +56,10 @@ pip install -e .
 python -m src.main --help
 
 # Or use the installed command
-pagereader --help
+vox --help
 
 # Run a simple test
-pagereader read --url https://example.com
+vox read --url https://example.com
 ```
 
 ---
@@ -72,7 +72,7 @@ The `build_exe.py` script automates the entire build process:
 
 ```bash
 # Ensure you're in the project root directory
-cd PageReader
+cd vox
 
 # Activate virtual environment
 .\.venv\Scripts\Activate.ps1
@@ -84,7 +84,7 @@ pip install pyinstaller
 python build_exe.py
 ```
 
-**Output**: `dist/pagereader.exe`
+**Output**: `dist/vox.exe`
 
 ### Option 2: Manual PyInstaller Build
 
@@ -92,7 +92,7 @@ For advanced users who want more control:
 
 ```bash
 pyinstaller src/main.py \
-    --name=pagereader \
+    --name=vox \
     --onefile \
     --console \
     --hidden-import=src \
@@ -109,7 +109,7 @@ pyinstaller src/main.py \
 ### Build Output
 
 After a successful build, you'll find:
-- **dist/pagereader.exe**: The standalone executable (single file)
+- **dist/vox.exe**: The standalone executable (single file)
 - **build/**: Temporary build files (can be deleted)
 
 **Expected File Size**: ~100-300 MB (includes Python runtime, dependencies, and TTS models)
@@ -121,28 +121,28 @@ After a successful build, you'll find:
 ### Basic Functionality Test
 ```powershell
 # Display help
-.\dist\pagereader.exe --help
+.\dist\vox.exe --help
 
 # Test URL reading (use a lightweight page for quick test)
-.\dist\pagereader.exe read --url https://example.com
+.\dist\vox.exe read --url https://example.com
 
 # List available voices
-.\dist\pagereader.exe list voices
+.\dist\vox.exe list voices
 ```
 
 ### Verify No Python Required
 To ensure the executable is truly standalone:
-1. Copy `pagereader.exe` to a clean directory
+1. Copy `vox.exe` to a clean directory
 2. Run it from a system without Python installed
 3. Or temporarily rename your Python installation directory
 
 ### Performance Test
 ```powershell
 # Measure startup time
-Measure-Command { .\dist\pagereader.exe --help }
+Measure-Command { .\dist\vox.exe --help }
 
 # Test with a real article
-.\dist\pagereader.exe read --url https://en.wikipedia.org/wiki/Python_(programming_language)
+.\dist\vox.exe read --url https://en.wikipedia.org/wiki/Python_(programming_language)
 ```
 
 ---
@@ -184,7 +184,7 @@ Fatal error detected
 
 ### Issue: Antivirus Blocks Executable
 ```
-Windows Defender quarantined pagereader.exe
+Windows Defender quarantined vox.exe
 ```
 
 **Solution**:
@@ -194,7 +194,7 @@ Windows Defender quarantined pagereader.exe
 
 ### Issue: Executable Size Too Large
 ```
-pagereader.exe is 500+ MB
+vox.exe is 500+ MB
 ```
 
 **Solution**: The size is expected due to:
@@ -273,7 +273,7 @@ Before distributing the executable:
 - [ ] Run virus scan (VirusTotal)
 - [ ] Create SHA256 checksum:
   ```powershell
-  Get-FileHash .\dist\pagereader.exe -Algorithm SHA256
+  Get-FileHash .\dist\vox.exe -Algorithm SHA256
   ```
 - [ ] Update release notes with checksum
 - [ ] Test on different Windows versions (if possible)
@@ -287,12 +287,12 @@ Before distributing the executable:
 Create `build.bat` for quick builds:
 ```batch
 @echo off
-echo Building PageReader executable...
+echo Building vox executable...
 .venv\Scripts\activate.bat
 python build_exe.py
 if %ERRORLEVEL% == 0 (
     echo Build successful!
-    echo Location: dist\pagereader.exe
+    echo Location: dist\vox.exe
 ) else (
     echo Build failed!
 )
@@ -303,12 +303,12 @@ pause
 
 Create `build.ps1`:
 ```powershell
-Write-Host "Building PageReader executable..." -ForegroundColor Cyan
+Write-Host "Building vox executable..." -ForegroundColor Cyan
 .\.venv\Scripts\Activate.ps1
 python build_exe.py
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Build successful!" -ForegroundColor Green
-    Write-Host "Location: dist\pagereader.exe"
+    Write-Host "Location: dist\vox.exe"
 } else {
     Write-Host "Build failed!" -ForegroundColor Red
 }
@@ -347,7 +347,7 @@ Currently Windows-only, but Linux/macOS builds are planned for v2.0+:
 ## Support
 
 For build issues:
-- Check [GitHub Issues](https://github.com/AidanInceer/PageReader/issues)
+- Check [GitHub Issues](https://github.com/AidanInceer/vox/issues)
 - Review [INSTALLATION.md](../INSTALLATION.md) for troubleshooting
 - Consult [PyInstaller documentation](https://pyinstaller.org/en/stable/)
 

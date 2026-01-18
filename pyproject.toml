@@ -1,12 +1,12 @@
 [project]
-name = "pagereader"
-version = "1.1.0"
-description = "Desktop application that reads any browser tab aloud using open-source neural text-to-speech"
+name = "vox"
+version = "3.0.0"
+description = "Bidirectional audio-text conversion for Windows 11 - read web content aloud or transcribe your voice to text, completely offline"
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [{name = "Aidan"}]
 license = {text = "MIT"}
-keywords = ["text-to-speech", "browser", "accessibility", "automation"]
+keywords = ["text-to-speech", "speech-to-text", "whisper", "piper-tts", "accessibility", "voice-transcription", "audio-text"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Win32 (MS Windows)",
@@ -27,7 +27,10 @@ dependencies = [
     "pywinauto>=0.6.9",
     "black>=25.12.0",
     "colorama>=0.4.6",
-    "pygame>=2.6.0"
+    "pygame>=2.6.0",
+    "faster-whisper>=1.0.0",
+    "sounddevice>=0.4.6",
+    "scipy>=1.11.0"
 ]
 
 [project.optional-dependencies]
@@ -45,13 +48,13 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/AidanInceer/PageReader"
-Repository = "https://github.com/AidanInceer/PageReader"
-Documentation = "https://github.com/AidanInceer/PageReader/blob/main/README.md"
-Issues = "https://github.com/AidanInceer/PageReader/issues"
+Homepage = "https://github.com/AidanInceer/vox"
+Repository = "https://github.com/AidanInceer/vox"
+Documentation = "https://github.com/AidanInceer/vox/blob/main/README.md"
+Issues = "https://github.com/AidanInceer/vox/issues"
 
 [project.scripts]
-pagereader = "src.main:main"
+vox = "src.main:main"
 
 [tool.ruff]
 line-length = 120
@@ -93,11 +96,11 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["src", "src.browser", "src.extraction", "src.tts", "src.session", "src.ui", "src.utils"]
+packages = ["src", "src.browser", "src.extraction", "src.tts", "src.session", "src.utils"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "1.0.0"
+version = "3.0.0"
 version_files = [
     "pyproject.toml:version",
     "src/__init__.py:__version__",

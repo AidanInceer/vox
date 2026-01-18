@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `list-sessions` command to view all saved sessions with progress
   - `resume` command to continue from saved position
   - `delete-session` command to remove unwanted sessions
-  - Session data stored in `%APPDATA%/PageReader/sessions/` as JSON files
+  - Session data stored in `%APPDATA%/vox/sessions/` as JSON files
   - Automatic position tracking and timestamp updates
   - Progress indicators (character position and percentage complete)
 
@@ -88,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Unit tests for CLI output and validation (20+ test cases)
 
 - **Phase 3: Build & Packaging System**
-  - PyPI package configuration with entry point (pagereader command)
+  - PyPI package configuration with entry point (vox command)
   - Setuptools package discovery for src/ module structure
   - PyInstaller support for standalone Windows executable builds
   - Automated build script (build_exe.py) with hidden imports configuration
@@ -223,5 +223,5 @@ git push origin main --tags
 
 ---
 
-[Unreleased]: https://github.com/AidanInceer/PageReader/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/AidanInceer/PageReader/releases/tag/v1.0.0
+[Unreleased]: https://github.com/AidanInceer/vox/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/AidanInceer/vox/releases/tag/v1.0.0

@@ -1,8 +1,8 @@
-"""Custom exception classes for PageReader application."""
+"""Custom exception classes for vox application."""
 
 
-class PageReaderException(Exception):
-    """Base exception for all PageReader errors."""
+class voxException(Exception):
+    """Base exception for all vox errors."""
 
     def __init__(self, message: str, error_code: str = None, context: dict = None):
         """Initialize exception with message, error code, and optional context.
@@ -26,25 +26,25 @@ class PageReaderException(Exception):
         return msg
 
 
-class BrowserDetectionError(PageReaderException):
+class BrowserDetectionError(voxException):
     """Raised when browser tab detection fails."""
 
     pass
 
 
-class TabNotFoundError(PageReaderException):
+class TabNotFoundError(voxException):
     """Raised when specified browser tab cannot be found."""
 
     pass
 
 
-class ExtractionError(PageReaderException):
+class ExtractionError(voxException):
     """Raised when text extraction from content fails."""
 
     pass
 
 
-class TTSError(PageReaderException):
+class TTSError(voxException):
     """Raised when text-to-speech synthesis fails."""
 
     pass
@@ -56,7 +56,7 @@ class TTSInitializationError(TTSError):
     pass
 
 
-class AudioPlaybackError(PageReaderException):
+class AudioPlaybackError(voxException):
     """Raised when audio playback fails."""
 
     pass
@@ -74,7 +74,7 @@ class FileLoadError(ExtractionError):
     pass
 
 
-class SessionError(PageReaderException):
+class SessionError(voxException):
     """Raised when session persistence operations fail."""
 
     pass
@@ -86,19 +86,37 @@ class SessionNotFoundError(SessionError):
     pass
 
 
-class ConfigurationError(PageReaderException):
+class ConfigurationError(voxException):
     """Raised when application configuration is invalid."""
 
     pass
 
 
-class ValidationError(PageReaderException):
+class ValidationError(voxException):
     """Raised when input validation fails."""
 
     pass
 
 
-class TimeoutError(PageReaderException):
+class MicrophoneError(voxException):
+    """Raised when microphone access or recording fails."""
+
+    pass
+
+
+class TranscriptionError(voxException):
+    """Raised when speech-to-text transcription fails."""
+
+    pass
+
+
+class ModelLoadError(voxException):
+    """Raised when STT model loading or initialization fails."""
+
+    pass
+
+
+class TimeoutError(voxException):
     """Raised when operation exceeds timeout."""
 
     pass

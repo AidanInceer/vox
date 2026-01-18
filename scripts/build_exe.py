@@ -1,8 +1,8 @@
-"""Build script for creating standalone PageReader executable using PyInstaller.
+"""Build script for creating standalone vox executable using PyInstaller.
 
 This script generates a single-file Windows executable that includes:
 - Python interpreter
-- All dependencies (Piper TTS, BeautifulSoup, etc.)
+- All dependencies (Piper TTS, Whisper STT, BeautifulSoup, etc.)
 - Application code
 - TTS models
 
@@ -10,7 +10,7 @@ Usage:
     python build_exe.py
 
 Output:
-    dist/pagereader.exe - Standalone executable
+    dist/vox.exe - Standalone executable
 """
 
 import os
@@ -27,7 +27,7 @@ except ImportError:
 
 def main():
     """Build the standalone executable."""
-    print("[*] Building PageReader standalone executable...")
+    print("[*] Building vox standalone executable...")
 
     # Project paths
     project_root = Path(__file__).parent
@@ -51,7 +51,7 @@ def main():
     # PyInstaller options
     options = [
         str(main_script),  # Main entry point
-        "--name=pagereader",  # Executable name
+        "--name=vox",  # Executable name
         "--onefile",  # Single file executable
         "--console",  # Console application
         "--noconfirm",  # Overwrite without asking
@@ -99,17 +99,17 @@ def main():
     try:
         PyInstaller.__main__.run(options)
         print("[OK] Build complete!")
-        print(f"[OK] Executable created: {dist_dir / 'pagereader.exe'}")
+        print(f"[OK] Executable created: {dist_dir / 'vox.exe'}")
 
         # Display file size
-        exe_path = dist_dir / "pagereader.exe"
+        exe_path = dist_dir / "vox.exe"
         if exe_path.exists():
             size_mb = exe_path.stat().st_size / (1024 * 1024)
             print(f"[OK] File size: {size_mb:.2f} MB")
 
         print("\n[*] Test the executable:")
         print(f"    {exe_path} --help")
-        print(f"    {exe_path} read --url https://example.com")
+        print(f"    {exe_path} read --url https://example.com"))
 
     except Exception as e:
         print(f"[ERROR] Build failed: {e}")

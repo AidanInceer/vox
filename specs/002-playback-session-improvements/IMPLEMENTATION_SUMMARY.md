@@ -8,7 +8,7 @@
 
 ## 🎯 Implementation Overview
 
-Successfully implemented all three user stories for PageReader v1.1.0, adding session management, interactive playback controls, and streaming text-to-speech with intelligent chunking.
+Successfully implemented all three user stories for vox v1.1.0, adding session management, interactive playback controls, and streaming text-to-speech with intelligent chunking.
 
 ### Implementation Statistics
 
@@ -30,16 +30,16 @@ Successfully implemented all three user stories for PageReader v1.1.0, adding se
 
 **Key Components**:
 - `SessionManager` class with save/load/list/resume/delete operations
-- JSON-based persistence in `%APPDATA%/PageReader/sessions/`
+- JSON-based persistence in `%APPDATA%/vox/sessions/`
 - Atomic file writes to prevent corruption
 - Session index for fast listing
 - Custom session names (alphanumeric, hyphens, underscores)
 
 **CLI Commands Added**:
-- `pagereader read --save-session <name>` - Save session
-- `pagereader list-sessions` - List all sessions
-- `pagereader resume <name>` - Resume from saved position
-- `pagereader delete-session <name>` - Delete session
+- `vox read --save-session <name>` - Save session
+- `vox list-sessions` - List all sessions
+- `vox resume <name>` - Resume from saved position
+- `vox delete-session <name>` - Delete session
 
 **Tests**: 22 unit tests + 5 integration tests (100% passing)
 

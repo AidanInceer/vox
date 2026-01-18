@@ -1,6 +1,6 @@
-# PageReader Examples
+# vox Examples
 
-This directory contains example files and usage scenarios for PageReader.
+This directory contains example files and usage scenarios for vox.
 
 ## Session Examples
 
@@ -14,22 +14,22 @@ The `sessions/` directory contains example session files that demonstrate the se
 
 To try out the example sessions:
 
-1. Copy the session files to your PageReader sessions directory:
+1. Copy the session files to your vox sessions directory:
    ```bash
    # Windows
-   Copy-Item .examples\sessions\*.json $env:APPDATA\PageReader\sessions\
+   Copy-Item .examples\sessions\*.json $env:APPDATA\vox\sessions\
 
-   # Or manually copy to: C:\Users\<YourUsername>\AppData\Roaming\PageReader\sessions\
+   # Or manually copy to: C:\Users\<YourUsername>\AppData\Roaming\vox\sessions\
    ```
 
 2. List the sessions:
    ```bash
-   pagereader list-sessions
+   vox list-sessions
    ```
 
 3. Resume a session:
    ```bash
-   pagereader resume example-article
+   vox resume example-article
    ```
 
 ### Session File Format
@@ -60,29 +60,29 @@ Each session file is a JSON document with the following structure:
 
 ```bash
 # Read from a URL
-pagereader read --url https://example.com
+vox read --url https://example.com
 
 # Read with custom speed
-pagereader read --url https://example.com --speed 1.5
+vox read --url https://example.com --speed 1.5
 
 # Save audio to file
-pagereader read --url https://example.com --output audio.wav
+vox read --url https://example.com --output audio.wav
 ```
 
 ### Session Management
 
 ```bash
 # Save a session
-pagereader read --url https://example.com --save-session my-article
+vox read --url https://example.com --save-session my-article
 
 # List all sessions
-pagereader list-sessions
+vox list-sessions
 
 # Resume a session
-pagereader resume my-article
+vox resume my-article
 
 # Delete a session
-pagereader delete-session my-article
+vox delete-session my-article
 ```
 
 ### Interactive Playback
@@ -98,7 +98,7 @@ Note: Speed adjustment must be set before playback using `--speed` flag. Runtime
 
 ## Performance Features
 
-For longer articles (>200 words), PageReader automatically uses chunking:
+For longer articles (>200 words), vox automatically uses chunking:
 
 - ✅ First audio chunk ready in <3 seconds
 - ✅ Background synthesis of remaining chunks
@@ -111,7 +111,7 @@ If sessions don't appear after copying:
 
 1. Verify the files are in the correct location:
    ```powershell
-   Get-ChildItem $env:APPDATA\PageReader\sessions\
+   Get-ChildItem $env:APPDATA\vox\sessions\
    ```
 
 2. Check the session names are valid (alphanumeric, hyphens, underscores only)

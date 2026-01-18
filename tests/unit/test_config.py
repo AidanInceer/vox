@@ -50,12 +50,12 @@ class TestAppMetadata:
 
     def test_app_name_defined(self):
         """App name should be defined."""
-        assert APP_NAME == "PageReader"
+        assert APP_NAME == "vox"
         assert isinstance(APP_NAME, str)
 
     def test_app_version_defined(self):
         """App version should be defined."""
-        assert APP_VERSION == "1.0.0"
+        assert APP_VERSION == "3.0.0"
         assert isinstance(APP_VERSION, str)
 
     def test_app_description_defined(self):

@@ -7,7 +7,7 @@
 
 ## Summary
 
-Enhance PageReader with three major capabilities: (1) Session management allowing users to save and resume reading sessions with custom names via `--save-session` flag; (2) Interactive playback controls enabling real-time keyboard shortcuts (spacebar=pause/resume, Q=quit, arrows=navigate/speed); (3) Streaming text-to-speech with chunking to provide faster feedback by synthesizing and playing first 150-word chunk within 3 seconds while preparing subsequent chunks in background.
+Enhance vox with three major capabilities: (1) Session management allowing users to save and resume reading sessions with custom names via `--save-session` flag; (2) Interactive playback controls enabling real-time keyboard shortcuts (spacebar=pause/resume, Q=quit, arrows=navigate/speed); (3) Streaming text-to-speech with chunking to provide faster feedback by synthesizing and playing first 150-word chunk within 3 seconds while preparing subsequent chunks in background.
 
 ## Technical Context
 
@@ -20,13 +20,13 @@ Enhance PageReader with three major capabilities: (1) Session management allowin
 - Background processing: threading (likely), [NEEDS CLARIFICATION: asyncio vs threading for chunk synthesis]
 
 **Storage**: 
-- Session data: [NEEDS CLARIFICATION: File location - %APPDATA%/PageReader/sessions/ vs user home directory]
+- Session data: [NEEDS CLARIFICATION: File location - %APPDATA%/vox/sessions/ vs user home directory]
 - Session format: JSON (likely) with schema: session_id, name, url, extracted_text, playback_position, created_at, last_accessed
 - Audio chunks: In-memory queue during playback (no persistent storage)
 
 **Testing**: pytest with >80% coverage requirement  
 **Target Platform**: Windows 11 (desktop application)  
-**Project Type**: Single CLI tool (PageReader) with enhanced playback capabilities  
+**Project Type**: Single CLI tool (vox) with enhanced playback capabilities  
 **Performance Goals**: 
 - Session save/load: <2 seconds per operation
 - Keyboard input response: <100ms latency
@@ -34,7 +34,7 @@ Enhance PageReader with three major capabilities: (1) Session management allowin
 - Chunk transition: seamless with <50ms gaps
 
 **Constraints**: 
-- Must maintain compatibility with existing PageReader CLI interface
+- Must maintain compatibility with existing vox CLI interface
 - Keyboard controls must work during audio playback without blocking
 - Chunk synthesis must not interfere with smooth playback
 - Session data must persist across application restarts
@@ -150,7 +150,7 @@ tests/
     └── test_chunked_playback.py   # NEW: End-to-end chunking + playback tests
 ```
 
-**Structure Decision**: Single project structure (Option 1). PageReader is a desktop CLI application with clear module separation for session management (src/session/), TTS/playback (src/tts/), and CLI interface (src/main.py). No web/mobile components required. Extends existing structure with new modules for session persistence, playback control, and chunking.
+**Structure Decision**: Single project structure (Option 1). vox is a desktop CLI application with clear module separation for session management (src/session/), TTS/playback (src/tts/), and CLI interface (src/main.py). No web/mobile components required. Extends existing structure with new modules for session persistence, playback control, and chunking.
 
 ---
 

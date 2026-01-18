@@ -48,7 +48,7 @@
   - 3 user stories with detailed acceptance scenarios covering all flows
   - 7 edge cases identified with clear handling strategies
   - Scope clearly bounded to playback controls, session management, and chunking
-  - Dependencies implicit (existing PageReader functionality) and assumptions documented in requirements
+  - Dependencies implicit (existing vox functionality) and assumptions documented in requirements
 
 - Feature Readiness: All 4 items passed
   - Each of 19 FRs maps to acceptance scenarios in user stories

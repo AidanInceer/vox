@@ -1,1 +1,1 @@
-"""Session persistence and management module."""
+"""Session persistence and management module for vox."""

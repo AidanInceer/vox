@@ -31,13 +31,13 @@ class SessionManager:
 
         Args:
             storage_dir: Directory for session storage. If None, defaults to
-                %APPDATA%/PageReader/sessions/
+                %APPDATA%/vox/sessions/
 
         Raises:
             OSError: If unable to create storage directory or index file
         """
         if storage_dir is None:
-            storage_dir = Path(os.getenv("APPDATA")) / "PageReader" / "sessions"
+            storage_dir = Path(os.getenv("APPDATA")) / "vox" / "sessions"
 
         self.storage_dir = Path(storage_dir)
 

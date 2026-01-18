@@ -1,5 +1,5 @@
-"""PageReader: Desktop text-to-speech browser integration application."""
+"""vox: Bidirectional audio-text conversion with TTS and STT."""
 
-__version__ = "1.0.0"
+__version__ = "3.0.0"
 __author__ = "Aidan"
-__description__ = "Read any browser tab aloud using open-source neural text-to-speech"
+__description__ = "Bidirectional audio-text conversion: read content aloud (TTS) and transcribe voice (STT)"

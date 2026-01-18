@@ -8,7 +8,7 @@ from src.utils.errors import (
     ConfigurationError,
     ExtractionError,
     FileLoadError,
-    PageReaderException,
+    voxException,
     SessionError,
     SessionNotFoundError,
     TabNotFoundError,
@@ -20,35 +20,35 @@ from src.utils.errors import (
 )
 
 
-class TestPageReaderExceptionBase:
-    """Tests for base PageReaderException class."""
+class TestvoxExceptionBase:
+    """Tests for base voxException class."""
     
     def test_exception_with_message_only(self):
         """Test exception instantiation with message only."""
-        exc = PageReaderException("Something went wrong")
-        assert str(exc) == "[PageReaderException] Something went wrong"
-        assert exc.error_code == "PageReaderException"
+        exc = voxException("Something went wrong")
+        assert str(exc) == "[voxException] Something went wrong"
+        assert exc.error_code == "voxException"
         assert exc.context == {}
     
     def test_exception_with_error_code(self):
         """Test exception with custom error code."""
-        exc = PageReaderException("Failed to connect", error_code="CONNECTION_FAILED")
+        exc = voxException("Failed to connect", error_code="CONNECTION_FAILED")
         assert "[CONNECTION_FAILED]" in str(exc)
         assert exc.error_code == "CONNECTION_FAILED"
     
     def test_exception_with_context(self):
         """Test exception with contextual information."""
         context = {"url": "https://example.com", "status": 404}
-        exc = PageReaderException("Invalid response", context=context)
+        exc = voxException("Invalid response", context=context)
         error_str = str(exc)
         assert "url=https://example.com" in error_str
         assert "status=404" in error_str
     
     def test_exception_is_subclassed_properly(self):
         """Test that exception inherits from Exception."""
-        exc = PageReaderException("Test")
+        exc = voxException("Test")
         assert isinstance(exc, Exception)
-        with pytest.raises(PageReaderException):
+        with pytest.raises(voxException):
             raise exc
 
 
@@ -126,9 +126,9 @@ class TestExceptionRaisingAndCatching:
     """Tests for raising and catching exceptions."""
     
     def test_raise_and_catch_base_exception(self):
-        """Test raising and catching base PageReaderException."""
-        with pytest.raises(PageReaderException):
-            raise PageReaderException("Test error")
+        """Test raising and catching base voxException."""
+        with pytest.raises(voxException):
+            raise voxException("Test error")
     
     def test_raise_and_catch_specific_exception(self):
         """Test raising and catching specific exception."""
@@ -137,12 +137,12 @@ class TestExceptionRaisingAndCatching:
     
     def test_catch_parent_catches_child(self):
         """Test that parent exception class catches child exceptions."""
-        with pytest.raises(PageReaderException):
+        with pytest.raises(voxException):
             raise TabNotFoundError("Specific error caught as parent")
     
     def test_exception_with_all_parameters(self):
         """Test exception with all parameters."""
-        exc = PageReaderException(
+        exc = voxException(
             message="Complete error",
             error_code="COMPLETE_ERROR",
             context={"key1": "value1", "key2": 42}

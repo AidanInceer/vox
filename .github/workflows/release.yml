@@ -72,12 +72,12 @@ jobs:
         
       - name: Test executable
         run: |
-          if (Test-Path "dist/pagereader.exe") {
+          if (Test-Path "dist/vox.exe") {
             Write-Output "Executable built successfully"
             # Test exe help command
-            & "dist/pagereader.exe" --help
+            & "dist/vox.exe" --help
           } else {
-            Write-Error "Executable not found at dist/pagereader.exe"
+            Write-Error "Executable not found at dist/vox.exe"
             exit 1
           }
         shell: pwsh
@@ -86,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: dist/pagereader.exe
+          path: dist/vox.exe
           
   publish-pypi:
     name: Publish to PyPI
@@ -172,7 +172,7 @@ jobs:
           prerelease: ${{ contains(steps.tag.outputs.tag, 'alpha') || contains(steps.tag.outputs.tag, 'beta') || contains(steps.tag.outputs.tag, 'rc') }}
           files: |
             dist-pypi/*
-            dist-exe/pagereader.exe
+            dist-exe/vox.exe
           
   notify-success:
     name: Notify Success
@@ -183,5 +183,5 @@ jobs:
       - name: Success notification
         run: |
           echo "✅ Release completed successfully!"
-          echo "PyPI: https://pypi.org/project/pagereader/"
+          echo "PyPI: https://pypi.org/project/vox/"
           echo "GitHub: ${{ github.server_url }}/${{ github.repository }}/releases"

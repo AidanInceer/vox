@@ -1,14 +1,14 @@
 <div align="center">
-  <img src="imgs/logo.png" alt="PageReader Logo" width="200" />
+  <img src="imgs/logo.png" alt="vox Logo" width="200" />
 </div>
 
-# PageReader
+# vox
 
 A Windows desktop application that reads any browser tab or webpage aloud using open-source neural text-to-speech.
 
 ## What It Does
 
-PageReader extracts text from browser tabs (Chrome, Edge, Firefox, etc.) or web URLs and reads it aloud using high-quality, offline TTS. No need to switch tabs or bring windows to the foreground.
+vox extracts text from browser tabs (Chrome, Edge, Firefox, etc.) or web URLs and reads it aloud using high-quality, offline TTS. No need to switch tabs or bring windows to the foreground.
 
 **Key Features:**
 - 🎯 Read any browser tab without switching focus
@@ -24,7 +24,7 @@ PageReader extracts text from browser tabs (Chrome, Edge, Firefox, etc.) or web 
 ### Option 1: Using pip
 
 ```bash
-pip install pagereader
+pip install vox
 ```
 
 ### Option 2: Using uv (recommended - faster)
@@ -33,13 +33,13 @@ pip install pagereader
 # Install uv first
 pip install uv
 
-# Install pagereader
-uv pip install pagereader
+# Install vox
+uv pip install vox
 ```
 
 ### Option 3: Standalone Executable
 
-Download `pagereader.exe` from the [Releases](https://github.com/AidanInceer/PageReader/releases) page. No Python installation required.
+Download `vox.exe` from the [Releases](https://github.com/AidanInceer/vox/releases) page. No Python installation required.
 
 ### Requirements
 
@@ -52,16 +52,16 @@ Download `pagereader.exe` from the [Releases](https://github.com/AidanInceer/Pag
 
 ```bash
 # Read from a URL
-pagereader read --url https://example.com
+vox read --url https://example.com
 
 # Read with custom voice and speed
-pagereader read --url https://example.com --voice en_US-libritts-high --speed 1.5
+vox read --url https://example.com --voice en_US-libritts-high --speed 1.5
 
 # Save audio to file instead of playing
-pagereader read --url https://example.com --output audio.wav
+vox read --url https://example.com --output audio.wav
 
 # Read from a local HTML file
-pagereader read --file article.html
+vox read --file article.html
 ```
 
 ### Session Management
@@ -70,16 +70,16 @@ Save reading sessions and resume later from where you left off:
 
 ```bash
 # Save a reading session with a custom name
-pagereader read --url https://example.com/long-article --save-session my-article
+vox read --url https://example.com/long-article --save-session my-article
 
 # List all saved sessions
-pagereader list-sessions
+vox list-sessions
 
 # Resume a saved session
-pagereader resume my-article
+vox resume my-article
 
 # Delete a session
-pagereader delete-session my-article
+vox delete-session my-article
 ```
 
 Session features:
@@ -104,7 +104,7 @@ During audio playback, use keyboard shortcuts to control playback:
 
 ### Streaming Playback Performance
 
-For longer articles (>200 words), PageReader uses intelligent chunking:
+For longer articles (>200 words), vox uses intelligent chunking:
 - ✅ First audio chunk synthesized in <3 seconds
 - ✅ Background synthesis of remaining chunks while playing
 - ✅ Seamless transitions between chunks (<50ms gaps)
@@ -112,7 +112,7 @@ For longer articles (>200 words), PageReader uses intelligent chunking:
 
 Example with a 5,000-word article:
 ```bash
-pagereader read --url https://example.com/long-article
+vox read --url https://example.com/long-article
 # First audio starts playing within 3 seconds
 # Remaining chunks synthesize in background
 ```
@@ -122,7 +122,7 @@ pagereader read --url https://example.com/long-article
 ### Project Structure
 
 ```
-PageReader/
+vox/
 ├── src/                   # Source code
 │   ├── browser/           # Browser tab detection
 │   ├── extraction/        # Text extraction from HTML
@@ -150,8 +150,8 @@ MIT License - see LICENSE file for details.
 
 ## Links
 
-- **Repository**: https://github.com/AidanInceer/PageReader
-- **Issues**: https://github.com/AidanInceer/PageReader/issues
+- **Repository**: https://github.com/AidanInceer/vox
+- **Issues**: https://github.com/AidanInceer/vox/issues
 
 - [ ] Content summarization
 - [ ] Bookmark integration

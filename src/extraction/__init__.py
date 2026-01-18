@@ -1,1 +1,1 @@
-"""Text extraction from pages, tabs, and URLs module."""
+"""Text extraction from pages, tabs, and URLs module for vox."""

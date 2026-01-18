@@ -1,1 +1,1 @@
-"""Test suite for PageReader application."""
+"""Test suite for vox application."""

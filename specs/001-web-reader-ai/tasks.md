@@ -1,8 +1,8 @@
 ---
-description: "Simplified task breakdown for PageReader v1.0 MVP - URL-only with enhanced CLI"
+description: "Simplified task breakdown for vox v1.0 MVP - URL-only with enhanced CLI"
 ---
 
-# Tasks: PageReader v1.0 MVP - URL Input → TTS → Audio Output
+# Tasks: vox v1.0 MVP - URL Input → TTS → Audio Output
 
 **Scope**: URL-only reading with colorized CLI and dual packaging (PyPI + Standalone Exe)  
 **Status**: Planning Phase  
@@ -79,7 +79,7 @@ python -m src.main read --url https://example.com
 - [x] T104 Improve help text and command examples:
   - Update `--help` to show usage examples
   - Add descriptions of what each option does
-  - Show example: `pagereader read --url https://example.com`
+  - Show example: `vox read --url https://example.com`
 - [x] T105 Add validation and error messages:
   - Validate URL format before fetching
   - Display user-friendly error messages for common failures
@@ -101,16 +101,16 @@ python -m src.main read --url https://example.com
   - Project name, version, description
   - Author, license, keywords
   - Homepage, repository URLs
-  - Entry points: `[project.scripts]` with `pagereader = src.main:main`
+  - Entry points: `[project.scripts]` with `vox = src.main:main`
 - [x] T202 Create src/main.py entry point function (if not exists):
   - Ensure `main()` is callable and handles sys.exit properly
   - Verify works with: `python -m src.main read --url https://example.com`
 - [x] T203 Test local PyPI installation:
   - Run `pip install -e .` in development mode
-  - Verify `pagereader --help` works globally
-  - Verify `pagereader read --url https://example.com` works
+  - Verify `vox --help` works globally
+  - Verify `vox read --url https://example.com` works
 - [x] T204 Create README.md with installation instructions:
-  - "Install via PyPI: `pip install pagereader`"
+  - "Install via PyPI: `pip install vox`"
   - "Or download standalone exe from Releases"
   - Quick start examples
 
@@ -119,17 +119,17 @@ python -m src.main read --url https://example.com
 - [x] T301 Add PyInstaller to dev dependencies in pyproject.toml
 - [x] T302 Create build_exe.py script to generate standalone .exe:
   - Use PyInstaller to bundle Python + dependencies + app code
-  - Single-file output: `dist/pagereader.exe`
+  - Single-file output: `dist/vox.exe`
   - Include all Piper TTS models in the exe
-  - Icon: use simple PageReader icon
+  - Icon: use simple vox icon
 - [x] T303 Create build instructions in docs/BUILD.md:
   - Prerequisites (Python 3.13, pip, PyInstaller)
   - Commands: `python build_exe.py`
-  - Output location: `dist/pagereader.exe`
-  - Verify exe works: `dist/pagereader.exe --help`
+  - Output location: `dist/vox.exe`
+  - Verify exe works: `dist/vox.exe --help`
 - [x] T304 Test standalone exe on clean Windows system:
   - Verify no Python installation required
-  - Verify `pagereader.exe read --url https://example.com` works
+  - Verify `vox.exe read --url https://example.com` works
   - Verify audio plays correctly
   - Measure exe file size
 - [x] T305 Create GitHub Actions workflow for automated exe generation:
@@ -160,11 +160,11 @@ python -m src.main read --url https://example.com
   - STATUS: 206 tests passing (21 new), 50% coverage (target 80% not met - see notes below)
 - [x] T502 Manual end-to-end test:
   - Install via `pip install -e .` ✅
-  - Run: `pagereader read --url https://example.com` ✅
+  - Run: `vox read --url https://example.com` ✅
   - Verified text extraction (127 chars, 0.23s), synthesis (342KB, 0.01s), playback working ✅
 - [x] T503 Test standalone exe:
-  - Built `dist/pagereader.exe` (31.98 MB) ✅
-  - Tested: `pagereader.exe read --url https://example.com` ✅
+  - Built `dist/vox.exe` (31.98 MB) ✅
+  - Tested: `vox.exe read --url https://example.com` ✅
   - Works without Python installed ✅
 - [x] T504 Performance validation:
   - Simple URL (example.com): <1 second total (fetch 0.21s + synth 0.01s) ✅ **Target: <5s**

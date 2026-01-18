@@ -11,7 +11,7 @@ This document defines all data entities, their attributes, relationships, and va
 ```
 ReadingSession (extends existing)
     ├── Contains: session metadata, content, playback position
-    └── Persisted as: JSON file in %APPDATA%/PageReader/sessions/
+    └── Persisted as: JSON file in %APPDATA%/vox/sessions/
 
 PlaybackState (new)
     ├── Contains: real-time playback status, position, speed, control flags
@@ -23,7 +23,7 @@ AudioChunk (new)
 
 SessionIndex (new)
     ├── Contains: list of all sessions with quick-access metadata
-    └── Persisted as: sessions.json in %APPDATA%/PageReader/sessions/
+    └── Persisted as: sessions.json in %APPDATA%/vox/sessions/
 ```
 
 ---
@@ -204,7 +204,7 @@ def mark_failed(error_message: str) -> None:
 
 **Purpose**: Fast-access index of all saved sessions for listing without loading full session files.
 
-**Note**: Persisted as `sessions.json` in `%APPDATA%/PageReader/sessions/` directory.
+**Note**: Persisted as `sessions.json` in `%APPDATA%/vox/sessions/` directory.
 
 #### Structure
 
@@ -301,7 +301,7 @@ SessionIndex
 ## Storage Layout
 
 ```
-%APPDATA%/PageReader/
+%APPDATA%/vox/
 └── sessions/
     ├── sessions.json                    # SessionIndex (master list)
     ├── my-article.json                  # ReadingSession for "my-article"
@@ -318,7 +318,7 @@ SessionIndex
 ### Save Session Flow
 
 ```
-User: pagereader read --url https://example.com --save-session my-article
+User: vox read --url https://example.com --save-session my-article
   ↓
 Main CLI: Parse arguments, extract text, start playback
   ↓
@@ -337,7 +337,7 @@ SessionManager.save_session(session_name, url, text, position, tts_settings)
 ### Resume Session Flow
 
 ```
-User: pagereader resume my-article
+User: vox resume my-article
   ↓
 SessionManager.load_session(session_name="my-article")
   ↓

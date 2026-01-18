@@ -55,8 +55,8 @@ class TestSessionManagerInit:
         """Test that __init__ uses default APPDATA dir when storage_dir is None."""
         manager = SessionManager(storage_dir=None)
         
-        # Should use %APPDATA%/PageReader/sessions
-        expected_path = Path(os.getenv("APPDATA")) / "PageReader" / "sessions"
+        # Should use %APPDATA%/vox/sessions
+        expected_path = Path(os.getenv("APPDATA")) / "vox" / "sessions"
         assert manager.storage_dir == expected_path
 
 

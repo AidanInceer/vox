@@ -1,4 +1,4 @@
-"""Structured logging configuration for PageReader."""
+"""Structured logging configuration for vox."""
 
 import logging
 import logging.handlers
@@ -28,16 +28,16 @@ class ColoredFormatter(logging.Formatter):
 
 
 def setup_logging(
-    name: str = "pagereader",
+    name: str = "vox",
     level: Optional[str] = None,
     log_file: Optional[Path] = None,
     enable_console: bool = True,
     enable_file: bool = True,
 ) -> logging.Logger:
-    """Configure logging for PageReader application.
+    """Configure logging for vox application.
 
     Args:
-        name: Logger name (usually module name or "pagereader" for root)
+        name: Logger name (usually module name or "vox" for root)
         level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
                If None, uses config.LOG_LEVEL
         log_file: Path to log file. If None, uses config.LOGS_DIR / f"{name}.log"
@@ -87,14 +87,14 @@ def setup_logging(
         logger.addHandler(file_handler)
 
     # Prevent propagation to avoid duplicate logs
-    if name != "pagereader":
+    if name != "vox":
         logger.propagate = False
 
     return logger
 
 
-# Root logger for PageReader
-_root_logger = setup_logging("pagereader")
+# Root logger for vox
+_root_logger = setup_logging("vox")
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -106,4 +106,4 @@ def get_logger(name: str) -> logging.Logger:
     Returns:
         Logger instance for the module
     """
-    return logging.getLogger(f"pagereader.{name}")
+    return logging.getLogger(f"vox.{name}")

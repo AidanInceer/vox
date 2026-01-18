@@ -3,7 +3,7 @@
 **Feature Branch**: `002-playback-session-improvements`  
 **Created**: 2026-01-17  
 **Status**: Draft  
-**Input**: User description: "Enhanced playback controls, session management, and performance improvements through text chunking for PageReader"
+**Input**: User description: "Enhanced playback controls, session management, and performance improvements through text chunking for vox"
 
 ## Clarifications
 
@@ -21,13 +21,13 @@ User can save reading sessions with custom names for later retrieval, allowing t
 
 **Why this priority**: P1 - Core functionality for user convenience. Enables users to manage multiple reading sessions and return to previously read content without losing their place.
 
-**Independent Test**: Can be fully tested by running `pagereader read --url https://example.com --save-session my-article`, verifying the session is saved with the specified name, and that saved sessions can be listed and resumed independently.
+**Independent Test**: Can be fully tested by running `vox read --url https://example.com --save-session my-article`, verifying the session is saved with the specified name, and that saved sessions can be listed and resumed independently.
 
 **Acceptance Scenarios**:
 
-1. **Given** user runs `pagereader read --url https://example.com --save-session my-article`, **When** the reading begins, **Then** the session is saved with name "my-article" including URL, content, and playback position
-2. **Given** a session named "my-article" exists, **When** user runs `pagereader list-sessions`, **Then** "my-article" appears in the list with creation date and URL
-3. **Given** a saved session exists, **When** user runs `pagereader resume my-article`, **Then** playback resumes from the last known position
+1. **Given** user runs `vox read --url https://example.com --save-session my-article`, **When** the reading begins, **Then** the session is saved with name "my-article" including URL, content, and playback position
+2. **Given** a session named "my-article" exists, **When** user runs `vox list-sessions`, **Then** "my-article" appears in the list with creation date and URL
+3. **Given** a saved session exists, **When** user runs `vox resume my-article`, **Then** playback resumes from the last known position
 4. **Given** user provides an invalid session name, **When** attempting to resume, **Then** a clear error message appears (e.g., "Session 'xyz' not found")
 
 ---

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 # Cache directory for synthesized audio
-TTS_CACHE_DIR = Path.home() / ".cache" / "pagereader" / "tts"
+TTS_CACHE_DIR = Path.home() / ".cache" / "vox" / "tts"
 TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 

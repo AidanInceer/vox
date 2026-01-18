@@ -1,7 +1,7 @@
-"""PageReader CLI - Main entry point and command-line interface.
+"""vox CLI - Main entry point and command-line interface.
 
-This is the entry point for the PageReader application.
-Provides commands for reading browser tabs, URLs, and files aloud.
+This is the entry point for the vox application.
+Provides bidirectional audio-text conversion: read content aloud (TTS) and transcribe voice (STT).
 """
 
 import argparse
@@ -89,23 +89,37 @@ class ColoredHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 
 def main():
-    """Main entry point for PageReader CLI."""
+    """Main entry point for vox CLI."""
+    # Check and run config migration if needed
+    from src.utils.migration import migrate_config
+    
+    try:
+        migration_result = migrate_config()
+        if migration_result["migrated"]:
+            print_success(f"Migrated configuration from vox to vox")
+            print_status(f"Backup saved to: {migration_result['backup_path']}")
+    except Exception as e:
+        # Log but don't fail - migration is non-critical
+        pass
+    
     parser = create_parser()
     args = parser.parse_args()
 
     # Handle version flag
     if hasattr(args, "version") and args.version:
-        print("PageReader v1.0.0")
+        print(f"vox v{config.APP_VERSION}")
         sys.exit(0)
 
     # Setup logging
     log_level = "DEBUG" if args.verbose else config.LOG_LEVEL
-    setup_logging(name="pagereader", level=log_level)
+    setup_logging(name="vox", level=log_level)
 
     # Dispatch to appropriate command
     try:
         if args.command == "read":
             command_read(args)
+        elif args.command == "transcribe":
+            command_transcribe(args)
         elif args.command == "list":
             command_list(args)
         elif args.command == "list-sessions":
@@ -137,9 +151,15 @@ def create_parser() -> argparse.ArgumentParser:
     # Create colored description with ASCII art header
     description = f"""
 {Fore.CYAN}╔═══════════════════════════════════════════════════════════════════╗
-║                          PageReader v1.0.0                        ║
-║          Read web pages and browser tabs aloud with AI TTS        ║
+║                            vox v{config.APP_VERSION}                              ║
+║       Bidirectional audio-text conversion: TTS and STT            ║
 ╚═══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}
+
+{Fore.YELLOW}🎤 Speech-to-Text:{Style.RESET_ALL}
+  Record your voice and get accurate text transcription
+
+{Fore.YELLOW}🔊 Text-to-Speech:{Style.RESET_ALL}
+  Read web pages and browser tabs aloud with AI TTS
 
 {Fore.YELLOW}📚 Session Management:{Style.RESET_ALL}
   Save reading sessions and resume later from where you left off
@@ -153,39 +173,45 @@ def create_parser() -> argparse.ArgumentParser:
 📖 Examples:
 ═══════════════════════════════════════════════════════════════════{Style.RESET_ALL}
 
+  {Fore.GREEN}# Transcribe your voice to text{Style.RESET_ALL}
+  vox transcribe
+
+  {Fore.GREEN}# Save transcription to file{Style.RESET_ALL}
+  vox transcribe --output transcript.txt
+
   {Fore.GREEN}# Read from a URL{Style.RESET_ALL}
-  pagereader read --url https://example.com
+  vox read --url https://example.com
 
   {Fore.GREEN}# Save a reading session{Style.RESET_ALL}
-  pagereader read --url https://example.com --save-session my-article
+  vox read --url https://example.com --save-session my-article
 
   {Fore.GREEN}# List saved sessions{Style.RESET_ALL}
-  pagereader list-sessions
+  vox list-sessions
 
   {Fore.GREEN}# Resume a session{Style.RESET_ALL}
-  pagereader resume my-article
+  vox resume my-article
 
   {Fore.GREEN}# Read from a local file{Style.RESET_ALL}
-  pagereader read --file article.html
+  vox read --file article.html
 
   {Fore.GREEN}# Read with custom voice and speed{Style.RESET_ALL}
-  pagereader read --url https://example.com --voice en_US-libritts-high --speed 1.5
+  vox read --url https://example.com --voice en_US-libritts-high --speed 1.5
 
   {Fore.GREEN}# Save audio to file{Style.RESET_ALL}
-  pagereader read --url https://example.com --output audio.wav
+  vox read --url https://example.com --output audio.wav
 
   {Fore.GREEN}# List all open browser tabs{Style.RESET_ALL}
-  pagereader list tabs
+  vox list tabs
 
   {Fore.GREEN}# List available voices{Style.RESET_ALL}
-  pagereader list voices
+  vox list voices
 
 {Fore.CYAN}═══════════════════════════════════════════════════════════════════{Style.RESET_ALL}
-💡 For more help on a specific command: {Fore.YELLOW}pagereader <command> --help{Style.RESET_ALL}
+💡 For more help on a specific command: {Fore.YELLOW}vox <command> --help{Style.RESET_ALL}
 """
 
     parser = argparse.ArgumentParser(
-        prog="pagereader",
+        prog="vox",
         description=description,
         epilog=epilog,
         formatter_class=ColoredHelpFormatter,
@@ -230,6 +256,24 @@ def create_parser() -> argparse.ArgumentParser:
     # Session management
     read_parser.add_argument(
         "--save-session", metavar="NAME", help="Save this reading session with a name for later resume"
+    )
+
+    # TRANSCRIBE command
+    transcribe_parser = subparsers.add_parser(
+        "transcribe",
+        help=f"{Fore.YELLOW}Transcribe voice to text{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Record your voice and convert it to text using speech-to-text{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
+    transcribe_parser.add_argument(
+        "--output",
+        metavar="FILE",
+        help="Save transcription to a file (default: print to stdout)",
+    )
+    transcribe_parser.add_argument(
+        "--model",
+        default=config.DEFAULT_STT_MODEL,
+        help=f"Whisper model size: tiny, base, small, medium, large (default: {config.DEFAULT_STT_MODEL})",
     )
 
     # LIST command
@@ -440,11 +484,14 @@ def command_config(args):
     Args:
         args: Parsed command-line arguments
     """
-    print("\nPageReader Configuration:")
+    print("\nvox Configuration:")
     print(f"  TTS Provider: {config.DEFAULT_TTS_PROVIDER}")
     print(f"  Default Voice: {config.DEFAULT_TTS_VOICE}")
     print(f"  Default Speed: {config.DEFAULT_TTS_SPEED}")
     print(f"  Cache Synthesis: {config.TTS_CACHE_ENABLED}")
+    print(f"  STT Model: {config.DEFAULT_STT_MODEL}")
+    print(f"  Sample Rate: {config.SAMPLE_RATE}Hz")
+    print(f"  Silence Duration: {config.SILENCE_DURATION}s")
 
 
 def _get_content(args) -> str:
@@ -685,7 +732,7 @@ def command_list_sessions(args):
 
         if not sessions:
             print_warning("No saved sessions found")
-            print("\nTo save a session, use: pagereader read --url <URL> --save-session <NAME>")
+            print("\nTo save a session, use: vox read --url <URL> --save-session <NAME>")
             return
 
         print(f"\n{Fore.CYAN}📚 Saved Reading Sessions:{Style.RESET_ALL}\n")
@@ -716,7 +763,7 @@ def command_list_sessions(args):
             print()
 
         print(f"Total: {len(sessions)} session(s)")
-        print("\nTo resume a session, use: pagereader resume <session-name>")
+        print("\nTo resume a session, use: vox resume <session-name>")
 
     except Exception as e:
         print_error(f"Failed to list sessions: {e}")
@@ -792,6 +839,24 @@ def command_delete_session(args):
     except Exception as e:
         print_error(f"Failed to delete session: {e}")
         sys.exit(1)
+
+
+def command_transcribe(args):
+    """Handle the 'transcribe' command (stub for Phase 6).
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    print_warning("Speech-to-text transcription not yet implemented")
+    print_status("This feature will be available in Phase 6 (User Story 4)")
+    print()
+    print("Planned functionality:")
+    print("  • Record voice using system microphone")
+    print("  • Transcribe speech using Whisper STT")
+    print("  • Output to stdout or save to file")
+    print("  • Press Enter to stop recording")
+    print()
+    sys.exit(0)
 
 
 if __name__ == "__main__":

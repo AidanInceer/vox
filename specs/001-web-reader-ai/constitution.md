@@ -1,4 +1,4 @@
-# PageReader Project Constitution
+# vox Project Constitution
 
 ## Core Development Principles
 
@@ -20,7 +20,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ## Python Environment Setup with UV
 
-**For Agents/Contributors**: To set up the PageReader development environment using [uv](https://github.com/astral-sh/uv):
+**For Agents/Contributors**: To set up the vox development environment using [uv](https://github.com/astral-sh/uv):
 
 ### Prerequisites
 - Python 3.13+
@@ -35,8 +35,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 2. **Clone the repository** (if not already done):
    ```bash
-   git clone https://github.com/AidanInceer/PageReader.git
-   cd PageReader
+   git clone https://github.com/AidanInceer/vox.git
+   cd vox
    ```
 
 3. **Create a virtual environment and install dependencies**:
@@ -63,7 +63,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
    pytest tests/
    
    # Check that the CLI works
-   pagereader --version
+   vox --version
    ```
 
 5. **Install pre-commit hooks** (optional but recommended):

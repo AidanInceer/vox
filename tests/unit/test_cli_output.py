@@ -203,7 +203,7 @@ class TestCLIHelpText:
         parser = create_parser()
         help_text = parser.format_help()
         assert "Examples:" in help_text
-        assert "pagereader read --url" in help_text
+        assert "vox read --url" in help_text
 
     def test_parser_has_descriptions(self):
         """Test that parser has descriptive help text."""

@@ -32,7 +32,7 @@
 **Purpose**: Initialize SessionManager with storage directory
 
 **Parameters**:
-- `storage_dir` (Optional[Path]): Directory for session storage. If None, defaults to `%APPDATA%/PageReader/sessions/`
+- `storage_dir` (Optional[Path]): Directory for session storage. If None, defaults to `%APPDATA%/vox/sessions/`
 
 **Returns**: None
 
@@ -45,7 +45,7 @@
 
 **Example**:
 ```python
-manager = SessionManager()  # Uses default %APPDATA%/PageReader/sessions/
+manager = SessionManager()  # Uses default %APPDATA%/vox/sessions/
 # or
 manager = SessionManager(storage_dir=Path("./custom/path"))
 ```
@@ -298,7 +298,7 @@ else:
 
 **Status**: Not thread-safe by design (single-user desktop application)
 
-**Rationale**: PageReader is a single-user CLI tool with no concurrent session operations expected. If concurrent access needed in future, add file locking via `fcntl` (Unix) or `msvcrt.locking` (Windows).
+**Rationale**: vox is a single-user CLI tool with no concurrent session operations expected. If concurrent access needed in future, add file locking via `fcntl` (Unix) or `msvcrt.locking` (Windows).
 
 ---
 

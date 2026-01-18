@@ -1,4 +1,4 @@
-# Pre-commit hooks configuration for PageReader
+# Pre-commit hooks configuration for vox
 # Runs automatically on every git commit to enforce code quality
 # Install with: pre-commit install
 # Manual run: pre-commit run --all-files

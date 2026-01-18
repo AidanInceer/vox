@@ -20,14 +20,14 @@ This document resolves all NEEDS CLARIFICATION items from the Technical Context 
 - **Access patterns**: Low frequency (save on quit, load on resume), no complex queries needed
 - **Volume**: Expecting <100 sessions per user, each <1MB (text + metadata)
 - **Dependencies**: Zero additional dependencies (uses Python standard library json module)
-- **Implementation**: One JSON file per session in `%APPDATA%/PageReader/sessions/` directory
+- **Implementation**: One JSON file per session in `%APPDATA%/vox/sessions/` directory
 
 **Alternatives considered**:
 - SQLite: Rejected - adds complexity, requires schema management, overkill for simple key-value access
 - pickle: Rejected - not human-readable, potential security issues, harder to debug
 - shelve: Rejected - Python-specific format, less portable than JSON
 
-**Storage location**: `%APPDATA%/PageReader/sessions/` (Windows: `C:\Users\<user>\AppData\Roaming\PageReader\sessions\`)
+**Storage location**: `%APPDATA%/vox/sessions/` (Windows: `C:\Users\<user>\AppData\Roaming\vox\sessions\`)
 - One JSON file per session: `{session_name}.json`
 - Session index file: `sessions.json` (list of all sessions with metadata for fast listing)
 
@@ -41,7 +41,7 @@ This document resolves all NEEDS CLARIFICATION items from the Technical Context 
 
 **Rationale**:
 - **Zero dependencies**: msvcrt is Python standard library for Windows
-- **Platform fit**: PageReader targets Windows 11 exclusively per constitution
+- **Platform fit**: vox targets Windows 11 exclusively per constitution
 - **Simplicity**: msvcrt.kbhit() and msvcrt.getch() provide non-blocking keyboard input
 - **Constitution compliance**: KISS principle - no need for cross-platform keyboard library
 - **Performance**: <100ms latency achievable with proper threading
@@ -193,7 +193,7 @@ This document resolves all NEEDS CLARIFICATION items from the Technical Context 
 | Component | Technology | Version | Justification |
 |-----------|-----------|---------|---------------|
 | Session storage | JSON (stdlib) | Python 3.13+ | Simple, human-readable, zero dependencies |
-| Session location | %APPDATA%/PageReader | Windows std | User-writable, persistent across updates |
+| Session location | %APPDATA%/vox | Windows std | User-writable, persistent across updates |
 | Keyboard input | msvcrt (stdlib) | Python 3.13+ | Windows-native, zero dependencies, non-blocking |
 | Audio playback | pygame.mixer | 2.6.0+ | Pause/resume/seek support, mature, Windows-tested |
 | Background processing | threading + queue (stdlib) | Python 3.13+ | Simple, compatible with sync TTS, sufficient performance |

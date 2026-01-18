@@ -1,1 +1,1 @@
-"""Text-to-speech synthesis and playback module."""
+"""Text-to-speech synthesis and playback module for vox."""

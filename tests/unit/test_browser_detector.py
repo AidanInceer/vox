@@ -29,8 +29,8 @@ class TestBrowserDetection:
                 TabInfo(
                     browser_name='chrome',
                     tab_id='2',
-                    title='GitHub - aidan/PageReader',
-                    url='https://github.com/aidan/PageReader',
+                    title='GitHub - aidan/vox',
+                    url='https://github.com/aidan/vox',
                     window_handle=1001
                 ),
             ]
