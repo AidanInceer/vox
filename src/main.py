@@ -90,6 +90,11 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
 
+    # Handle version flag
+    if hasattr(args, 'version') and args.version:
+        print("PageReader v1.0.0")
+        sys.exit(0)
+
     # Setup logging
     log_level = "DEBUG" if args.verbose else config.LOG_LEVEL
     setup_logging(name="pagereader", level=log_level)
@@ -193,7 +198,8 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     # Global options
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
+    parser.add_argument("-v", "--version", action="store_true", help="Show version and exit")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     # Subcommands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -349,6 +355,9 @@ def command_read(args):
         _save_audio(audio_bytes, args.output)
     elif not args.no_play:
         _play_audio(audio_bytes)
+    
+    # Exit successfully
+    sys.exit(0)
 
 
 def command_list(args):

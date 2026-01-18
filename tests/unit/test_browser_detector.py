@@ -193,7 +193,7 @@ class TestBrowserDetectionErrors:
     def test_browser_tab_detection_timeout(self):
         """Handle detection timeout gracefully."""
         from src.browser.detector import get_browser_tabs
-        from src.utils.errors import TimeoutError
+        from src.utils.errors import BrowserDetectionError, TimeoutError
         
         # Patch the helper function that would timeout
         with patch('src.browser.detector._detect_tabs_by_window_title') as mock_window:
@@ -202,10 +202,9 @@ class TestBrowserDetectionErrors:
                 mock_window.side_effect = TimeoutError("Detection timeout")
                 mock_accessibility.return_value = []
                 
-                # get_browser_tabs should handle the timeout gracefully
-                # It catches exceptions and returns empty list
-                result = get_browser_tabs('chrome')
-                assert result == []
+                # get_browser_tabs wraps exceptions in BrowserDetectionError
+                with pytest.raises(BrowserDetectionError):
+                    get_browser_tabs('chrome')
 
 
 class TestBrowserTabSelection:

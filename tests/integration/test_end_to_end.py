@@ -18,9 +18,9 @@ from src.main import main, create_parser
 class TestEndToEndURLReading:
     """Test complete URL reading workflow from CLI to audio output."""
 
-    @patch("src.tts.synthesizer.PiperSynthesizer")
-    @patch("src.tts.playback.get_playback")
-    @patch("src.extraction.text_extractor.ConcreteTextExtractor")
+    @patch("src.main.PiperSynthesizer")
+    @patch("src.main.get_playback")
+    @patch("src.main.ConcreteTextExtractor")
     def test_read_url_complete_flow(self, mock_extractor_class, mock_get_playback, mock_synth_class):
         """Test reading a URL from start to finish."""
         # Setup mocks
@@ -34,7 +34,7 @@ class TestEndToEndURLReading:
         mock_synth_class.return_value = mock_synth
 
         mock_player = MagicMock()
-        mock_player.play.return_value = None
+        mock_player.play_audio.return_value = None
         mock_get_playback.return_value = mock_player
 
         # Simulate CLI arguments
@@ -50,7 +50,7 @@ class TestEndToEndURLReading:
         # Verify workflow
         mock_extractor.extract_from_url.assert_called_once_with("https://example.com/test")
         assert mock_synth.synthesize.called
-        assert mock_player.play.called
+        assert mock_player.play_audio.called
 
 
     def test_url_validation_error_handling(self):

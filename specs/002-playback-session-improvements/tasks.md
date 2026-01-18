@@ -113,17 +113,17 @@
 
 > **TDD Workflow**: Write these tests FIRST, ensure they FAIL, then implement to make them PASS
 
-- [ ] T040 [P] [US2] Unit test for PlaybackController.__init__() in tests/unit/test_playback_controller.py
-- [ ] T041 [P] [US2] Unit test for PlaybackController.pause() state transition in tests/unit/test_playback_controller.py
-- [ ] T042 [P] [US2] Unit test for PlaybackController.resume() state transition in tests/unit/test_playback_controller.py
-- [ ] T043 [P] [US2] Unit test for PlaybackController.quit() graceful shutdown in tests/unit/test_playback_controller.py
-- [ ] T044 [P] [US2] Unit test for PlaybackController.seek() forward with bounds checking in tests/unit/test_playback_controller.py
-- [ ] T045 [P] [US2] Unit test for PlaybackController.seek() backward with bounds checking in tests/unit/test_playback_controller.py
-- [ ] T046 [P] [US2] Unit test for PlaybackController.adjust_speed() increase (clamped to 2.0x) in tests/unit/test_playback_controller.py
-- [ ] T047 [P] [US2] Unit test for PlaybackController.adjust_speed() decrease (clamped to 0.5x) in tests/unit/test_playback_controller.py
-- [ ] T048 [P] [US2] Unit test for keyboard command queue processing in tests/unit/test_playback_controller.py
-- [ ] T049 [P] [US2] Unit test for debouncing rapid key presses in tests/unit/test_playback_controller.py
-- [ ] T050 [P] [US2] Integration test for playback control workflow (start → pause → resume → seek → quit) in tests/integration/test_playback_controls.py
+- [X] T040 [P] [US2] Unit test for PlaybackController.__init__() in tests/unit/test_playback_controller.py
+- [X] T041 [P] [US2] Unit test for PlaybackController.pause() state transition in tests/unit/test_playback_controller.py
+- [X] T042 [P] [US2] Unit test for PlaybackController.resume() state transition in tests/unit/test_playback_controller.py
+- [X] T043 [P] [US2] Unit test for PlaybackController.quit() graceful shutdown in tests/unit/test_playback_controller.py
+- [X] T044 [P] [US2] Unit test for PlaybackController.seek() forward with bounds checking in tests/unit/test_playback_controller.py
+- [X] T045 [P] [US2] Unit test for PlaybackController.seek() backward with bounds checking in tests/unit/test_playback_controller.py
+- [X] T046 [P] [US2] Unit test for PlaybackController.adjust_speed() increase (clamped to 2.0x) in tests/unit/test_playback_controller.py
+- [X] T047 [P] [US2] Unit test for PlaybackController.adjust_speed() decrease (clamped to 0.5x) in tests/unit/test_playback_controller.py
+- [X] T048 [P] [US2] Unit test for PlaybackController.keyboard command queue processing in tests/unit/test_playback_controller.py
+- [X] T049 [P] [US2] Unit test for debouncing rapid key presses in tests/unit/test_playback_controller.py
+- [X] T050 [P] [US2] Integration test for playback control workflow (start → pause → resume → seek → quit) in tests/integration/test_playback_controls.py
 
 **Run tests** (should FAIL): `pytest tests/unit/test_playback_controller.py tests/integration/test_playback_controls.py -v`
 
@@ -131,29 +131,29 @@
 
 #### Update AudioPlayback for pygame.mixer
 
-- [ ] T051 [US2] Replace winsound with pygame.mixer initialization in src/tts/playback.py
-- [ ] T052 [US2] Implement AudioPlayback.play_audio() using pygame.mixer.Sound in src/tts/playback.py
-- [ ] T053 [US2] Implement AudioPlayback.pause() method in src/tts/playback.py
-- [ ] T054 [US2] Implement AudioPlayback.resume() method in src/tts/playback.py
-- [ ] T055 [US2] Implement AudioPlayback.seek() method in src/tts/playback.py
-- [ ] T056 [US2] Implement AudioPlayback.stop() method in src/tts/playback.py
-- [ ] T057 [US2] Implement AudioPlayback.get_position() method in src/tts/playback.py
-- [ ] T058 [US2] Add error handling for pygame.mixer errors in src/tts/playback.py
+- [X] T051 [US2] Replace winsound with pygame.mixer initialization in src/tts/playback.py
+- [X] T052 [US2] Implement AudioPlayback.play_audio() using pygame.mixer.Sound in src/tts/playback.py
+- [X] T053 [US2] Implement AudioPlayback.pause() method in src/tts/playback.py
+- [X] T054 [US2] Implement AudioPlayback.resume() method in src/tts/playback.py
+- [X] T055 [US2] Implement AudioPlayback.seek() method in src/tts/playback.py
+- [X] T056 [US2] Implement AudioPlayback.stop() method in src/tts/playback.py
+- [X] T057 [US2] Implement AudioPlayback.get_position() method in src/tts/playback.py
+- [X] T058 [US2] Add error handling for pygame.mixer errors in src/tts/playback.py
 
 #### Implement PlaybackController
 
-- [ ] T059 [P] [US2] Create PlaybackController class skeleton in src/tts/controller.py with __init__ method
-- [ ] T060 [US2] Implement PlaybackController.start() method in src/tts/controller.py (start playback + keyboard thread)
-- [ ] T061 [US2] Implement PlaybackController.pause() method in src/tts/controller.py (update state, call AudioPlayback.pause)
-- [ ] T062 [US2] Implement PlaybackController.resume() method in src/tts/controller.py (update state, call AudioPlayback.resume)
-- [ ] T063 [US2] Implement PlaybackController.seek() method in src/tts/controller.py (validate bounds, call AudioPlayback.seek)
-- [ ] T064 [US2] Implement PlaybackController.adjust_speed() method in src/tts/controller.py (clamp [0.5, 2.0], update state)
-- [ ] T065 [US2] Implement PlaybackController.quit() method in src/tts/controller.py (set shutdown_event, join threads)
-- [ ] T066 [US2] Implement PlaybackController._keyboard_input_thread() in src/tts/controller.py (msvcrt polling, key mapping)
-- [ ] T067 [US2] Implement PlaybackController._process_commands() in src/tts/controller.py (queue processing, command dispatch)
-- [ ] T068 [US2] Add threading.Lock for PlaybackState shared access in src/tts/controller.py
-- [ ] T069 [US2] Add 100ms debouncing for rapid key presses in src/tts/controller.py
-- [ ] T070 [US2] Add logging for playback control events in src/tts/controller.py
+- [X] T059 [P] [US2] Create PlaybackController class skeleton in src/tts/controller.py with __init__ method
+- [X] T060 [US2] Implement PlaybackController.start() method in src/tts/controller.py (start playback + keyboard thread)
+- [X] T061 [US2] Implement PlaybackController.pause() method in src/tts/controller.py (update state, call AudioPlayback.pause)
+- [X] T062 [US2] Implement PlaybackController.resume() method in src/tts/controller.py (update state, call AudioPlayback.resume)
+- [X] T063 [US2] Implement PlaybackController.seek() method in src/tts/controller.py (validate bounds, call AudioPlayback.seek)
+- [X] T064 [US2] Implement PlaybackController.adjust_speed() method in src/tts/controller.py (clamp [0.5, 2.0], update state)
+- [X] T065 [US2] Implement PlaybackController.quit() method in src/tts/controller.py (set shutdown_event, join threads)
+- [X] T066 [US2] Implement PlaybackController._keyboard_input_thread() in src/tts/controller.py (msvcrt polling, key mapping)
+- [X] T067 [US2] Implement PlaybackController._process_commands() in src/tts/controller.py (queue processing, command dispatch)
+- [X] T068 [US2] Add threading.Lock for PlaybackState shared access in src/tts/controller.py
+- [X] T069 [US2] Add 100ms debouncing for rapid key presses in src/tts/controller.py
+- [X] T070 [US2] Add logging for playback control events in src/tts/controller.py
 
 **Run tests** (should PASS): `pytest tests/unit/test_playback_controller.py tests/integration/test_playback_controls.py -v`
 

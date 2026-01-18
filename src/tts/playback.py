@@ -1,14 +1,17 @@
 """Audio playback and control implementation for Windows.
 
 This module provides audio playback functionality including pause/resume,
-volume control, and speed adjustment.
+volume control, and speed adjustment using pygame.mixer.
 """
 
+import io
 import logging
-import winsound
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+
+import pygame
 
 logger = logging.getLogger(__name__)
 
@@ -35,15 +38,27 @@ class PlaybackState:
 
 
 class AudioPlayback:
-    """Manages audio playback with pause/resume and control support."""
+    """Manages audio playback with pause/resume and control support using pygame.mixer."""
 
     def __init__(self):
-        """Initialize audio playback engine."""
+        """Initialize pygame.mixer for audio playback."""
         self.state = PlaybackState()
         self._audio_file: Optional[Path] = None
+        self._initialized = False
+        self._init_mixer()
+
+    def _init_mixer(self) -> None:
+        """Initialize pygame mixer if not already initialized."""
+        if not self._initialized:
+            try:
+                pygame.mixer.init(frequency=22050, size=-16, channels=1, buffer=512)
+                self._initialized = True
+                logger.info("pygame.mixer initialized successfully")
+            except pygame.error as e:
+                raise RuntimeError(f"Failed to initialize pygame.mixer: {e}") from e
 
     def play_audio(self, audio_bytes: bytes, format: str = "wav") -> None:
-        """Play audio from bytes.
+        """Play audio from bytes using pygame.mixer.
 
         Args:
             audio_bytes: Audio data to play
@@ -57,119 +72,96 @@ class AudioPlayback:
             raise ValueError("Audio bytes cannot be empty")
 
         try:
-            # Save to temporary file for playback
-            import tempfile
+            # Load audio from bytes using pygame
+            audio_stream = io.BytesIO(audio_bytes)
+            pygame.mixer.music.load(audio_stream)
 
-            suffix = f".{format}"
-            with tempfile.NamedTemporaryFile(
-                suffix=suffix, delete=False
-            ) as tmp:
-                tmp.write(audio_bytes)
-                tmp_path = tmp.name
-
-            self._audio_file = Path(tmp_path)
-
-            # Start playback in background thread
+            # Start playback
+            pygame.mixer.music.play()
             self.state.is_playing = True
             self.state.is_paused = False
 
-            self._play_file(tmp_path)
+            logger.info("Started audio playback with pygame.mixer")
 
-        except Exception as e:
+        except pygame.error as e:
             self.state.is_playing = False
             raise RuntimeError(f"Audio playback failed: {e}") from e
-
-    def _play_file(self, file_path: str) -> None:
-        """Play a WAV file using winsound.
-
-        Args:
-            file_path: Path to the WAV file
-
-        Raises:
-            RuntimeError: If playback fails
-        """
-        try:
-            # Use winsound for Windows audio playback
-            # Play without any flags for blocking (synchronous) playback
-            winsound.PlaySound(file_path, winsound.SND_FILENAME)
-
-            logger.info(f"Finished playing audio: {file_path}")
-            self.state.is_playing = False
-
         except Exception as e:
             self.state.is_playing = False
-            raise RuntimeError(f"Failed to play audio file: {e}") from e
+            raise RuntimeError(f"Unexpected error during playback: {e}") from e
 
     def pause(self) -> None:
         """Pause audio playback.
 
-        Note: winsound doesn't support pause/resume natively.
-        This is a placeholder for future implementation.
+        Raises:
+            RuntimeError: If not currently playing or already paused
         """
-        if self.state.is_playing and not self.state.is_paused:
+        if not self.state.is_playing:
+            raise RuntimeError("Cannot pause: no audio is playing")
+        if self.state.is_paused:
+            raise RuntimeError("Cannot pause: already paused")
+
+        try:
+            pygame.mixer.music.pause()
             self.state.is_paused = True
+            self.state.is_playing = False
             logger.info("Audio paused")
-            # In a real implementation, would pause the playback
+        except pygame.error as e:
+            raise RuntimeError(f"Failed to pause audio: {e}") from e
 
     def resume(self) -> None:
         """Resume paused audio playback.
 
-        Note: winsound doesn't support pause/resume natively.
-        This is a placeholder for future implementation.
+        Raises:
+            RuntimeError: If not currently paused
         """
-        if self.state.is_playing and self.state.is_paused:
+        if not self.state.is_paused:
+            raise RuntimeError("Cannot resume: audio is not paused")
+
+        try:
+            pygame.mixer.music.unpause()
             self.state.is_paused = False
+            self.state.is_playing = True
             logger.info("Audio resumed")
-            # In a real implementation, would resume from pause position
+        except pygame.error as e:
+            raise RuntimeError(f"Failed to resume audio: {e}") from e
 
     def stop(self) -> None:
         """Stop audio playback completely."""
-        if self.state.is_playing:
+        if self.state.is_playing or self.state.is_paused:
             try:
-                winsound.PlaySound(None, winsound.SND_PURGE)
+                pygame.mixer.music.stop()
                 self.state.is_playing = False
                 self.state.is_paused = False
+                self.state.current_position_ms = 0
                 logger.info("Audio stopped")
-            except Exception as e:
+            except pygame.error as e:
                 logger.error(f"Failed to stop audio: {e}")
 
-    def set_volume(self, level: int) -> None:
-        """Set playback volume.
-
-        Note: winsound doesn't support volume control.
-        This is a placeholder for future implementation.
+    def seek(self, position_ms: int) -> None:
+        """Seek to a specific position in audio.
 
         Args:
-            level: Volume level (0-100%)
+            position_ms: Position in milliseconds
 
         Raises:
-            ValueError: If level is out of range
+            ValueError: If position is invalid
+            RuntimeError: If not currently playing
         """
-        if not 0 <= level <= 100:
-            raise ValueError(f"Volume must be 0-100, got {level}")
+        if position_ms < 0:
+            raise ValueError(f"Position must be >= 0, got {position_ms}")
+        
+        if not (self.state.is_playing or self.state.is_paused):
+            raise RuntimeError("Cannot seek: no audio is playing")
 
-        self.state.volume = level
-        logger.debug(f"Volume set to {level}%")
-        # In a real implementation, would adjust system volume
-
-    def set_playback_speed(self, speed: float) -> None:
-        """Set playback speed.
-
-        Note: winsound doesn't support speed control.
-        This is a placeholder for future implementation.
-
-        Args:
-            speed: Speed multiplier (0.5 to 2.0)
-
-        Raises:
-            ValueError: If speed is out of range
-        """
-        if not 0.5 <= speed <= 2.0:
-            raise ValueError(f"Speed must be 0.5-2.0, got {speed}")
-
-        self.state.speed = speed
-        logger.debug(f"Playback speed set to {speed}x")
-        # In a real implementation, would adjust playback speed
+        try:
+            # pygame.mixer.music.set_pos() takes position in seconds (float)
+            position_sec = position_ms / 1000.0
+            pygame.mixer.music.set_pos(position_sec)
+            self.state.current_position_ms = position_ms
+            logger.debug(f"Seeked to {position_ms}ms")
+        except pygame.error as e:
+            raise RuntimeError(f"Failed to seek: {e}") from e
 
     def get_position(self) -> int:
         """Get current playback position in milliseconds.
@@ -177,26 +169,39 @@ class AudioPlayback:
         Returns:
             Position in milliseconds
         """
-        return self.state.position_ms
+        if self.state.is_playing or self.state.is_paused:
+            try:
+                # pygame.mixer.music.get_pos() returns milliseconds since play() started
+                position_ms = pygame.mixer.music.get_pos()
+                if position_ms >= 0:
+                    self.state.current_position_ms = position_ms
+            except pygame.error:
+                pass  # Keep last known position
+        
+        return self.state.current_position_ms
 
-    def set_position(self, position_ms: int) -> None:
-        """Seek to a specific position in audio.
-
-        Note: Not supported by winsound.
-        This is a placeholder for future implementation.
+    def set_speed(self, speed: float) -> None:
+        """Set playback speed.
 
         Args:
-            position_ms: Position in milliseconds
+            speed: Speed multiplier (0.5 to 2.0)
 
         Raises:
-            ValueError: If position is invalid
+            ValueError: If speed is out of range
+            RuntimeError: If not currently playing
         """
-        if position_ms < 0:
-            raise ValueError(f"Position must be >= 0, got {position_ms}")
+        if not 0.5 <= speed <= 2.0:
+            raise ValueError(f"Speed must be 0.5-2.0, got {speed}")
+        
+        if not (self.state.is_playing or self.state.is_paused):
+            raise RuntimeError("Cannot set speed: no audio is playing")
 
-        self.state.position_ms = position_ms
-        logger.debug(f"Seeking to {position_ms}ms")
-        # In a real implementation, would seek in the audio file
+        # Note: pygame.mixer doesn't directly support speed control
+        # This would require audio processing (e.g., using pydub or librosa)
+        # For now, we just update the state
+        self.state.playback_speed = speed
+        logger.warning(f"Speed set to {speed}x (note: pygame.mixer doesn't support speed control natively)")
+
 
     def is_playing(self) -> bool:
         """Check if audio is currently playing.
@@ -215,13 +220,14 @@ class AudioPlayback:
         return self.state.is_paused
 
     def cleanup(self) -> None:
-        """Clean up resources (temporary files, etc.)."""
+        """Clean up resources and shut down pygame mixer."""
         try:
             self.stop()
 
-            if self._audio_file and self._audio_file.exists():
-                self._audio_file.unlink()
-                logger.debug("Cleaned up temporary audio file")
+            if self._initialized:
+                pygame.mixer.quit()
+                self._initialized = False
+                logger.debug("pygame.mixer shut down")
         except Exception as e:
             logger.error(f"Error during cleanup: {e}")
 
