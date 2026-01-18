@@ -2,63 +2,80 @@
   <img src="imgs/logo.png" alt="PageReader Logo" width="200" />
 </div>
 
-# PageReader: Desktop Text-to-Speech Browser Integration
+# PageReader
 
-## Overview
+A Windows desktop application that reads any browser tab or webpage aloud using open-source neural text-to-speech.
 
-**PageReader** is a Windows desktop application that reads any browser tab aloud using open-source neural text-to-speech (TTS). Point to any browser tab—even if it's in the background—and PageReader will extract the text and read it back to you with high-quality, natural-sounding speech.
+## What It Does
 
-### Core Features
+PageReader extracts text from browser tabs (Chrome, Edge, Firefox, etc.) or web URLs and reads it aloud using high-quality, offline TTS. No need to switch tabs or bring windows to the foreground.
 
-- 🎯 **Read Any Browser Tab** - No need to switch focus or bring tabs to foreground
-- 🌐 **Multiple Browsers** - Works with Chrome, Edge, Firefox, Opera, Brave
-- 🔗 **URL & File Input** - Read directly from URLs or local HTML files
-- 🎙️ **Open Source TTS** - Powered by Piper neural TTS engine (fully offline, no API keys)
-- ⚙️ **Playback Controls** - Pause, resume, adjust speed
-- 💾 **Session Persistence** - Save and resume reading sessions
-- 🔧 **Configurable** - Customize extraction settings, voice selection, speech speed
+**Key Features:**
+- 🎯 Read any browser tab without switching focus
+- 🌐 Supports Chrome, Edge, Firefox, Opera, Brave
+- 🔗 Read from URLs or local HTML files
+- 🎙️ Open-source Piper TTS (fully offline, no API keys)
+- ⚙️ Playback controls (pause/resume/speed adjustment)
+- 💾 Save and resume reading sessions
 
-## Quick Start
+## Installation
 
-### Prerequisites
+### Option 1: Using pip
 
-- Python 3.13+
-- Windows 11
-- pip or [uv](https://astral.sh/blog/uv/)
-
-### Installation
-
-For detailed installation instructions, including standalone executable installation, see [INSTALLATION.md](INSTALLATION.md).
-
-**Quick Install (PyPI)**:
 ```bash
-# Using pip
 pip install pagereader
+```
 
-# Or using uv (faster)
+### Option 2: Using uv (recommended - faster)
+
+```bash
+# Install uv first
+pip install uv
+
+# Install pagereader
 uv pip install pagereader
 ```
 
-**Download Standalone Executable**:
-- No Python required
-- Download from [Releases](https://github.com/AidanInceer/PageReader/releases)
-- See [INSTALLATION.md](INSTALLATION.md) for setup instructions
+### Option 3: Standalone Executable
 
-### First Run
+Download `pagereader.exe` from the [Releases](https://github.com/AidanInceer/PageReader/releases) page. No Python installation required.
+
+### Requirements
+
+- Windows 11
+- Python 3.13+ (not needed for standalone executable)
+
+## Usage
+
+### Basic Commands
 
 ```bash
 # List all open browser tabs
-python -m src.main tabs
-
-# Read a specific tab by ID
-python -m src.main read --tab 12345
+pagereader tabs
 
 # Read from a URL
-python -m src.main read --url https://example.com
-
-# Read a local file
-python -m src.main read --file /path/to/page.html
+pagereader read --url https://example.com
 ```
+
+### Session Management
+
+```bash
+# Save a reading session
+pagereader read --url https://example.com --save-session my-article
+
+# List saved sessions
+pagereader sessions
+
+# Resume a session
+pagereader resume my-article
+```
+
+### Playback Controls
+
+During playback:
+- `SPACE` - Pause/Resume
+- `<` / `>` - Decrease/Increase speed
+- `Q` - Quit
 
 ## Development
 
@@ -66,138 +83,36 @@ python -m src.main read --file /path/to/page.html
 
 ```
 PageReader/
-├── src/                      # Application source code
-│   ├── browser/              # Browser tab detection
-│   ├── extraction/           # Text extraction from pages/URLs
-│   ├── tts/                  # Text-to-speech synthesis
-│   ├── session/              # Session management
-│   ├── ui/                   # CLI and UI components
-│   ├── utils/                # Utilities (logging, errors, etc.)
-│   └── config.py             # Configuration constants
-│
-├── tests/                    # Test suite
-│   ├── unit/                 # Unit tests (individual components)
-│   ├── integration/          # Integration tests (component interactions)
-│   ├── contract/             # Contract tests (API specifications)
-│   └── performance/          # Performance benchmarks
-│
-├── docs/                     # Documentation
-├── pyproject.toml            # Project configuration & dependencies
-├── pytest.ini                # Pytest configuration
-├── .pre-commit-config.yaml   # Pre-commit hooks configuration
-└── .github/
-    └── workflows/            # GitHub Actions CI/CD
+├── src/                   # Source code
+│   ├── browser/           # Browser tab detection
+│   ├── extraction/        # Text extraction from HTML
+│   ├── tts/               # Text-to-speech synthesis
+│   ├── session/           # Session management
+│   └── ui/                # CLI interface
+├── tests/                 # Test suite
+└── pyproject.toml         # Dependencies and configuration
 ```
 
-## Architecture & Design
+### Contributing
 
-### Core Modules
+1. Fork the repository
+2. Create a feature branch
+3. Write tests first (TDD approach)
+4. Implement your changes
+5. Run tests: `pytest tests/`
+6. Submit a pull request
 
-- **browser/**: Windows API integration to detect and enumerate browser tabs across all installed browsers
-- **extraction/**: HTML parsing with BeautifulSoup and text extraction with reading order preservation
-- **tts/**: Piper neural TTS engine integration for offline speech synthesis
-- **session/**: SQLite-based persistence for reading sessions and playback position
-- **ui/**: Command-line interface for user interaction
-- **utils/**: Logging, error handling, caching, and validation utilities
+See [CONSTITUTION.md](CONSTITUTION.md) for development standards.
 
-### Design Principles
+## License
 
-The implementation follows PageReader's Constitution:
+MIT License - see LICENSE file for details.
 
-1. **Test-First Development**: All code is tested before being written. Tests are comprehensive and cover success paths and edge cases.
-2. **Text-Based I/O**: Core operations work with text streams. Speech synthesis is layered on top of text operations.
-3. **Clear API Contracts**: Each module exports well-defined interfaces with clear input/output specifications.
-4. **Semantic Versioning**: Version numbers follow strict semantic versioning (MAJOR.MINOR.PATCH).
-5. **Code Quality**: SOLID principles, DRY (Don't Repeat Yourself), KISS (Keep It Simple Stupid) applied throughout.
+## Links
 
-### Technology Stack
+- **Repository**: https://github.com/AidanInceer/PageReader
+- **Issues**: https://github.com/AidanInceer/PageReader/issues
 
-| Component | Technology | Justification |
-|-----------|-----------|---|
-| Language | Python 3.13 | Cross-platform, rich ecosystem for accessibility tools |
-| TTS | Piper (open-source) | Free, offline-capable, neural quality speech |
-| HTML Parsing | BeautifulSoup4 | Robust DOM parsing, handles malformed HTML |
-| HTTP Client | requests | Simple, reliable URL fetching with good error handling |
-| Browser Detection | pywinauto | Windows-native process/window enumeration |
-| Testing | pytest | Industry-standard, excellent coverage reporting |
-| Linting | ruff | Fast, all-in-one Python linter+formatter |
-| CI/CD | GitHub Actions | Native GitHub integration, free for open source |
-
-## Usage Examples
-
-### Reading Browser Tabs
-
-```bash
-# List all open tabs across all browsers
-pagereader tabs
-
-# Read a specific tab (use tab ID from list)
-pagereader read --tab abc123
-
-# Read the currently active tab
-pagereader read --active
-```
-
-### Reading Web Pages
-
-```bash
-# Read from a URL
-pagereader read --url https://news.ycombinator.com
-
-# Read from a local file
-pagereader read --file ~/Documents/article.html
-
-# Read from URL and save session
-pagereader read --url https://example.com --save-session my-article
-```
-
-### Session Management
-
-```bash
-# List saved sessions
-pagereader sessions
-
-# Resume a saved session
-pagereader resume my-article
-
-# Delete a session
-pagereader delete-session my-article
-```
-
-### Playback Controls
-
-During playback, use keyboard shortcuts:
-- `SPACE` - Pause/Resume
-- `<` / `>` - Decrease/Increase speed
-- `+` / `-` - Increase/Decrease volume
-- `N` - Next section
-- `P` - Previous section
-- `Q` - Quit
-
-## Success Metrics (v1.0 MVP)
-
-- ✅ Extract text from any browser tab in <3 seconds without focus switch
-- ✅ Achieve ≥95% text extraction accuracy on English content
-- ✅ Generate natural-sounding speech with ≥90% user satisfaction
-- ✅ Handle pages up to 100 MB without performance degradation
-- ✅ Resume saved sessions in <1 second
-- ✅ Detect ≥95% of open browser tabs across all major browsers
-- ✅ Maintain <300 MB memory footprint during operation
-- ✅ Support speed adjustment (0.5x - 2.0x) with real-time feedback
-- ✅ Recover 100% of saved sessions across application restarts
-
-## Roadmap
-
-### v1.0 (Current MVP)
-- [x] Read any browser tab without focus switch
-- [x] Read from URLs and local files
-- [x] Playback controls (pause/resume/speed)
-- [x] Session persistence
-- [ ] Tab picker UI
-
-### v1.1 (Planned)
-- [ ] Multiple language support
-- [ ] PDF document reading
 - [ ] Content summarization
 - [ ] Bookmark integration
 - [ ] Reading history
