@@ -11,7 +11,7 @@ Whisper models via the faster-whisper library. Key components:
 
 Example usage:
     from src.stt.transcriber import Transcriber
-    
+
     transcriber = Transcriber(model="medium", silence_duration=5.0)
     result = transcriber.transcribe(output_file="transcript.txt")
     print(result)

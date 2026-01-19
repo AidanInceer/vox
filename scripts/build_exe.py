@@ -13,7 +13,6 @@ Output:
     dist/vox.exe - Standalone executable
 """
 
-import os
 import shutil
 import sys
 from pathlib import Path
@@ -30,7 +29,7 @@ def main():
     print("[*] Building vox standalone executable...")
 
     # Project paths
-    project_root = Path(__file__).parent
+    project_root = Path(__file__).parent.parent  # Go up from scripts/ to project root
     src_dir = project_root / "src"
     main_script = src_dir / "main.py"
     dist_dir = project_root / "dist"
@@ -72,12 +71,21 @@ def main():
         "--hidden-import=src.tts.synthesizer",
         "--hidden-import=src.tts.piper_provider",
         "--hidden-import=src.tts.playback",
+        "--hidden-import=src.tts.chunking",
+        "--hidden-import=src.tts.controller",
+        "--hidden-import=src.stt",
+        "--hidden-import=src.stt.engine",
+        "--hidden-import=src.stt.recorder",
+        "--hidden-import=src.stt.transcriber",
+        "--hidden-import=src.stt.audio_utils",
+        "--hidden-import=src.stt.ui",
         "--hidden-import=src.session",
         "--hidden-import=src.session.models",
-        "--hidden-import=src.ui",
+        "--hidden-import=src.session.manager",
         "--hidden-import=src.utils",
         "--hidden-import=src.utils.errors",
         "--hidden-import=src.utils.logging",
+        "--hidden-import=src.utils.migration",
         "--hidden-import=src.config",
         # Data files
         "--collect-data=piper_tts",  # Include Piper TTS models
@@ -109,7 +117,7 @@ def main():
 
         print("\n[*] Test the executable:")
         print(f"    {exe_path} --help")
-        print(f"    {exe_path} read --url https://example.com"))
+        print(f"    {exe_path} read --url https://example.com")
 
     except Exception as e:
         print(f"[ERROR] Build failed: {e}")

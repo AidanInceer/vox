@@ -92,19 +92,19 @@ def main():
     """Main entry point for vox CLI."""
     # Create default config file if it doesn't exist
     config.create_default_config()
-    
+
     # Check and run config migration if needed
     from src.utils.migration import migrate_config
-    
+
     try:
         migration_result = migrate_config()
         if migration_result["migrated"]:
-            print_success(f"Migrated configuration from vox to vox")
+            print_success("Migrated configuration from vox to vox")
             print_status(f"Backup saved to: {migration_result['backup_path']}")
     except Exception as e:
         # Log but don't fail - migration is non-critical
         pass
-    
+
     parser = create_parser()
     args = parser.parse_args()
 
@@ -501,36 +501,74 @@ def command_config(args):
         # Show STT configuration
         user_config = config.load_user_config()
         default_model = config.get_stt_default_model()
-        
+
         print(f"\n{Fore.CYAN}╔{'═' * 50}╗{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}STT Configuration{Style.RESET_ALL}" + " " * 32 + f"{Fore.CYAN}║{Style.RESET_ALL}")
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}STT Configuration{Style.RESET_ALL}"
+            + " " * 32
+            + f"{Fore.CYAN}║{Style.RESET_ALL}"
+        )
         print(f"{Fore.CYAN}╠{'═' * 50}╣{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Model:{Style.RESET_ALL} {default_model:28s} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Silence Duration:{Style.RESET_ALL} {config.SILENCE_DURATION}s{' ' * 26} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Sample Rate:{Style.RESET_ALL} {config.SAMPLE_RATE}Hz{' ' * 24} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Model Cache:{Style.RESET_ALL} {str(config.STT_MODEL_CACHE):24s} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Config File:{Style.RESET_ALL} {str(config.USER_CONFIG_FILE):24s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Model:{Style.RESET_ALL} {default_model:28s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Silence Duration:{Style.RESET_ALL} {config.SILENCE_DURATION}s{' ' * 26} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Sample Rate:{Style.RESET_ALL} {config.SAMPLE_RATE}Hz{' ' * 24} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Model Cache:{Style.RESET_ALL} {str(config.STT_MODEL_CACHE):24s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Config File:{Style.RESET_ALL} {str(config.USER_CONFIG_FILE):24s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
         print(f"{Fore.CYAN}╠{'═' * 50}╣{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.YELLOW}Available Models:{Style.RESET_ALL}" + " " * 30 + f"{Fore.CYAN}║{Style.RESET_ALL}")
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.YELLOW}Available Models:{Style.RESET_ALL}"
+            + " " * 30
+            + f"{Fore.CYAN}║{Style.RESET_ALL}"
+        )
         for model in config.VALID_STT_MODELS:
             marker = "→" if model == default_model else " "
-            print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}{marker}{Style.RESET_ALL} {model:44s} {Fore.CYAN}║{Style.RESET_ALL}")
+            print(
+                f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}{marker}{Style.RESET_ALL} {model:44s} {Fore.CYAN}║{Style.RESET_ALL}"
+            )
         print(f"{Fore.CYAN}╚{'═' * 50}╝{Style.RESET_ALL}\n")
-        
-        print(f"{Fore.WHITE}💡 Tip:{Style.RESET_ALL} Set default model with: vox transcribe --model <name> --set-default-model\n")
+
+        print(
+            f"{Fore.WHITE}💡 Tip:{Style.RESET_ALL} Set default model with: vox transcribe --model <name> --set-default-model\n"
+        )
     else:
         # Show general configuration
         print(f"\n{Fore.CYAN}╔{'═' * 50}╗{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}vox Configuration{Style.RESET_ALL}" + " " * 30 + f"{Fore.CYAN}║{Style.RESET_ALL}")
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}vox Configuration{Style.RESET_ALL}"
+            + " " * 30
+            + f"{Fore.CYAN}║{Style.RESET_ALL}"
+        )
         print(f"{Fore.CYAN}╠{'═' * 50}╣{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}TTS Provider:{Style.RESET_ALL} {config.DEFAULT_TTS_PROVIDER:30s} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Voice:{Style.RESET_ALL} {config.DEFAULT_TTS_VOICE:29s} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Speed:{Style.RESET_ALL} {str(config.DEFAULT_TTS_SPEED):29s} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Cache Enabled:{Style.RESET_ALL} {str(config.TTS_CACHE_ENABLED):29s} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}STT Model:{Style.RESET_ALL} {config.get_stt_default_model():33s} {Fore.CYAN}║{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Config Directory:{Style.RESET_ALL} {str(config.USER_CONFIG_DIR):25s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}TTS Provider:{Style.RESET_ALL} {config.DEFAULT_TTS_PROVIDER:30s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Voice:{Style.RESET_ALL} {config.DEFAULT_TTS_VOICE:29s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Speed:{Style.RESET_ALL} {str(config.DEFAULT_TTS_SPEED):29s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Cache Enabled:{Style.RESET_ALL} {str(config.TTS_CACHE_ENABLED):29s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}STT Model:{Style.RESET_ALL} {config.get_stt_default_model():33s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
+        print(
+            f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Config Directory:{Style.RESET_ALL} {str(config.USER_CONFIG_DIR):25s} {Fore.CYAN}║{Style.RESET_ALL}"
+        )
         print(f"{Fore.CYAN}╚{'═' * 50}╝{Style.RESET_ALL}\n")
-        
+
         print(f"{Fore.WHITE}💡 Tip:{Style.RESET_ALL} Use --show-stt to see detailed STT configuration\n")
 
 
@@ -888,9 +926,9 @@ def command_transcribe(args):
         args: Parsed command-line arguments
     """
     from pathlib import Path
-    
+
     from src.stt.transcriber import Transcriber
-    from src.stt.ui import format_error_box, format_device_list
+    from src.stt.ui import format_device_list, format_error_box
     from src.utils.errors import MicrophoneError, ModelLoadError, TranscriptionError
 
     try:
@@ -899,51 +937,51 @@ def command_transcribe(args):
             if not args.model:
                 print_error("--set-default-model requires --model to be specified")
                 sys.exit(1)
-            
+
             if config.set_stt_default_model(args.model):
                 print_success(f"Set default STT model to: {args.model}")
             else:
                 print_error(f"Invalid model '{args.model}'. Valid options: {', '.join(config.VALID_STT_MODELS)}")
                 sys.exit(1)
-        
+
         # Initialize transcriber once (uses saved default if args.model is None)
         if args.model:
             print_status(f"Initializing speech-to-text with model: {args.model}")
         else:
             default_model = config.get_stt_default_model()
             print_status(f"Initializing speech-to-text with default model: {default_model}")
-        
+
         transcriber = Transcriber(model_name=args.model)
-        
+
         # Loop to allow retries
         while True:
             try:
                 # Prepare output path if specified
                 output_path = Path(args.output) if args.output else None
-                
+
                 # Run transcription
                 text = transcriber.transcribe(output_file=output_path)
-                
+
                 print_success("Transcription complete!")
-                
+
                 # Ask if user wants to record again
                 print()
                 response = input(f"{Fore.CYAN}?{Style.RESET_ALL} Record again? (y/N): ").strip().lower()
-                
-                if response in ['y', 'yes']:
+
+                if response in ["y", "yes"]:
                     print()  # Add blank line before next recording
                     continue
-                elif response in ['', 'n', 'no']:
+                elif response in ["", "n", "no"]:
                     break
                 else:
                     print_warning(f"Unknown response '{response}', exiting...")
                     break
-                    
+
             except KeyboardInterrupt:
                 print()
                 print_warning("Recording cancelled by user")
                 break
-        
+
     except MicrophoneError as e:
         error_box = format_error_box(
             error_type="Microphone Error",
@@ -952,13 +990,13 @@ def command_transcribe(args):
                 "Check that a microphone is connected",
                 "Verify microphone permissions in Windows Settings (Privacy & security > Microphone)",
                 "Ensure no other application is using the microphone",
-            ]
+            ],
         )
         print(f"\n{error_box}\n")
         print(format_device_list())
         logger.error(f"Microphone error: {e}")
         sys.exit(1)
-        
+
     except ModelLoadError as e:
         error_box = format_error_box(
             error_type="Model Loading Error",
@@ -966,13 +1004,13 @@ def command_transcribe(args):
             suggestions=[
                 f"Check internet connection (first download of '{args.model or config.get_stt_default_model()}' model)",
                 f"Verify cache directory exists: {config.STT_MODEL_CACHE}",
-                f"Try a smaller model: vox transcribe --model tiny",
-            ]
+                "Try a smaller model: vox transcribe --model tiny",
+            ],
         )
         print(f"\n{error_box}\n")
         logger.error(f"Model load error: {e}")
         sys.exit(1)
-        
+
     except TranscriptionError as e:
         error_box = format_error_box(
             error_type="Transcription Error",
@@ -982,12 +1020,12 @@ def command_transcribe(args):
                 "Check microphone input volume in Windows settings",
                 "Try recording again with less background noise",
                 "Try a larger model for better accuracy: vox transcribe --model large",
-            ]
+            ],
         )
         print(f"\n{error_box}\n")
         logger.error(f"Transcription error: {e}")
         sys.exit(1)
-        
+
     except Exception as e:
         error_box = format_error_box(
             error_type="Unexpected Error",
@@ -995,7 +1033,7 @@ def command_transcribe(args):
             suggestions=[
                 "Check log files for details",
                 "Report this issue if it persists",
-            ]
+            ],
         )
         print(f"\n{error_box}\n")
         logger.exception("Unexpected error in transcribe command")

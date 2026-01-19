@@ -18,7 +18,6 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-
 # Default Piper model directory
 PIPER_MODELS_DIR = Path.home() / ".cache" / "piper"
 PIPER_MODELS_DIR.mkdir(parents=True, exist_ok=True)

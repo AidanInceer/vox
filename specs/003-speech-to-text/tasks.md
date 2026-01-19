@@ -379,11 +379,11 @@
 
 **Purpose**: Final integration, documentation updates, and release preparation
 
-- [ ] T195 [P] Update CHANGELOG.md with v3.0.0 breaking changes and new features
-- [ ] T196 [P] Verify all docstrings use "vox" not "vox"
-- [ ] T197 [P] Run ruff linting on entire codebase: `ruff check .`
-- [ ] T198 [P] Run ruff formatting on entire codebase: `ruff format .`
-- [ ] T199 [P] Update constitution.md if any new coding standards were established
+- [X] T195 [P] Update CHANGELOG.md with v3.0.0 breaking changes and new features
+- [X] T196 [P] Verify all docstrings use "vox" not "vox"
+- [X] T197 [P] Run ruff linting on entire codebase: `ruff check .`
+- [X] T198 [P] Run ruff formatting on entire codebase: `ruff format .`
+- [X] T199 [P] Update constitution.md if any new coding standards were established
 - [ ] T200 Build standalone executable: `python scripts/build_exe.py`, verify vox.exe works
 - [ ] T201 Test end-to-end workflow: install fresh, run TTS, run STT, verify config migration
 - [ ] T202 Prepare release notes for v3.0.0 with migration guide for existing users

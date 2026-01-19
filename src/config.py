@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,7 @@ DEFAULT_USER_CONFIG: Final[dict[str, Any]] = {
 
 def load_user_config() -> dict[str, Any]:
     """Load user configuration from config.json.
-    
+
     Returns:
         User configuration dictionary. Returns default config if file doesn't exist
         or if loading fails.
@@ -121,7 +121,7 @@ def load_user_config() -> dict[str, Any]:
     if not USER_CONFIG_FILE.exists():
         logger.debug(f"Config file not found at {USER_CONFIG_FILE}, using defaults")
         return DEFAULT_USER_CONFIG.copy()
-    
+
     try:
         with USER_CONFIG_FILE.open("r", encoding="utf-8") as f:
             config = json.load(f)
@@ -137,10 +137,10 @@ def load_user_config() -> dict[str, Any]:
 
 def save_user_config(config: dict[str, Any]) -> bool:
     """Save user configuration to config.json.
-    
+
     Args:
         config: Configuration dictionary to save
-    
+
     Returns:
         True if save successful, False otherwise
     """
@@ -151,14 +151,14 @@ def save_user_config(config: dict[str, Any]) -> bool:
             if model not in VALID_STT_MODELS:
                 logger.error(f"Invalid STT model '{model}', valid options: {VALID_STT_MODELS}")
                 return False
-        
+
         # Write config with pretty formatting
         with USER_CONFIG_FILE.open("w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
-        
+
         logger.info(f"Saved user config to {USER_CONFIG_FILE}")
         return True
-        
+
     except Exception as e:
         logger.error(f"Failed to save config file: {e}")
         return False
@@ -166,7 +166,7 @@ def save_user_config(config: dict[str, Any]) -> bool:
 
 def get_stt_default_model() -> str:
     """Get the default STT model from user config.
-    
+
     Returns:
         Model name string (e.g., "medium")
     """
@@ -176,34 +176,33 @@ def get_stt_default_model() -> str:
 
 def set_stt_default_model(model: str) -> bool:
     """Set the default STT model in user config.
-    
+
     Args:
         model: Model name (e.g., "medium")
-    
+
     Returns:
         True if successful, False otherwise
     """
     if model not in VALID_STT_MODELS:
         logger.error(f"Invalid STT model '{model}', valid options: {VALID_STT_MODELS}")
         return False
-    
+
     config = load_user_config()
     if "stt" not in config:
         config["stt"] = {}
     config["stt"]["default_model"] = model
-    
+
     return save_user_config(config)
 
 
 def create_default_config() -> bool:
     """Create default config.json file if it doesn't exist.
-    
+
     Returns:
         True if created successfully or already exists, False on error
     """
     if USER_CONFIG_FILE.exists():
         logger.debug("Config file already exists")
         return True
-    
-    return save_user_config(DEFAULT_USER_CONFIG)
 
+    return save_user_config(DEFAULT_USER_CONFIG)

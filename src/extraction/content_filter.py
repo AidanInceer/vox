@@ -10,7 +10,6 @@ from typing import Optional
 
 from bs4 import BeautifulSoup, NavigableString
 
-
 # Common IDs and classes for navigation elements
 NAV_SELECTORS = [
     "nav",
@@ -284,11 +283,7 @@ def clean_text_for_tts(text: str) -> str:
 
     # Remove control characters and invalid surrogates
     try:
-        text = "".join(
-            char
-            for char in text
-            if unicodedata.category(char)[0] != "C" or char in "\n\t\r"
-        )
+        text = "".join(char for char in text if unicodedata.category(char)[0] != "C" or char in "\n\t\r")
     except Exception:
         pass
 
@@ -309,7 +304,6 @@ def clean_text_for_tts(text: str) -> str:
         "—": "-",
         """: '"',
         """: '"',
-        "'": "'",
         "'": "'",
     }
 

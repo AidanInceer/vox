@@ -57,9 +57,7 @@ class ReadingSession:
         Returns:
             True if all required fields are present and non-empty
         """
-        return all(
-            [self.session_id, self.session_name, self.page_url, self.title]
-        )
+        return all([self.session_id, self.session_name, self.page_url, self.title])
 
     def to_dict(self) -> dict:
         """Convert session to dictionary for serialization.
@@ -95,12 +93,8 @@ class ReadingSession:
             page_url=data["page_url"],
             title=data["title"],
             playback_position=data.get("playback_position", 0),
-            created_at=datetime.fromisoformat(
-                data.get("created_at", datetime.now().isoformat())
-            ),
-            last_accessed=datetime.fromisoformat(
-                data.get("last_accessed", datetime.now().isoformat())
-            ),
+            created_at=datetime.fromisoformat(data.get("created_at", datetime.now().isoformat())),
+            last_accessed=datetime.fromisoformat(data.get("last_accessed", datetime.now().isoformat())),
             extraction_settings=data.get("extraction_settings", {}),
             tts_settings=data.get("tts_settings", {}),
         )
