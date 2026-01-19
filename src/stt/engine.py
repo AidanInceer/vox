@@ -1,8 +1,12 @@
 """Whisper-based speech-to-text engine for vox."""
 
 import logging
+import os
 from pathlib import Path
 from typing import Optional
+
+# Suppress huggingface_hub symlink warning on Windows
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
 
 from faster_whisper import WhisperModel
 
@@ -55,16 +59,35 @@ class STTEngine:
         Raises:
             ModelLoadError: If model loading fails
         """
+        from src.stt.ui import ProgressIndicator
+        
         try:
             # Ensure cache directory exists
             self.model_path.mkdir(parents=True, exist_ok=True)
             
+            # Estimate model size for user feedback
+            model_sizes = {
+                "tiny": "75 MB",
+                "base": "142 MB",
+                "small": "466 MB",
+                "medium": "1.5 GB",
+                "large": "2.9 GB",
+            }
+            size_str = model_sizes.get(self.model_name, "unknown size")
+            
+            # Show progress indicator
             if self._check_model_cache():
-                logger.info(f"Loading cached model from {self.model_path}")
-            else:
-                logger.info(
-                    f"Model not cached, downloading {self.model_name}..."
+                progress = ProgressIndicator(
+                    message=f"Loading {self.model_name} model from cache...",
+                    show_spinner=True,
                 )
+            else:
+                progress = ProgressIndicator(
+                    message=f"Downloading {self.model_name} model ({size_str})...",
+                    show_spinner=True,
+                )
+            
+            progress.start()
             
             # Load model with CTranslate2 backend for speed
             self.model = WhisperModel(
@@ -74,7 +97,7 @@ class STTEngine:
                 download_root=str(self.model_path),
             )
             
-            logger.info(f"Model {self.model_name} loaded successfully")
+            progress.stop(success=True)
             
         except Exception as e:
             error_msg = (

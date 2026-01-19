@@ -7,6 +7,7 @@ Whisper models via the faster-whisper library. Key components:
 - recorder.py: Microphone audio capture
 - transcriber.py: Main orchestration coordinator
 - audio_utils.py: Audio processing and silence detection
+- ui.py: Visual feedback and formatting utilities
 
 Example usage:
     from src.stt.transcriber import Transcriber

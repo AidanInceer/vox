@@ -3,7 +3,7 @@
 import logging
 import threading
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 import numpy as np
 import sounddevice as sd
@@ -58,6 +58,7 @@ class MicrophoneRecorder:
         self.is_recording = False
         self._stream: Optional[sd.InputStream] = None
         self._stop_event = threading.Event()
+        self._audio_level_callback: Optional[Callable[[np.ndarray], None]] = None
         
         # Detect and validate microphone device
         device_info = self._detect_default_device(device_id)
@@ -151,11 +152,23 @@ class MicrophoneRecorder:
         audio_chunk = indata.copy()
         self.audio_chunks.append(audio_chunk)
         
+        # Notify callback for visual feedback
+        if self._audio_level_callback:
+            self._audio_level_callback(audio_chunk)
+        
         # Check for silence if detector is enabled
         if self.silence_detector:
             if self.silence_detector.process_chunk(audio_chunk.flatten()):
                 logger.info("Silence threshold reached, stopping recording")
                 self._stop_event.set()
+    
+    def set_audio_callback(self, callback: Callable[[np.ndarray], None]) -> None:
+        """Set callback function to receive audio chunks for visual feedback.
+        
+        Args:
+            callback: Function that receives audio chunk as numpy array
+        """
+        self._audio_level_callback = callback
 
     def start_recording(self) -> None:
         """Start recording audio from microphone.
@@ -251,8 +264,6 @@ class MicrophoneRecorder:
         This runs in the main thread and monitors both keyboard input
         and the silence detection stop event.
         """
-        print("Press Enter to stop recording...")
-        
         # Use a separate thread to monitor Enter key
         def wait_for_input():
             try:

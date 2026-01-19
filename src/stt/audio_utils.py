@@ -1,8 +1,13 @@
 """Audio processing utilities for silence detection and analysis."""
 
 import logging
+import warnings
+from typing import Callable, Optional
 
 import numpy as np
+
+# Suppress numpy warnings for invalid values (NaN, inf) in audio processing
+warnings.filterwarnings('ignore', category=RuntimeWarning, module='numpy')
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +22,21 @@ def calculate_rms(audio_chunk: np.ndarray) -> float:
         audio_chunk: Audio samples as numpy array
     
     Returns:
-        RMS energy value (higher = louder)
+        RMS energy value (higher = louder), or 0.0 if invalid
     """
-    return np.sqrt(np.mean(audio_chunk ** 2))
+    if audio_chunk is None or len(audio_chunk) == 0:
+        return 0.0
+    
+    try:
+        # Suppress all numpy warnings during calculation
+        with np.errstate(all='ignore'):
+            rms = np.sqrt(np.mean(audio_chunk ** 2))
+        # Check for NaN or infinite values
+        if np.isnan(rms) or np.isinf(rms):
+            return 0.0
+        return float(rms)
+    except Exception:
+        return 0.0
 
 
 def detect_silence(audio_chunk: np.ndarray, threshold: float = 500.0) -> bool:
@@ -69,6 +86,7 @@ class SilenceDetector:
         self.sample_rate = sample_rate
         self.chunk_duration = chunk_duration
         self.silence_threshold = silence_threshold
+        self._silence_callback: Optional[Callable[[bool], None]] = None
         
         # Calculate how many chunks constitute the target silence duration
         self.required_chunks = int(silence_duration / chunk_duration)
@@ -92,6 +110,9 @@ class SilenceDetector:
             audio_chunk, threshold=self.silence_threshold
         )
         
+        # Notify callback if state changed
+        prev_silent = self.silent_chunks > 0
+        
         if is_silent:
             self.silent_chunks += 1
             if self.silent_chunks % 10 == 0:  # Log every 1 second
@@ -99,13 +120,27 @@ class SilenceDetector:
                     f"Silence: {self.silent_chunks}/{self.required_chunks} "
                     f"chunks"
                 )
+            
+            # Notify when silence starts (2 seconds threshold for visual feedback)
+            if not prev_silent and self.silent_chunks >= 20 and self._silence_callback:
+                self._silence_callback(True)
         else:
             # Reset counter if sound detected
             if self.silent_chunks > 0:
                 logger.debug("Sound detected, resetting silence counter")
+                if self._silence_callback:
+                    self._silence_callback(False)
             self.silent_chunks = 0
         
         return self.is_silence_threshold_reached()
+    
+    def set_silence_callback(self, callback: Callable[[bool], None]) -> None:
+        """Set callback to notify about silence state changes.
+        
+        Args:
+            callback: Function that receives boolean (True=silent, False=sound)
+        """
+        self._silence_callback = callback
 
     def is_silence_threshold_reached(self) -> bool:
         """Check if the required silence duration has been reached.

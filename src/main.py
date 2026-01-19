@@ -90,6 +90,9 @@ class ColoredHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 def main():
     """Main entry point for vox CLI."""
+    # Create default config file if it doesn't exist
+    config.create_default_config()
+    
     # Check and run config migration if needed
     from src.utils.migration import migrate_config
     
@@ -272,8 +275,13 @@ def create_parser() -> argparse.ArgumentParser:
     )
     transcribe_parser.add_argument(
         "--model",
-        default=config.DEFAULT_STT_MODEL,
-        help=f"Whisper model size: tiny, base, small, medium, large (default: {config.DEFAULT_STT_MODEL})",
+        default=None,  # Will use saved default from config
+        help=f"Whisper model size: tiny, base, small, medium, large (default: saved preference or {config.DEFAULT_STT_MODEL})",
+    )
+    transcribe_parser.add_argument(
+        "--set-default-model",
+        action="store_true",
+        help="Save the specified --model as the new default for future transcriptions",
     )
 
     # LIST command
@@ -320,8 +328,13 @@ def create_parser() -> argparse.ArgumentParser:
     # CONFIG command
     config_parser = subparsers.add_parser(
         "config",
-        help=f"{Fore.YELLOW}Show configuration{Style.RESET_ALL}",
+        help=f"{Fore.YELLOW}Show or manage configuration{Style.RESET_ALL}",
         formatter_class=ColoredHelpFormatter,
+    )
+    config_parser.add_argument(
+        "--show-stt",
+        action="store_true",
+        help="Show STT configuration settings",
     )
 
     return parser
@@ -484,14 +497,41 @@ def command_config(args):
     Args:
         args: Parsed command-line arguments
     """
-    print("\nvox Configuration:")
-    print(f"  TTS Provider: {config.DEFAULT_TTS_PROVIDER}")
-    print(f"  Default Voice: {config.DEFAULT_TTS_VOICE}")
-    print(f"  Default Speed: {config.DEFAULT_TTS_SPEED}")
-    print(f"  Cache Synthesis: {config.TTS_CACHE_ENABLED}")
-    print(f"  STT Model: {config.DEFAULT_STT_MODEL}")
-    print(f"  Sample Rate: {config.SAMPLE_RATE}Hz")
-    print(f"  Silence Duration: {config.SILENCE_DURATION}s")
+    if args.show_stt:
+        # Show STT configuration
+        user_config = config.load_user_config()
+        default_model = config.get_stt_default_model()
+        
+        print(f"\n{Fore.CYAN}╔{'═' * 50}╗{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}STT Configuration{Style.RESET_ALL}" + " " * 32 + f"{Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}╠{'═' * 50}╣{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Model:{Style.RESET_ALL} {default_model:28s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Silence Duration:{Style.RESET_ALL} {config.SILENCE_DURATION}s{' ' * 26} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Sample Rate:{Style.RESET_ALL} {config.SAMPLE_RATE}Hz{' ' * 24} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Model Cache:{Style.RESET_ALL} {str(config.STT_MODEL_CACHE):24s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Config File:{Style.RESET_ALL} {str(config.USER_CONFIG_FILE):24s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}╠{'═' * 50}╣{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.YELLOW}Available Models:{Style.RESET_ALL}" + " " * 30 + f"{Fore.CYAN}║{Style.RESET_ALL}")
+        for model in config.VALID_STT_MODELS:
+            marker = "→" if model == default_model else " "
+            print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}{marker}{Style.RESET_ALL} {model:44s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}╚{'═' * 50}╝{Style.RESET_ALL}\n")
+        
+        print(f"{Fore.WHITE}💡 Tip:{Style.RESET_ALL} Set default model with: vox transcribe --model <name> --set-default-model\n")
+    else:
+        # Show general configuration
+        print(f"\n{Fore.CYAN}╔{'═' * 50}╗{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.GREEN}vox Configuration{Style.RESET_ALL}" + " " * 30 + f"{Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}╠{'═' * 50}╣{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}TTS Provider:{Style.RESET_ALL} {config.DEFAULT_TTS_PROVIDER:30s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Voice:{Style.RESET_ALL} {config.DEFAULT_TTS_VOICE:29s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Default Speed:{Style.RESET_ALL} {str(config.DEFAULT_TTS_SPEED):29s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Cache Enabled:{Style.RESET_ALL} {str(config.TTS_CACHE_ENABLED):29s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}STT Model:{Style.RESET_ALL} {config.get_stt_default_model():33s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.WHITE}Config Directory:{Style.RESET_ALL} {str(config.USER_CONFIG_DIR):25s} {Fore.CYAN}║{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}╚{'═' * 50}╝{Style.RESET_ALL}\n")
+        
+        print(f"{Fore.WHITE}💡 Tip:{Style.RESET_ALL} Use --show-stt to see detailed STT configuration\n")
 
 
 def _get_content(args) -> str:
@@ -850,57 +890,114 @@ def command_transcribe(args):
     from pathlib import Path
     
     from src.stt.transcriber import Transcriber
+    from src.stt.ui import format_error_box, format_device_list
     from src.utils.errors import MicrophoneError, ModelLoadError, TranscriptionError
 
     try:
-        # Initialize transcriber
-        print_status(f"Initializing speech-to-text with model: {args.model}")
+        # Handle --set-default-model flag
+        if args.set_default_model:
+            if not args.model:
+                print_error("--set-default-model requires --model to be specified")
+                sys.exit(1)
+            
+            if config.set_stt_default_model(args.model):
+                print_success(f"Set default STT model to: {args.model}")
+            else:
+                print_error(f"Invalid model '{args.model}'. Valid options: {', '.join(config.VALID_STT_MODELS)}")
+                sys.exit(1)
+        
+        # Initialize transcriber once (uses saved default if args.model is None)
+        if args.model:
+            print_status(f"Initializing speech-to-text with model: {args.model}")
+        else:
+            default_model = config.get_stt_default_model()
+            print_status(f"Initializing speech-to-text with default model: {default_model}")
+        
         transcriber = Transcriber(model_name=args.model)
         
-        # Prepare output path if specified
-        output_path = Path(args.output) if args.output else None
-        
-        # Run transcription
-        text = transcriber.transcribe(output_file=output_path)
-        
-        print_success("Transcription complete!")
+        # Loop to allow retries
+        while True:
+            try:
+                # Prepare output path if specified
+                output_path = Path(args.output) if args.output else None
+                
+                # Run transcription
+                text = transcriber.transcribe(output_file=output_path)
+                
+                print_success("Transcription complete!")
+                
+                # Ask if user wants to record again
+                print()
+                response = input(f"{Fore.CYAN}?{Style.RESET_ALL} Record again? (y/N): ").strip().lower()
+                
+                if response in ['y', 'yes']:
+                    print()  # Add blank line before next recording
+                    continue
+                elif response in ['', 'n', 'no']:
+                    break
+                else:
+                    print_warning(f"Unknown response '{response}', exiting...")
+                    break
+                    
+            except KeyboardInterrupt:
+                print()
+                print_warning("Recording cancelled by user")
+                break
         
     except MicrophoneError as e:
-        print_error(f"Microphone error: {e.message}")
-        print()
-        print("Troubleshooting steps:")
-        print("  1. Check that a microphone is connected")
-        print("  2. Verify microphone permissions in Windows Settings")
-        print("     (Privacy & security > Microphone)")
-        print("  3. Ensure no other application is using the microphone")
-        print()
+        error_box = format_error_box(
+            error_type="Microphone Error",
+            message=e.message,
+            suggestions=[
+                "Check that a microphone is connected",
+                "Verify microphone permissions in Windows Settings (Privacy & security > Microphone)",
+                "Ensure no other application is using the microphone",
+            ]
+        )
+        print(f"\n{error_box}\n")
+        print(format_device_list())
         logger.error(f"Microphone error: {e}")
         sys.exit(1)
         
     except ModelLoadError as e:
-        print_error(f"Model loading error: {e.message}")
-        print()
-        print("Troubleshooting steps:")
-        print(f"  1. Check internet connection (first download of '{args.model}' model)")
-        print(f"  2. Verify cache directory exists: {config.STT_MODEL_CACHE}")
-        print("  3. Try a smaller model: --model tiny")
-        print()
+        error_box = format_error_box(
+            error_type="Model Loading Error",
+            message=e.message,
+            suggestions=[
+                f"Check internet connection (first download of '{args.model or config.get_stt_default_model()}' model)",
+                f"Verify cache directory exists: {config.STT_MODEL_CACHE}",
+                f"Try a smaller model: vox transcribe --model tiny",
+            ]
+        )
+        print(f"\n{error_box}\n")
         logger.error(f"Model load error: {e}")
         sys.exit(1)
         
     except TranscriptionError as e:
-        print_error(f"Transcription error: {e.message}")
-        print()
-        print("Troubleshooting steps:")
-        print("  1. Ensure you spoke clearly during recording")
-        print("  2. Check microphone input volume in Windows settings")
-        print("  3. Try recording again with less background noise")
-        print()
+        error_box = format_error_box(
+            error_type="Transcription Error",
+            message=e.message,
+            suggestions=[
+                "Ensure you spoke clearly during recording",
+                "Check microphone input volume in Windows settings",
+                "Try recording again with less background noise",
+                "Try a larger model for better accuracy: vox transcribe --model large",
+            ]
+        )
+        print(f"\n{error_box}\n")
         logger.error(f"Transcription error: {e}")
         sys.exit(1)
         
     except Exception as e:
-        print_error(f"Unexpected error: {str(e)}")
+        error_box = format_error_box(
+            error_type="Unexpected Error",
+            message=str(e),
+            suggestions=[
+                "Check log files for details",
+                "Report this issue if it persists",
+            ]
+        )
+        print(f"\n{error_box}\n")
         logger.exception("Unexpected error in transcribe command")
         sys.exit(1)
 

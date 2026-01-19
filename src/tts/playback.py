@@ -6,10 +6,18 @@ volume control, and speed adjustment using pygame.mixer.
 
 import io
 import logging
+import os
 import tempfile
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+
+# Suppress pygame welcome message
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
+# Suppress pkg_resources deprecation warning from pygame
+warnings.filterwarnings('ignore', category=UserWarning, module='pygame.pkgdata')
 
 import pygame
 

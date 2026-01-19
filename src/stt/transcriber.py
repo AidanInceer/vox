@@ -2,13 +2,17 @@
 
 import logging
 import tempfile
+import time
 from pathlib import Path
 from typing import Optional
+
+from colorama import Fore, Style
 
 from src.config import DEFAULT_STT_MODEL, SAMPLE_RATE, SILENCE_DURATION
 from src.stt.audio_utils import SilenceDetector
 from src.stt.engine import STTEngine
 from src.stt.recorder import MicrophoneRecorder
+from src.stt.ui import RecordingIndicator, ProgressIndicator, format_transcription_result
 from src.utils.errors import TranscriptionError
 
 logger = logging.getLogger(__name__)
@@ -32,34 +36,27 @@ class Transcriber:
 
     def __init__(
         self,
-        model_name: str = DEFAULT_STT_MODEL,
-        silence_duration: float = SILENCE_DURATION,
+        model_name: Optional[str] = None,
         sample_rate: int = SAMPLE_RATE,
     ):
         """Initialize transcriber with model and recording settings.
         
         Args:
-            model_name: Whisper model size (default: "medium")
-            silence_duration: Seconds of silence to auto-stop (default: 5.0)
+            model_name: Whisper model size or None to use saved default
             sample_rate: Audio sample rate in Hz (default: 16000)
         """
+        # Use saved default model if none specified
+        if model_name is None:
+            from src.config import get_stt_default_model
+            model_name = get_stt_default_model()
+        
         self.model_name = model_name
-        self.silence_duration = silence_duration
         self.sample_rate = sample_rate
         
-        logger.info(
-            f"Initializing Transcriber: model={model_name}, "
-            f"silence={silence_duration}s"
-        )
+        logger.info(f"Initializing Transcriber: model={model_name}")
         
         # Initialize STT engine
         self.engine = STTEngine(model_name=model_name)
-        
-        # Initialize silence detector for auto-stop
-        self.silence_detector = SilenceDetector(
-            silence_duration=silence_duration,
-            sample_rate=sample_rate,
-        )
         
         # Initialize recorder (will be created fresh for each transcription)
         self.recorder: Optional[MicrophoneRecorder] = None
@@ -88,16 +85,17 @@ class Transcriber:
             TranscriptionError: If transcription pipeline fails
         """
         try:
-            # Step 1: Record audio
-            print("\n🎤 Recording... (Press Enter to stop, or wait for silence)")
-            audio_data = self._record_audio()
+            # Show keyboard shortcuts hint
+            print(f"\n{Fore.WHITE}💡 Tip:{Style.RESET_ALL} Press {Fore.YELLOW}Enter{Style.RESET_ALL} to stop recording\n")
+            
+            # Step 1: Record audio with visual feedback
+            audio_data, duration = self._record_audio()
             
             # Step 2: Process recording (save and transcribe)
-            print("\n⏳ Transcribing...")
-            text = self._process_recording(audio_data, language)
+            text = self._process_recording(audio_data, language, duration)
             
-            # Step 3: Display result
-            self._display_result(text)
+            # Step 3: Display result with formatting
+            self._display_result(text, duration)
             
             # Step 4: Save to file if requested
             if output_file:
@@ -114,40 +112,54 @@ class Transcriber:
                 error_code="TRANSCRIPTION_PIPELINE_FAILED",
             ) from e
 
-    def _record_audio(self) -> "np.ndarray":
-        """Record audio from microphone with Enter or silence stop.
+    def _record_audio(self) -> tuple["np.ndarray", float]:
+        """Record audio from microphone with Enter key stop.
         
         Returns:
-            Numpy array of audio samples
+            Tuple of (audio samples, duration in seconds)
         """
-        # Create fresh recorder with silence detection
+        # Create fresh recorder without silence detection
         self.recorder = MicrophoneRecorder(
             sample_rate=self.sample_rate,
             channels=1,
-            silence_detector=self.silence_detector,
+            silence_detector=None,
         )
         
-        # Display device info
+        # Get device info for visual feedback
         device_info = self.recorder.get_device_info()
         logger.info(f"Recording from: {device_info['device_name']}")
         
+        # Create and start visual indicator
+        indicator = RecordingIndicator(
+            device_name=device_info['device_name'],
+            show_audio_levels=True,
+        )
+        indicator.start()
+        
         # Start recording
+        start_time = time.time()
         self.recorder.start_recording()
         
-        # Wait for Enter key or silence detection
+        # Set callback to update visual indicator
+        self.recorder.set_audio_callback(lambda chunk: indicator.update_audio_level(chunk))
+        
+        # Wait for Enter key
         self.recorder.wait_for_enter()
         
-        # Stop and get audio data
+        # Stop recording and indicator
         audio_data = self.recorder.stop_recording()
+        duration = time.time() - start_time
+        indicator.stop()
         
-        return audio_data
+        return audio_data, duration
 
-    def _process_recording(self, audio_data: "np.ndarray", language: str) -> str:
+    def _process_recording(self, audio_data: "np.ndarray", language: str, duration: float) -> str:
         """Save recording to WAV and transcribe to text.
         
         Args:
             audio_data: Recorded audio samples
             language: Language code for transcription
+            duration: Recording duration in seconds
         
         Returns:
             Transcribed text
@@ -166,8 +178,17 @@ class Transcriber:
                     error_code="RECORDER_NOT_INITIALIZED",
                 )
             
+            # Show progress indicator
+            progress = ProgressIndicator(
+                message=f"Transcribing with {self.model_name} model...",
+                show_spinner=True,
+            )
+            progress.start()
+            
             # Transcribe WAV file
             text = self.engine.transcribe_audio(tmp_path, language=language)
+            
+            progress.stop(success=True)
             
             return text
             
@@ -177,17 +198,21 @@ class Transcriber:
                 tmp_path.unlink()
                 logger.debug(f"Cleaned up temporary file: {tmp_path}")
 
-    def _display_result(self, text: str) -> None:
-        """Display transcription result to terminal.
+    def _display_result(self, text: str, duration: float) -> None:
+        """Display transcription result to terminal with formatting.
         
         Args:
             text: Transcribed text to display
+            duration: Recording duration in seconds
         """
-        print("\n" + "="*60)
-        print("📝 Transcription:")
-        print("="*60)
-        print(text)
-        print("="*60 + "\n")
+        # Use formatted output from ui module
+        formatted = format_transcription_result(
+            text=text,
+            duration=duration,
+            model_name=self.model_name,
+            confidence=None,  # TODO: Extract from Whisper segments if available
+        )
+        print(f"\n{formatted}\n")
 
     def _save_result(self, text: str, output_file: Path) -> None:
         """Save transcription to file.

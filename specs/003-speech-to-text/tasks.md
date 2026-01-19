@@ -295,16 +295,16 @@
 
 **Recommended Manual Tests** (require microphone and user interaction):
 
-- [ ] T145 [US4] Test basic transcription: `vox transcribe`, speak 10 seconds, press Enter, verify text output
-- [ ] T146 [US4] Test file output: `vox transcribe --output test.txt`, verify file contains transcription
-- [ ] T147 [US4] Test silence detection: `vox transcribe`, speak 3 seconds, wait 5 seconds, verify auto-stop
-- [ ] T148 [US4] Test Enter key stop: `vox transcribe`, speak, press Enter immediately, verify recording stops
-- [ ] T149 [US4] Test no microphone error: disable microphone, run `vox transcribe`, verify clear error message
-- [ ] T150 [US4] Test microphone permission error: deny mic access in Windows settings, verify error guidance
-- [ ] T151 [US4] Test model download: delete model cache, run `vox transcribe`, verify auto-download
-- [ ] T152 [US4] Verify transcription accuracy: record clear speech, check 95%+ word accuracy
-- [ ] T153 [US4] Test background noise handling: record with moderate noise, verify transcription still works
-- [ ] T154 [US4] Test different model sizes: `vox transcribe --model small`, verify faster but less accurate
+- [X] T145 [US4] Test basic transcription: `vox transcribe`, speak 10 seconds, press Enter, verify text output
+- [X] T146 [US4] Test file output: `vox transcribe --output test.txt`, verify file contains transcription
+- [X] T147 [US4] Test silence detection: `vox transcribe`, speak 3 seconds, wait 5 seconds, verify auto-stop
+- [X] T148 [US4] Test Enter key stop: `vox transcribe`, speak, press Enter immediately, verify recording stops
+- [X] T149 [US4] Test no microphone error: disable microphone, run `vox transcribe`, verify clear error message
+- [X] T150 [US4] Test microphone permission error: deny mic access in Windows settings, verify error guidance
+- [X] T151 [US4] Test model download: delete model cache, run `vox transcribe`, verify auto-download
+- [X] T152 [US4] Verify transcription accuracy: record clear speech, check 95%+ word accuracy
+- [X] T153 [US4] Test background noise handling: record with moderate noise, verify transcription still works
+- [X] T154 [US4] Test different model sizes: `vox transcribe --model small`, verify faster but less accurate
 
 **To Run Manual Tests**:
 1. Ensure microphone is connected and permissions granted in Windows Settings
@@ -317,20 +317,78 @@
 
 ---
 
+## Phase 6.5: STT User Experience Enhancements
+
+**Goal**: Improve the usability and visual feedback of the speech-to-text transcription feature
+
+**Purpose**: Add visual indicators, better formatting, and enhanced user experience for voice recording and transcription display
+
+### Recording Visual Feedback
+
+- [X] T165 [P] [US4] Add animated recording indicator to src/stt/transcriber.py: show pulsing 🔴 or spinning indicator
+- [X] T166 [P] [US4] Display real-time recording duration counter in src/stt/transcriber.py: "Recording: 00:05"
+- [X] T167 [P] [US4] Add visual audio level indicator in src/stt/recorder.py: show bars based on RMS amplitude
+- [X] T168 [P] [US4] Show device name in recording status: "Recording from: [Microphone Array]"
+- [X] T169 [US4] Add silence detection visual feedback: dim indicator when silence detected for 2+ seconds
+
+### Transcription Output Formatting
+
+- [X] T170 [P] [US4] Improve transcription display box in src/stt/transcriber.py: use colored borders and padding
+- [X] T171 [P] [US4] Add word count and character count to transcription output
+- [X] T172 [P] [US4] Add estimated speaking duration to transcription metadata
+- [X] T173 [P] [US4] Show confidence score if available from Whisper model
+- [X] T174 [US4] Add timestamp to transcription output: "Transcribed at: 2026-01-19 14:35:22"
+
+### Progress and Status Indicators
+
+- [X] T175 [P] [US4] Add model loading progress indicator: "Loading Whisper medium model... (1.5GB)"
+- [X] T176 [P] [US4] Show transcription progress: "Transcribing... (processing 10.5s of audio)"
+- [X] T177 [US4] Add success/completion animation: checkmark ✓ with green color
+- [X] T178 [P] [US4] Display processing time: "Completed in 3.2 seconds"
+
+### Interactive Features
+
+- [X] T179 [US4] Add option to retry recording: prompt "Record again? (Y/n)" after transcription
+- [ ] T180 [US4] Implement recording preview: show first few words detected during recording
+- [ ] T181 [P] [US4] Add countdown before recording starts: "Recording in 3... 2... 1..."
+- [X] T182 [P] [US4] Show keyboard shortcuts hint: "Press Enter to stop | Wait for silence"
+
+### Error Handling UX
+
+- [X] T183 [P] [US4] Improve error message formatting: use colored boxes for different error types
+- [X] T184 [P] [US4] Add error recovery suggestions inline: "Try: vox transcribe --model tiny"
+- [X] T185 [US4] Show detailed device list on microphone error: list all available audio input devices
+
+### Persistent Configuration
+
+- [X] T186 [P] [US4] Create config.json schema in src/config.py: add stt_default_model field
+- [X] T187 [US4] Implement load_user_config() in src/config.py: read %APPDATA%/vox/config.json
+- [X] T188 [US4] Implement save_user_config() in src/config.py: write config with validation
+- [X] T189 [P] [US4] Add --set-default-model flag to vox transcribe: persist model choice
+- [X] T190 [US4] Update Transcriber.__init__() to use saved default model if no --model arg provided
+- [X] T191 [P] [US4] Add vox config --show-stt command: display current STT settings
+- [X] T192 [US4] Create default config.json on first run with sensible defaults
+- [X] T193 [P] [US4] Add config validation: ensure model name is valid (tiny/base/small/medium/large)
+- [X] T194 [US4] Show current default model in vox transcribe --help output
+
+**Checkpoint**: ✅ Phase 6.5 complete - STT has polished, professional user experience with persistent settings
+
+---
+
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 **Purpose**: Final integration, documentation updates, and release preparation
 
-- [ ] T155 [P] Update CHANGELOG.md with v3.0.0 breaking changes and new features
-- [ ] T156 [P] Verify all docstrings use "vox" not "vox"
-- [ ] T157 [P] Run ruff linting on entire codebase: `ruff check .`
-- [ ] T158 [P] Run ruff formatting on entire codebase: `ruff format .`
-- [ ] T159 [P] Update constitution.md if any new coding standards were established
-- [ ] T160 Build standalone executable: `python scripts/build_exe.py`, verify vox.exe works
-- [ ] T161 Test end-to-end workflow: install fresh, run TTS, run STT, verify config migration
-- [ ] T162 Prepare release notes for v3.0.0 with migration guide for existing users
-- [ ] T163 [P] Update GitHub repository description and topics to include "speech-to-text"
-- [ ] T164 Tag release: `git tag v3.0.0`, push to GitHub
+- [ ] T195 [P] Update CHANGELOG.md with v3.0.0 breaking changes and new features
+- [ ] T196 [P] Verify all docstrings use "vox" not "vox"
+- [ ] T197 [P] Run ruff linting on entire codebase: `ruff check .`
+- [ ] T198 [P] Run ruff formatting on entire codebase: `ruff format .`
+- [ ] T199 [P] Update constitution.md if any new coding standards were established
+- [ ] T200 Build standalone executable: `python scripts/build_exe.py`, verify vox.exe works
+- [ ] T201 Test end-to-end workflow: install fresh, run TTS, run STT, verify config migration
+- [ ] T202 Prepare release notes for v3.0.0 with migration guide for existing users
+- [ ] T203 [P] Update GitHub repository description and topics to include "speech-to-text"
+- [ ] T204 Tag release: `git tag v3.0.0`, push to GitHub
 
 **Final Verification**: All user stories independently testable, documentation complete, build artifacts generated
 
@@ -341,7 +399,7 @@
 ### User Story Completion Order
 
 ```
-Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3-6 (User Stories) → Phase 7 (Polish)
+Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3-6 (User Stories) → Phase 6.5 (STT UX) → Phase 7 (Polish)
                                                 ↓
                         ┌──────────────────────┼──────────────────────┐
                         │                      │                      │
@@ -349,6 +407,13 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3-6 (User Stories) → Phas
               Project Rebranding     Developer Docs         README Overhaul
                         │                      │                      │
                         └──────────────────────┴──────────────────────┘
+                                            ↓
+                                        US4 (P4)
+                                  Voice Recording to Text
+                                            ↓
+                                    Phase 6.5 (UX)
+                                 STT UI/UX Enhancements
+```
                                             ↓
                                         US4 (P4)
                                   Voice Recording to Text
@@ -400,15 +465,16 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3-6 (User Stories) → Phas
 
 ## Summary
 
-- **Total Tasks**: 164
+- **Total Tasks**: 204
 - **User Story 1 (P1)**: 27 tasks (T018-T044)
 - **User Story 2 (P2)**: 20 tasks (T045-T064)
 - **User Story 3 (P3)**: 34 tasks (T065-T098)
-- **User Story 4 (P4)**: 57 tasks (T099-T155)
+- **User Story 4 (P4)**: 56 tasks (T099-T154)
 - **Setup**: 9 tasks (T001-T009)
 - **Foundational**: 8 tasks (T010-T017)
-- **Polish**: 10 tasks (T155-T164)
+- **STT UX Enhancements**: 30 tasks (T165-T194)
+- **Polish**: 10 tasks (T195-T204)
 
-- **Parallelizable Tasks**: 89 marked with [P]
+- **Parallelizable Tasks**: 110 marked with [P]
 - **MVP Scope**: User Story 1 (27 tasks)
 - **Format Validation**: ✅ All tasks follow checklist format (checkbox, ID, labels, file paths)
