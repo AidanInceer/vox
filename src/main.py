@@ -133,6 +133,8 @@ def main():
             command_delete_session(args)
         elif args.command == "config":
             command_config(args)
+        elif args.command == "gui":
+            command_gui(args)
         else:
             parser.print_help()
 
@@ -335,6 +337,19 @@ def create_parser() -> argparse.ArgumentParser:
         "--show-stt",
         action="store_true",
         help="Show STT configuration settings",
+    )
+
+    # GUI command - Desktop application with hotkey voice input
+    gui_parser = subparsers.add_parser(
+        "gui",
+        help=f"{Fore.YELLOW}Launch desktop app with hotkey voice input{Style.RESET_ALL}",
+        description=f"{Fore.CYAN}Launch the Vox desktop application with global hotkey voice input{Style.RESET_ALL}",
+        formatter_class=ColoredHelpFormatter,
+    )
+    gui_parser.add_argument(
+        "--minimized",
+        action="store_true",
+        help="Start minimized (hidden, hotkey still works)",
     )
 
     return parser
@@ -570,6 +585,51 @@ def command_config(args):
         print(f"{Fore.CYAN}╚{'═' * 50}╝{Style.RESET_ALL}\n")
 
         print(f"{Fore.WHITE}💡 Tip:{Style.RESET_ALL} Use --show-stt to see detailed STT configuration\n")
+
+
+def command_gui(args):
+    """Handle the 'gui' command - launch desktop application.
+
+    Args:
+        args: Parsed command-line arguments
+    """
+    from src.persistence.database import VoxDatabase
+    from src.ui.main_window import VoxMainWindow
+    from src.voice_input.controller import VoiceInputController
+
+    print_status("Starting Vox Desktop Application...")
+
+    # Initialize database
+    database = VoxDatabase()
+
+    # Initialize controller
+    controller = VoiceInputController(database=database)
+
+    # Create and configure main window
+    window = VoxMainWindow(
+        controller=controller,
+        database=database,
+    )
+
+    # Start the controller (registers hotkeys)
+    controller.start()
+
+    print_success("Application started")
+    print_status(f"Hotkey: {database.get_setting('hotkey', '<ctrl>+<alt>+space')}")
+    print_status("Press the hotkey to start voice input")
+
+    # Hide window if --minimized flag
+    if args.minimized:
+        window.hide()
+        print_status("Running minimized - use hotkey to activate")
+
+    # Run the main window event loop
+    try:
+        window.run()
+    finally:
+        # Cleanup
+        database.close()
+        print_status("Application closed")
 
 
 def _get_content(args) -> str:

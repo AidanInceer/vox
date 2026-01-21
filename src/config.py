@@ -24,6 +24,7 @@ SESSION_STORAGE_DIR: Final[Path] = Path(os.getenv("APPDATA", ".")) / "vox" / "se
 STT_MODEL_CACHE: Final[Path] = Path(os.getenv("APPDATA", ".")) / "vox" / "models"
 USER_CONFIG_DIR: Final[Path] = Path(os.getenv("APPDATA", ".")) / "vox"
 USER_CONFIG_FILE: Final[Path] = USER_CONFIG_DIR / "config.json"
+VOX_DATABASE_FILE: Final[Path] = USER_CONFIG_DIR / "vox.db"
 
 # Ensure necessary directories exist
 for directory in [DATA_DIR, CACHE_DIR, LOGS_DIR, SESSION_STORAGE_DIR, STT_MODEL_CACHE, USER_CONFIG_DIR]:
@@ -206,3 +207,28 @@ def create_default_config() -> bool:
         return True
 
     return save_user_config(DEFAULT_USER_CONFIG)
+
+
+# ============================================================================
+# 004-hotkey-voice-input: Path Resolution Helpers
+# ============================================================================
+
+
+def get_vox_data_dir() -> Path:
+    """Get the vox data directory path.
+
+    Returns:
+        Path to %APPDATA%/vox/ directory (created if not exists)
+    """
+    USER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    return USER_CONFIG_DIR
+
+
+def get_vox_database_path() -> Path:
+    """Get the path to the vox SQLite database file.
+
+    Returns:
+        Path to %APPDATA%/vox/vox.db
+    """
+    get_vox_data_dir()  # Ensure directory exists
+    return VOX_DATABASE_FILE

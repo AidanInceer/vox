@@ -38,6 +38,13 @@ Previously known as *vox* (versions ≤2.0.0)
   - 💬 Instant terminal output or save to file
   - 🔒 Fully offline (no cloud services)
 
+- **Desktop App with Hotkey Voice Input** (NEW): Quick voice-to-text anywhere
+  - ⌨️ Global hotkey (Ctrl+Alt+Space) for instant voice input
+  - 📋 Automatic paste at cursor position
+  - 🔴 Visual recording indicator
+  - 📜 Transcription history with copy support
+  - ⚙️ Customizable hotkey configuration
+
 **All processing happens locally**—your voice and content never leave your machine
 
 
@@ -196,6 +203,78 @@ vox transcribe --model large
 | `small` | 488 MB | ~3s | ~93% |
 | `medium` (default) | 1.5 GB | ~4s | ~95% |
 | `large` | 3 GB | ~8s | ~97% |
+
+---
+
+### Desktop App: Hotkey Voice Input (NEW)
+
+Launch the vox desktop application for quick voice-to-text input anywhere on your system.
+
+#### Launch the Desktop App
+
+```bash
+# Start the desktop application
+vox gui
+
+# Start minimized to tray
+vox gui --minimized
+```
+
+#### Quick Start Workflow
+
+1. **Launch**: Run `vox gui` to open the desktop application
+2. **Press Hotkey**: Press `Ctrl+Alt+Space` (default) to start recording
+3. **Speak**: Say your text while the recording indicator appears
+4. **Press Hotkey Again**: Press the hotkey to stop recording
+5. **Auto-Paste**: Transcribed text is automatically pasted at your cursor position
+
+#### Visual Recording Indicator
+
+A small translucent pill appears above your taskbar showing the current state:
+
+| Color | State | Meaning |
+|-------|-------|---------|
+| 🔴 Red (pulsing) | Recording | Microphone is active, speak now |
+| 🔵 Blue (spinning) | Processing | Transcribing your speech |
+| 🟢 Green (checkmark) | Success | Text pasted successfully |
+| 🟠 Orange (warning) | Error | Something went wrong |
+
+#### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+Alt+Space` | Toggle recording (default hotkey) |
+| `Escape` | Cancel current recording without transcribing |
+
+#### Settings Tab
+
+Customize the application from the Settings tab:
+
+- **Hotkey Configuration**: Click "Capture" and press your preferred key combination
+- **Restore Clipboard**: Toggle whether to restore your original clipboard content after pasting
+- **Settings are saved** automatically and persist across restarts
+
+#### History Tab
+
+View and manage your transcription history:
+
+- **View Past Transcriptions**: See all your transcribed text with timestamps
+- **Copy to Clipboard**: Click the copy button next to any transcription
+- **Word Count**: Each entry shows the number of words transcribed
+
+#### Use Case: Voice Input in Any Application
+
+The desktop app works with any text field or application:
+
+```
+Example Workflow:
+1. Open Notepad, Word, browser, email, etc.
+2. Click where you want to type
+3. Press Ctrl+Alt+Space
+4. Speak: "Hello, this is a test message"
+5. Press Ctrl+Alt+Space again
+6. Your spoken text appears at the cursor!
+```
 
 ---
 

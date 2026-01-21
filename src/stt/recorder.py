@@ -16,6 +16,31 @@ from src.utils.errors import MicrophoneError
 logger = logging.getLogger(__name__)
 
 
+def check_microphone_available() -> tuple[bool, Optional[str]]:
+    """Check if a microphone is available for recording.
+
+    Returns:
+        Tuple of (is_available, error_message).
+        If available, returns (True, None).
+        If not available, returns (False, error_message).
+    """
+    try:
+        # Try to get default input device
+        default_device = sd.query_devices(kind="input")
+        if default_device is None:
+            return False, "No microphone detected. Please connect a microphone and try again."
+
+        # Check device has input channels
+        if default_device.get("max_input_channels", 0) < 1:
+            return False, "Microphone has no input channels."
+
+        return True, None
+    except sd.PortAudioError as e:
+        return False, f"Audio system error: {str(e)}"
+    except Exception as e:
+        return False, f"Microphone check failed: {str(e)}"
+
+
 class MicrophoneRecorder:
     """Handles microphone audio capture with Enter key and silence detection.
 
