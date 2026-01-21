@@ -13,8 +13,10 @@ Output:
     dist/vox.exe - Standalone executable
 """
 
+import os
 import shutil
 import sys
+import time
 from pathlib import Path
 
 try:
@@ -22,6 +24,33 @@ try:
 except ImportError:
     print("ERROR: PyInstaller not found. Install it with: pip install pyinstaller")
     sys.exit(1)
+
+
+def remove_readonly(func, path, excinfo):
+    """Error handler for Windows readonly files."""
+    os.chmod(path, 0o777)
+    func(path)
+
+
+def safe_rmtree(path, max_retries=3):
+    """Safely remove directory tree with retry logic for Windows."""
+    for attempt in range(max_retries):
+        try:
+            shutil.rmtree(path, onerror=remove_readonly)
+            return True
+        except PermissionError as e:
+            if attempt < max_retries - 1:
+                print(f"[!] Directory locked, retrying in 2 seconds... (attempt {attempt + 1}/{max_retries})")
+                time.sleep(2)
+            else:
+                print(f"[ERROR] Could not delete {path}")
+                print(f"[ERROR] {e}")
+                print(f"[!] Please close any running instances of vox.exe and try again")
+                return False
+        except Exception as e:
+            print(f"[ERROR] Unexpected error removing {path}: {e}")
+            return False
+    return False
 
 
 def main():
@@ -42,17 +71,20 @@ def main():
 
     # Clean previous builds
     if dist_dir.exists():
-        print("[*] Cleaning previous build artifacts...")
-        shutil.rmtree(dist_dir)
+        print("[*] Cleaning previous build artifacts (dist/)...")
+        if not safe_rmtree(dist_dir):
+            sys.exit(1)
     if build_dir.exists():
-        shutil.rmtree(build_dir)
+        print("[*] Cleaning previous build artifacts (build/)...")
+        if not safe_rmtree(build_dir):
+            sys.exit(1)
 
     # PyInstaller options
     options = [
         str(main_script),  # Main entry point
         "--name=vox",  # Executable name
         "--onefile",  # Single file executable
-        "--console",  # Console application
+        "--windowed",  # GUI application (no console window)
         "--noconfirm",  # Overwrite without asking
         # Add hidden imports for dynamic imports
         "--hidden-import=src",
@@ -87,8 +119,25 @@ def main():
         "--hidden-import=src.utils.logging",
         "--hidden-import=src.utils.migration",
         "--hidden-import=src.config",
+        "--hidden-import=src.ui",
+        "--hidden-import=src.ui.main_window",
+        "--hidden-import=src.ui.system_tray",
+        "--hidden-import=src.ui.indicator",
+        "--hidden-import=src.ui.styles",
+        # Third-party hidden imports
+        "--hidden-import=pystray",
+        "--hidden-import=pystray._win32",
+        "--hidden-import=PIL",
+        "--hidden-import=PIL.Image",
+        "--hidden-import=PIL.ImageDraw",
+        "--hidden-import=ttkbootstrap",
+        "--hidden-import=pynput",
+        "--hidden-import=pynput.keyboard",
+        "--hidden-import=pynput.mouse",
+        "--hidden-import=pyperclip",
         # Data files
         "--collect-data=piper_tts",  # Include Piper TTS models
+        "--collect-data=ttkbootstrap",  # Include ttkbootstrap themes
         # Exclude test files
         "--exclude-module=pytest",
         "--exclude-module=tests",

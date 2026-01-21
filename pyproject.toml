@@ -26,7 +26,6 @@ dependencies = [
     "piper-tts>=1.2.0",
     "pywinauto>=0.6.9",
     "black>=25.12.0",
-    "colorama>=0.4.6",
     "pygame>=2.6.0",
     "faster-whisper>=1.0.0",
     "sounddevice>=0.4.6",

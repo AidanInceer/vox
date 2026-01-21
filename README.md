@@ -2,9 +2,9 @@
 
 <div align="center">
 
-**Transform your voice into text, and text into voice—instantly.**
+**Transform your voice into text—instantly.**
 
-A modern Windows desktop app for reading content aloud and transcribing your voice, 100% offline.
+A modern Windows desktop app for voice transcription, 100% offline.
 
 [![Download Latest](https://img.shields.io/badge/Download-Latest%20Release-4582ec?style=for-the-badge)](https://github.com/AidanInceer/vox/releases)
 [![Python 3.13+](https://img.shields.io/badge/Python-3.13%2B-blue?style=flat-square)](https://www.python.org)
@@ -52,23 +52,7 @@ Record your voice and get instant, accurate text transcription.
 - Quickly capturing ideas
 - Accessibility and hands-free computing
 
-### 🔊 Text to Voice (Text-to-Speech)
-
-Listen to articles, documents, and web pages in natural, high-quality voices.
-
-- **Read Websites**: Paste any URL and listen
-- **Read Browser Tabs**: Automatically detect Chrome, Edge, Firefox tabs
-- **Playback Controls**: Pause, resume, adjust speed
-- **Save Sessions**: Pick up where you left off
-
-**Perfect for:**
-
-- Multitasking while consuming content
-- Accessibility (screen reading)
-- Learning by listening
-- Reducing screen time
-
-### 🖥️ Modern Desktop Experience
+### ️ Modern Desktop Experience
 
 - **Light Theme**: Clean, professional Windows 11 native look
 - **System Tray**: Minimize to tray, always accessible
@@ -83,11 +67,6 @@ Listen to articles, documents, and web pages in natural, high-quality voices.
 | ---------------- | -------------------------- |
 | `Ctrl+Alt+Space` | Start/stop voice recording |
 | `Esc`            | Cancel recording           |
-| During playback: |                            |
-| `Space`          | Pause/resume               |
-| `q`              | Stop playback              |
-| `←` / `→`        | Skip backward/forward      |
-| `↑` / `↓`        | Adjust speed               |
 
 **Tip**: Customize the hotkey in Settings → Hotkey Configuration
 
@@ -95,19 +74,10 @@ Listen to articles, documents, and web pages in natural, high-quality voices.
 
 ## 📖 How It Works
 
-### Voice Input (STT)
-
 1. Press your hotkey (`Ctrl+Alt+Space` by default)
 2. Speak clearly—recording starts automatically
 3. Stop speaking for 2 seconds to finish
 4. Text appears at your cursor immediately
-
-### Reading Aloud (TTS)
-
-1. Copy a website URL
-2. Run `vox read --url <URL>` in terminal
-3. Listen with natural voice synthesis
-4. Control playback with keyboard shortcuts
 
 ---
 
@@ -120,34 +90,7 @@ Listen to articles, documents, and web pages in natural, high-quality voices.
 - ✅ No telemetry or tracking
 - ✅ Open-source—audit the code yourself
 
-Vox uses:
-
-- **Whisper** (OpenAI) for speech recognition
-- **Piper TTS** for voice synthesis
-
-Both run entirely on your computer.
-
----
-
-## 🛠️ Command Line (Advanced)
-
-While Vox is primarily a GUI app, power users can access CLI commands:
-
-```bash
-# Transcribe voice to file
-vox --cli transcribe --output notes.txt
-
-# Read a website aloud
-vox --cli read --url https://example.com
-
-# List saved reading sessions
-vox --cli list-sessions
-
-# Resume a session
-vox --cli resume <session-id>
-```
-
-Run `vox --cli --help` for full command reference.
+Vox uses **Whisper** (OpenAI) for speech recognition—running entirely on your computer.
 
 ---
 
@@ -220,7 +163,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 Built with:
 
 - [Whisper](https://github.com/openai/whisper) - Speech recognition by OpenAI
-- [Piper TTS](https://github.com/rhasspy/piper) - Neural text-to-speech
 - [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap) - Modern UI toolkit
 
 ---
