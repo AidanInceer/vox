@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -54,7 +54,7 @@ jobs:
       
       - name: Archive coverage reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: htmlcov/
@@ -69,7 +69,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       
@@ -83,7 +83,7 @@ jobs:
         run: ruff format --check src/ tests/
 
   build:
-    name: Build
+    name: Build & Test EXE
     runs-on: windows-latest
     needs: [tests, lint-only]
     if: success()
@@ -93,19 +93,33 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       
       - name: Install build tools
-        run: pip install build
+        run: |
+          pip install -e .[dev]
+          pip install pyinstaller
       
-      - name: Build distribution
-        run: python -m build
+      - name: Build executable
+        run: python scripts/build_exe.py
+      
+      - name: Verify executable
+        run: |
+          if (Test-Path "dist/vox.exe") {
+            Write-Output "✅ Executable built successfully"
+            $size = (Get-Item "dist/vox.exe").Length / 1MB
+            Write-Output "📦 File size: $([math]::Round($size, 2)) MB"
+          } else {
+            Write-Error "❌ Executable not found"
+            exit 1
+          }
+        shell: pwsh
       
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: distributions
-          path: dist/
-          retention-days: 30
+          name: vox-exe-${{ github.sha }}
+          path: dist/vox.exe
+          retention-days: 7

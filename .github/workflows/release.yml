@@ -12,39 +12,6 @@ on:
         type: string
 
 jobs:
-  build-pypi:
-    name: Build PyPI Package
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-          
-      - name: Install build dependencies
-        run: |
-          pip install build twine
-          
-      - name: Build package
-        run: |
-          python -m build
-          
-      - name: Check package
-        run: |
-          twine check dist/*
-          
-      - name: Upload PyPI artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: pypi-dist
-          path: dist/
-          
   build-exe:
     name: Build Windows Executable
     runs-on: windows-latest
@@ -67,17 +34,17 @@ jobs:
           
       - name: Build executable
         run: |
-          python build_exe.py
+          python scripts/build_exe.py
         shell: pwsh
         
-      - name: Test executable
+      - name: Verify executable exists
         run: |
           if (Test-Path "dist/vox.exe") {
-            Write-Output "Executable built successfully"
-            # Test exe help command
-            & "dist/vox.exe" --help
+            Write-Output "✅ Executable built successfully"
+            $size = (Get-Item "dist/vox.exe").Length / 1MB
+            Write-Output "📦 File size: $([math]::Round($size, 2)) MB"
           } else {
-            Write-Error "Executable not found at dist/vox.exe"
+            Write-Error "❌ Executable not found at dist/vox.exe"
             exit 1
           }
         shell: pwsh
@@ -88,30 +55,9 @@ jobs:
           name: windows-exe
           path: dist/vox.exe
           
-  publish-pypi:
-    name: Publish to PyPI
-    needs: [build-pypi, build-exe]
-    runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      id-token: write
-      
-    steps:
-      - name: Download PyPI artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: pypi-dist
-          path: dist/
-          
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          skip-existing: true
-          verbose: true
-          
   publish-release:
     name: Create GitHub Release
-    needs: [build-pypi, build-exe]
+    needs: [build-exe]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -122,17 +68,11 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Download PyPI artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: pypi-dist
-          path: dist-pypi/
-          
       - name: Download exe artifact
         uses: actions/download-artifact@v4
         with:
           name: windows-exe
-          path: dist-exe/
+          path: dist/
           
       - name: Get release tag
         id: tag
@@ -162,26 +102,24 @@ jobs:
           # Save to file for multiline output
           echo "$CHANGELOG" > /tmp/changelog.txt
           
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          name: Release ${{ steps.tag.outputs.tag }}
+          name: Vox ${{ steps.tag.outputs.tag }}
           body_path: /tmp/changelog.txt
           draft: false
           prerelease: ${{ contains(steps.tag.outputs.tag, 'alpha') || contains(steps.tag.outputs.tag, 'beta') || contains(steps.tag.outputs.tag, 'rc') }}
           files: |
-            dist-pypi/*
-            dist-exe/vox.exe
+            dist/vox.exe
           
   notify-success:
     name: Notify Success
-    needs: [publish-pypi, publish-release]
+    needs: [publish-release]
     runs-on: ubuntu-latest
     
     steps:
       - name: Success notification
         run: |
           echo "✅ Release completed successfully!"
-          echo "PyPI: https://pypi.org/project/vox/"
-          echo "GitHub: ${{ github.server_url }}/${{ github.repository }}/releases"
+          echo "📦 Download: ${{ github.server_url }}/${{ github.repository }}/releases"

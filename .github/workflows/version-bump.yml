@@ -27,6 +27,10 @@ jobs:
     permissions:
       contents: write
       
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      bumped: ${{ steps.version.outputs.bumped }}
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -76,47 +80,119 @@ jobs:
           cz bump --increment ${{ github.event.inputs.bump_type }} --yes --changelog
           
       - name: Get new version
-        if: env.SKIP_BUMP == 'false' || github.event_name == 'workflow_dispatch'
         id: version
         run: |
-          NEW_VERSION=$(cz version -p)
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version: $NEW_VERSION"
+          if [ "${{ env.SKIP_BUMP }}" == "true" ]; then
+            echo "bumped=false" >> $GITHUB_OUTPUT
+          else
+            NEW_VERSION=$(cz version -p)
+            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "bumped=true" >> $GITHUB_OUTPUT
+            echo "New version: $NEW_VERSION"
+          fi
           
-      - name: Push changes
-        if: env.SKIP_BUMP == 'false' || github.event_name == 'workflow_dispatch'
+      - name: Push changes and tags
+        if: steps.version.outputs.bumped == 'true'
         run: |
           git push origin main --follow-tags
           
-      - name: Create Release
-        if: env.SKIP_BUMP == 'false' || github.event_name == 'workflow_dispatch'
-        uses: actions/github-script@v7
+  build-exe:
+    name: Build Windows Executable
+    needs: [bump-version]
+    if: needs.bump-version.outputs.bumped == 'true'
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          script: |
-            const fs = require('fs');
-            const version = '${{ steps.version.outputs.version }}';
+          ref: v${{ needs.bump-version.outputs.version }}
+          fetch-depth: 0
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install dependencies
+        run: |
+          pip install -e .[dev]
+          pip install pyinstaller
+          
+      - name: Build executable
+        run: |
+          python scripts/build_exe.py
+        shell: pwsh
+        
+      - name: Verify executable exists
+        run: |
+          if (Test-Path "dist/vox.exe") {
+            Write-Output "✅ Executable built successfully"
+            $size = (Get-Item "dist/vox.exe").Length / 1MB
+            Write-Output "📦 File size: $([math]::Round($size, 2)) MB"
+          } else {
+            Write-Error "❌ Executable not found at dist/vox.exe"
+            exit 1
+          }
+        shell: pwsh
+        
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: dist/vox.exe
+          
+  create-release:
+    name: Create GitHub Release
+    needs: [bump-version, build-exe]
+    if: needs.bump-version.outputs.bumped == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.bump-version.outputs.version }}
+          fetch-depth: 0
+          
+      - name: Download exe artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-exe
+          path: dist/
+          
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.bump-version.outputs.version }}"
+          
+          # Extract the changelog section for this version
+          if [ -f CHANGELOG.md ]; then
+            CHANGELOG=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$ d')
+            if [ -z "$CHANGELOG" ]; then
+              CHANGELOG="See [CHANGELOG.md](CHANGELOG.md) for details."
+            fi
+          else
+            CHANGELOG="Release v$VERSION"
+          fi
+          
+          # Save to file for multiline output
+          echo "$CHANGELOG" > /tmp/changelog.txt
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.bump-version.outputs.version }}
+          name: Vox v${{ needs.bump-version.outputs.version }}
+          body_path: /tmp/changelog.txt
+          draft: false
+          prerelease: ${{ contains(needs.bump-version.outputs.version, 'alpha') || contains(needs.bump-version.outputs.version, 'beta') || contains(needs.bump-version.outputs.version, 'rc') }}
+          files: |
+            dist/vox.exe
             
-            // Extract changelog section for this version
-            let changelog = '';
-            try {
-              const changelogContent = fs.readFileSync('CHANGELOG.md', 'utf8');
-              const versionSection = changelogContent.match(new RegExp(`## \\[${version}\\].*?(?=## \\[|$)`, 's'));
-              if (versionSection) {
-                changelog = versionSection[0];
-              } else {
-                changelog = 'See CHANGELOG.md for details.';
-              }
-            } catch (error) {
-              console.log('Could not read changelog:', error);
-              changelog = 'See CHANGELOG.md for details.';
-            }
-            
-            await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${version}`,
-              name: `Release v${version}`,
-              body: changelog,
-              draft: false,
-              prerelease: version.includes('alpha') || version.includes('beta') || version.includes('rc')
-            });
+      - name: Success notification
+        run: |
+          echo "✅ Release v${{ needs.bump-version.outputs.version }} created successfully!"
+          echo "📦 Download: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.bump-version.outputs.version }}"
