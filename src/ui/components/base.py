@@ -57,11 +57,7 @@ class BaseTabComponent:
         _frame: The root frame of this component.
     """
 
-    def __init__(
-        self,
-        parent: ttk.Frame,
-        on_action: ActionCallback | None = None
-    ) -> None:
+    def __init__(self, parent: ttk.Frame, on_action: ActionCallback | None = None) -> None:
         """Initialize the tab component.
 
         Args:

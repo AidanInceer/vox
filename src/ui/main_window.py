@@ -100,9 +100,7 @@ class VoxMainWindow:
         self._system_tray: Optional[SystemTrayManager] = None
 
         # Tray behavior: True = minimize to tray on close, False = exit
-        self._minimize_to_tray_on_close = database.get_setting(
-            "minimize_to_tray", True
-        )
+        self._minimize_to_tray_on_close = database.get_setting("minimize_to_tray", True)
 
         # Hotkey capture state
         self._is_capturing_hotkey = False
@@ -167,7 +165,9 @@ class VoxMainWindow:
 
         # Status display
         status_frame = ttk.LabelFrame(frame, text="Current Status")
-        status_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        status_frame.pack(
+            fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"]
+        )
 
         self._status_label = ttk.Label(
             status_frame,
@@ -179,9 +179,13 @@ class VoxMainWindow:
 
         # Hotkey display
         hotkey_frame = ttk.LabelFrame(frame, text="Activation Hotkey")
-        hotkey_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        hotkey_frame.pack(
+            fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"]
+        )
 
-        current_hotkey = self._database.get_setting("hotkey", "<ctrl>+<alt>+space") or "<ctrl>+<alt>+space"
+        current_hotkey = (
+            self._database.get_setting("hotkey", "<ctrl>+<alt>+space") or "<ctrl>+<alt>+space"
+        )
         self._hotkey_display = ttk.Label(
             hotkey_frame,
             text=self._format_hotkey_display(current_hotkey),
@@ -217,7 +221,9 @@ class VoxMainWindow:
 
         # Hotkey configuration section
         hotkey_frame = ttk.LabelFrame(frame, text="Hotkey Configuration")
-        hotkey_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        hotkey_frame.pack(
+            fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"]
+        )
 
         # Current hotkey
         current_label = ttk.Label(hotkey_frame, text="Current Hotkey:", font=FONTS["body"])
@@ -231,7 +237,9 @@ class VoxMainWindow:
             font=FONTS["mono"],
             width=30,
         )
-        self._settings_hotkey_entry.grid(row=0, column=1, padx=PADDING["medium"], pady=PADDING["small"])
+        self._settings_hotkey_entry.grid(
+            row=0, column=1, padx=PADDING["medium"], pady=PADDING["small"]
+        )
 
         # Capture hotkey button
         capture_btn = ttk.Button(
@@ -245,7 +253,9 @@ class VoxMainWindow:
 
         # Clipboard settings section
         clipboard_frame = ttk.LabelFrame(frame, text="Clipboard Options")
-        clipboard_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        clipboard_frame.pack(
+            fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"]
+        )
 
         restore_setting = self._database.get_setting("restore_clipboard", "true")
         self._restore_clipboard_var = ttk.BooleanVar(value=restore_setting == "true")
@@ -410,7 +420,9 @@ class VoxMainWindow:
         def show_error():
             self._status_bar_label.configure(text=f"⚠️ {message}", bootstyle="danger")
             # Reset status after 5 seconds
-            self._root.after(5000, lambda: self._status_bar_label.configure(text="Ready", bootstyle="secondary"))
+            self._root.after(
+                5000, lambda: self._status_bar_label.configure(text="Ready", bootstyle="secondary")
+            )
 
         self._root.after(0, show_error)
         logger.warning(f"Error toast: {message}")
@@ -436,9 +448,13 @@ class VoxMainWindow:
 
         # Update record button state
         if state == AppState.IDLE:
-            self._root.after(0, lambda: self._record_btn.configure(text="Start Recording", state=NORMAL))
+            self._root.after(
+                0, lambda: self._record_btn.configure(text="Start Recording", state=NORMAL)
+            )
         elif state == AppState.RECORDING:
-            self._root.after(0, lambda: self._record_btn.configure(text="Stop Recording", state=NORMAL))
+            self._root.after(
+                0, lambda: self._record_btn.configure(text="Stop Recording", state=NORMAL)
+            )
         else:
             self._root.after(0, lambda: self._record_btn.configure(state=DISABLED))
 
@@ -494,7 +510,9 @@ class VoxMainWindow:
         # Update UI to show we're capturing
         self._settings_hotkey_entry.configure(state=DISABLED)
         self._settings_hotkey_var.set("Press keys... (Enter to confirm, Esc to cancel)")
-        self._status_bar_label.configure(text="Press your hotkey combination, then Enter to confirm")
+        self._status_bar_label.configure(
+            text="Press your hotkey combination, then Enter to confirm"
+        )
 
         # Start keyboard listener
         self._keyboard_listener = keyboard.Listener(
@@ -632,14 +650,22 @@ class VoxMainWindow:
 
             if not modifiers:
                 # Must have at least one modifier
-                self._status_bar_label.configure(text="Hotkey must include a modifier (Ctrl, Alt, Shift)")
+                self._status_bar_label.configure(
+                    text="Hotkey must include a modifier (Ctrl, Alt, Shift)"
+                )
                 # Restore previous value
-                current = self._database.get_setting("hotkey", "<ctrl>+<alt>+space") or "<ctrl>+<alt>+space"
+                current = (
+                    self._database.get_setting("hotkey", "<ctrl>+<alt>+space")
+                    or "<ctrl>+<alt>+space"
+                )
                 self._settings_hotkey_var.set(current)
             elif not others:
                 # Must have at least one non-modifier key
                 self._status_bar_label.configure(text="Hotkey must include a non-modifier key")
-                current = self._database.get_setting("hotkey", "<ctrl>+<alt>+space") or "<ctrl>+<alt>+space"
+                current = (
+                    self._database.get_setting("hotkey", "<ctrl>+<alt>+space")
+                    or "<ctrl>+<alt>+space"
+                )
                 self._settings_hotkey_var.set(current)
             else:
                 # Valid hotkey
@@ -649,7 +675,9 @@ class VoxMainWindow:
                 logger.info(f"Captured hotkey: {hotkey}")
         else:
             # Cancelled or empty - restore previous value
-            current = self._database.get_setting("hotkey", "<ctrl>+<alt>+space") or "<ctrl>+<alt>+space"
+            current = (
+                self._database.get_setting("hotkey", "<ctrl>+<alt>+space") or "<ctrl>+<alt>+space"
+            )
             self._settings_hotkey_var.set(current)
             self._status_bar_label.configure(text="Hotkey capture cancelled")
 
@@ -826,8 +854,7 @@ class VoxMainWindow:
             self.hide()
             if self._system_tray:
                 self._system_tray.show_notification(
-                    "Vox",
-                    "Application minimized to tray. Use hotkey or tray icon to restore."
+                    "Vox", "Application minimized to tray. Use hotkey or tray icon to restore."
                 )
             return
 

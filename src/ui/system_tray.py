@@ -162,6 +162,7 @@ class SystemTrayManager:
 
         # Draw a simple "V" shape in white
         from PIL import ImageDraw
+
         draw = ImageDraw.Draw(image)
 
         # V shape points

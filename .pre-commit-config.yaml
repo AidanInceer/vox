@@ -3,70 +3,79 @@
 # Install with: pre-commit install
 # Manual run: pre-commit run --all-files
 
-default_stages: [commit]
+default_stages: [pre-commit]
 fail_fast: false
 
 repos:
   # Ruff: Fast Python linter and formatter (replaces black, isort, flake8, etc.)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.14.13
     hooks:
       # Auto-format code (runs first to fix style issues)
       - id: ruff-format
         name: ruff format
         description: Format Python code with ruff
         args: [--line-length=100]
-        stages: [commit]
-      
+        stages: [pre-commit]
+
       # Lint code (after formatting, catches logical issues)
       - id: ruff
         name: ruff lint
         description: Lint Python code with ruff
         args: [--line-length=100, --fix]
-        stages: [commit]
+        stages: [pre-commit]
 
   # Trailing whitespace and end-of-file-fixer
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         name: Trim trailing whitespace
         description: Remove trailing whitespace
-      
+
       - id: end-of-file-fixer
         name: Fix end of file
         description: Ensure files end with a newline
-      
+
       - id: check-yaml
         name: Check YAML
         description: Validate YAML syntax
         args: [--unsafe]
-      
+
       - id: check-json
         name: Check JSON
         description: Validate JSON syntax
-      
+
       - id: check-merge-conflict
         name: Check for merge conflicts
         description: Detect merge conflict markers
-      
+
       - id: debug-statements
         name: Debug statements
         description: Detect debugger imports and calls
-      
+
       - id: mixed-line-ending
         name: Fix mixed line ending
         description: Normalize line endings
 
   # YAML formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.0
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
         name: Prettier (YAML/Markdown)
         description: Format YAML and Markdown with Prettier
         types_or: [yaml, markdown]
         exclude: '^(\.github/|\.specify/)'
+
+  # Commitizen: Enforce conventional commits
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.12.0
+    hooks:
+      - id: commitizen
+        name: Commitizen check
+        description: Check commit message follows conventional commits format
+        stages: [commit-msg]
 
 # Files to exclude from all hooks
 exclude: |
@@ -90,14 +99,14 @@ exclude: |
 ci:
   autofix_commit_msg: |
     ci: auto-format code with pre-commit hooks
-    
+
     - ruff format: auto-format Python code
     - ruff lint: auto-fix linting issues
     - trailing-whitespace: remove trailing whitespace
     - end-of-file-fixer: ensure files end with newline
   autofix_prs: true
-  autoupdate_branch: ''
-  autoupdate_commit_msg: 'ci: update pre-commit hooks to latest versions'
+  autoupdate_branch: ""
+  autoupdate_commit_msg: "ci: update pre-commit hooks to latest versions"
   autoupdate_schedule: weekly
   skip: []
   submodules: false

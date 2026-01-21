@@ -28,11 +28,7 @@ class ValidationMixin:
         return True
 
     def validate_in_range(
-        self,
-        value: float,
-        min_val: float,
-        max_val: float,
-        field_name: str
+        self, value: float, min_val: float, max_val: float, field_name: str
     ) -> bool:
         """Validate that a numeric value is within range.
 
@@ -46,9 +42,7 @@ class ValidationMixin:
             True if valid, False otherwise.
         """
         if value < min_val or value > max_val:
-            self._show_validation_error(
-                f"{field_name} must be between {min_val} and {max_val}"
-            )
+            self._show_validation_error(f"{field_name} must be between {min_val} and {max_val}")
             return False
         return True
 
