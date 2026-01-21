@@ -1,6 +1,5 @@
 """Unit tests for content filter module."""
 
-import pytest
 from bs4 import BeautifulSoup
 
 from src.extraction.content_filter import (

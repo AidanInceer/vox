@@ -4,8 +4,10 @@ These tests verify text-to-speech synthesis capability using Piper
 neural TTS engine with various text inputs and configurations.
 """
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from src.tts.synthesizer import PiperSynthesizer
 from src.utils.errors import TTSError, ValidationError
 
@@ -15,188 +17,191 @@ class TestTTSSynthesis:
 
     def test_synthesize_basic_text(self):
         """Convert simple text to audio bytes."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
             # Mock Piper to return audio bytes
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "Hello, world!"
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert isinstance(audio_bytes, bytes)
             assert len(audio_bytes) > 0
 
     def test_synthesize_long_text(self):
         """Synthesize text with over 1000 characters."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
             # Mock Piper to return audio bytes
-            mock_piper.return_value = b'WAV_AUDIO_DATA_LONG'
-            
+            mock_piper.return_value = b"WAV_AUDIO_DATA_LONG"
+
             synthesizer = PiperSynthesizer()
-            
+
             # Create a long text (simulating a paragraph)
-            long_text = " ".join([
-                "This is a test sentence that will be repeated multiple times.",
-            ] * 50)
-            
+            long_text = " ".join(
+                [
+                    "This is a test sentence that will be repeated multiple times.",
+                ]
+                * 50
+            )
+
             assert len(long_text) > 1000
-            
+
             audio_bytes = synthesizer.synthesize(long_text)
-            
+
             assert audio_bytes is not None
             assert isinstance(audio_bytes, bytes)
             assert len(audio_bytes) > 0
 
     def test_synthesize_multiple_speeds(self):
         """Verify speed parameter affects audio output."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
             # Return different sized audio for different speeds
             def side_effect(text, voice, speed):
                 # Simulate slower speed = longer audio
-                base = b'WAV_' * 10
+                base = b"WAV_" * 10
                 multiplier = int(2.0 / speed)  # Slower (lower speed) = more bytes
                 return base * multiplier
-            
+
             mock_piper.side_effect = side_effect
-            
+
             synthesizer = PiperSynthesizer()
             text = "Test sentence for speed variation"
-            
+
             # Synthesize at different speeds
             audio_slow = synthesizer.synthesize(text, speed=0.8)
             audio_normal = synthesizer.synthesize(text, speed=1.0)
             audio_fast = synthesizer.synthesize(text, speed=1.5)
-            
+
             # All should produce audio
             assert audio_slow is not None and len(audio_slow) > 0
             assert audio_normal is not None and len(audio_normal) > 0
             assert audio_fast is not None and len(audio_fast) > 0
-            
+
             # Slower audio should generally be longer (more bytes)
             assert len(audio_slow) > len(audio_fast)
 
     def test_synthesize_with_default_voice(self):
         """Synthesize using default voice."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "Default voice test"
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_with_different_voices(self):
         """Synthesize with different voice models."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "Voice comparison test"
-            
+
             # Get available voices
             voices = synthesizer.get_voices()
             assert len(voices) > 0
-            
+
             # Synthesize with first voice
             voice = voices[0]
             synthesizer.set_voice(voice)
-            
+
             audio_bytes = synthesizer.synthesize(text)
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_uppercase_text(self):
         """Handle uppercase text correctly."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "THIS IS ALL UPPERCASE TEXT"
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_mixed_case_text(self):
         """Handle mixed case text."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "ThE QuIcK bRoWn FoX"
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_with_numbers(self):
         """Handle text containing numbers."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "The year is 2026 and it is 15 degrees"
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_with_punctuation(self):
         """Handle text with various punctuation."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "What? Really! Yes, I'm sure. (Absolutely!)"
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_with_special_characters(self):
         """Handle special characters and symbols."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "Email: test@example.com. Price: $19.99. Symbol: © 2026"
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_unicode_text(self):
         """Handle Unicode characters."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
-            
+
             # Test with accented characters
             text = "Café with naïve résumé"
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
     def test_synthesize_with_emojis(self):
         """Handle emoji characters gracefully."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "Party time 🎉 Celebration 🎊"
-            
+
             # Should either synthesize successfully or raise validation error
             try:
                 audio_bytes = synthesizer.synthesize(text)
@@ -207,16 +212,16 @@ class TestTTSSynthesis:
 
     def test_synthesize_multiline_text(self):
         """Handle text with multiple lines."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = """Line one
         Line two
         Line three"""
-            
+
             audio_bytes = synthesizer.synthesize(text)
-            
+
             assert audio_bytes is not None
             assert len(audio_bytes) > 0
 
@@ -227,7 +232,7 @@ class TestTTSSynthesisErrors:
     def test_synthesize_empty_text(self):
         """Handle empty text gracefully."""
         synthesizer = PiperSynthesizer()
-        
+
         # Should either return empty audio or raise validation error
         try:
             audio_bytes = synthesizer.synthesize("")
@@ -240,7 +245,7 @@ class TestTTSSynthesisErrors:
     def test_synthesize_none_input(self):
         """Reject None input."""
         synthesizer = PiperSynthesizer()
-        
+
         with pytest.raises((TTSError, TypeError)):
             synthesizer.synthesize(None)
 
@@ -248,14 +253,14 @@ class TestTTSSynthesisErrors:
         """Reject invalid speed values."""
         synthesizer = PiperSynthesizer()
         text = "Test"
-        
+
         # Test with invalid speeds
         with pytest.raises(TTSError):
             synthesizer.synthesize(text, speed=0)  # Too slow
-        
+
         with pytest.raises(TTSError):
             synthesizer.synthesize(text, speed=-1)  # Negative
-        
+
         with pytest.raises(TTSError):
             synthesizer.synthesize(text, speed=10)  # Too fast
 
@@ -263,7 +268,7 @@ class TestTTSSynthesisErrors:
         """get_voices should return list of available voices."""
         synthesizer = PiperSynthesizer()
         voices = synthesizer.get_voices()
-        
+
         assert isinstance(voices, list)
         assert len(voices) > 0
 
@@ -271,7 +276,7 @@ class TestTTSSynthesisErrors:
         """Set voice with valid voice name."""
         synthesizer = PiperSynthesizer()
         voices = synthesizer.get_voices()
-        
+
         if len(voices) > 0:
             synthesizer.set_voice(voices[0])
             # Should not raise
@@ -279,7 +284,7 @@ class TestTTSSynthesisErrors:
     def test_set_voice_with_invalid_voice(self):
         """Reject invalid voice names."""
         synthesizer = PiperSynthesizer()
-        
+
         with pytest.raises(TTSError):
             synthesizer.set_voice("nonexistent_voice_xyz")
 
@@ -290,42 +295,42 @@ class TestTTSSynthesizerInterface:
     def test_synthesizer_has_synthesize_method(self):
         """Synthesizer should have synthesize method."""
         synthesizer = PiperSynthesizer()
-        assert hasattr(synthesizer, 'synthesize')
+        assert hasattr(synthesizer, "synthesize")
         assert callable(synthesizer.synthesize)
 
     def test_synthesizer_has_get_voices_method(self):
         """Synthesizer should have get_voices method."""
         synthesizer = PiperSynthesizer()
-        assert hasattr(synthesizer, 'get_voices')
+        assert hasattr(synthesizer, "get_voices")
         assert callable(synthesizer.get_voices)
 
     def test_synthesizer_has_set_voice_method(self):
         """Synthesizer should have set_voice method."""
         synthesizer = PiperSynthesizer()
-        assert hasattr(synthesizer, 'set_voice')
+        assert hasattr(synthesizer, "set_voice")
         assert callable(synthesizer.set_voice)
 
     def test_synthesizer_has_is_available_method(self):
         """Synthesizer should have is_available method."""
         synthesizer = PiperSynthesizer()
-        assert hasattr(synthesizer, 'is_available')
+        assert hasattr(synthesizer, "is_available")
         assert callable(synthesizer.is_available)
 
     def test_is_available_returns_boolean(self):
         """is_available should return boolean."""
         synthesizer = PiperSynthesizer()
         available = synthesizer.is_available()
-        
+
         assert isinstance(available, bool)
 
     def test_synthesize_returns_bytes(self):
         """synthesize always returns bytes."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             result = synthesizer.synthesize("test")
-            
+
             assert isinstance(result, bytes)
 
 
@@ -334,15 +339,15 @@ class TestTTSCaching:
 
     def test_synthesize_same_text_twice(self):
         """Synthesizing same text twice produces same audio."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
-            mock_piper.return_value = b'WAV_AUDIO_DATA'
-            
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
+            mock_piper.return_value = b"WAV_AUDIO_DATA"
+
             synthesizer = PiperSynthesizer()
             text = "Same text test"
-            
+
             audio1 = synthesizer.synthesize(text)
             audio2 = synthesizer.synthesize(text)
-            
+
             # Both should be audio bytes
             assert audio1 is not None
             assert audio2 is not None
@@ -351,18 +356,18 @@ class TestTTSCaching:
 
     def test_synthesize_different_text_produces_different_audio(self):
         """Different text produces different audio output."""
-        with patch('src.tts.synthesizer.synthesize_piper') as mock_piper:
+        with patch("src.tts.synthesizer.synthesize_piper") as mock_piper:
             # Return different audio based on input text
             def mock_synthesis(text, voice, speed):
                 return f"AUDIO_FOR_{text}".encode()
-            
+
             mock_piper.side_effect = mock_synthesis
-            
+
             synthesizer = PiperSynthesizer()
-            
+
             audio1 = synthesizer.synthesize("First text")
             audio2 = synthesizer.synthesize("Second text")
-            
+
             assert audio1 is not None
             assert audio2 is not None
             # Should be different audio data

@@ -8,9 +8,8 @@ This module tests the ChunkSynthesizer class which handles:
 - On-demand synthesis
 """
 
-import threading
 import time
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -187,7 +186,8 @@ class TestChunkSynthesizerBackgroundSynthesis:
 
         # At least some chunks should be in progress or completed
         synthesized_count = sum(
-            1 for chunk in chunker.chunks[1:]
+            1
+            for chunk in chunker.chunks[1:]
             if chunk.synthesis_status in (SynthesisStatus.IN_PROGRESS, SynthesisStatus.COMPLETED)
         )
         assert synthesized_count > 0
@@ -476,7 +476,5 @@ class TestChunkSynthesizerErrorHandling:
         # First chunk should be completed, second should be failed
         assert chunker.chunks[0].synthesis_status == SynthesisStatus.COMPLETED
         # Some other chunks may be completed or in progress
-        completed_count = sum(
-            1 for chunk in chunker.chunks if chunk.synthesis_status == SynthesisStatus.COMPLETED
-        )
+        completed_count = sum(1 for chunk in chunker.chunks if chunk.synthesis_status == SynthesisStatus.COMPLETED)
         assert completed_count > 0

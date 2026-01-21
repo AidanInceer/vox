@@ -1,10 +1,9 @@
 """Unit tests for file loader module."""
 
-import pytest
-from unittest.mock import Mock, patch, mock_open
-from pathlib import Path
-import tempfile
 import os
+import tempfile
+
+import pytest
 
 from src.extraction.file_loader import load_file
 from src.utils.errors import FileLoadError

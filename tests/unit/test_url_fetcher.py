@@ -1,8 +1,9 @@
 """Unit tests for URL fetcher module."""
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from requests.exceptions import Timeout, ConnectionError
+from requests.exceptions import ConnectionError, Timeout
 
 from src.extraction.url_fetcher import fetch_url
 from src.utils.errors import URLFetchError
@@ -121,7 +122,7 @@ class TestURLFetcher:
         """Test that 401 Unauthorized is handled."""
         mock_response = Mock()
         mock_response.status_code = 401
-        mock_response.text = '<html><body>Unauthorized</body></html>'
+        mock_response.text = "<html><body>Unauthorized</body></html>"
         mock_response.encoding = "utf-8"
 
         with patch("src.extraction.url_fetcher.requests.get") as mock_get:

@@ -6,16 +6,17 @@ Tests cover:
 - Show/hide/destroy lifecycle
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
 
 from src.ui.indicator import (
-    RecordingIndicator,
-    STATE_COLORS,
-    DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
+    DEFAULT_WIDTH,
+    STATE_COLORS,
     SUCCESS_AUTO_HIDE_MS,
     TASKBAR_HEIGHT,
+    RecordingIndicator,
 )
 
 

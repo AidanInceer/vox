@@ -1,47 +1,46 @@
 """Tests for configuration module."""
 
-import pytest
 from src.config import (
+    APP_DESCRIPTION,
     # App metadata
     APP_NAME,
     APP_VERSION,
-    APP_DESCRIPTION,
-    # TTS Settings
-    DEFAULT_TTS_PROVIDER,
-    DEFAULT_TTS_VOICE,
-    DEFAULT_TTS_SPEED,
-    TTS_CACHE_ENABLED,
-    TTS_CACHE_TTL_HOURS,
-    # Browser Settings
-    SUPPORTED_BROWSERS,
+    AUDIO_DEVICE_INDEX,
     BROWSER_TAB_DETECTION_TIMEOUT,
     BROWSER_WINDOW_CLASS_NAMES,
-    # Extraction Settings
-    TEXT_EXTRACTION_TIMEOUT,
-    MIN_TEXT_LENGTH,
-    MAX_TEXT_LENGTH,
-    # Playback Settings
-    DEFAULT_PLAYBACK_VOLUME,
-    MIN_PLAYBACK_SPEED,
-    MAX_PLAYBACK_SPEED,
-    AUDIO_DEVICE_INDEX,
-    # Performance Settings
-    PERFORMANCE_TARGETS,
-    # Memory Settings
-    MAX_MEMORY_MB,
-    MAX_CACHE_SIZE_MB,
-    # Logging Settings
-    LOG_LEVEL,
-    LOG_FORMAT,
-    LOG_FILE_SIZE_MB,
-    LOG_BACKUP_COUNT,
-    # Feature Flags
-    ENABLE_SESSION_PERSISTENCE,
-    ENABLE_CACHE,
-    ENABLE_ERROR_REPORTING,
     # Development
     DEBUG,
+    # Playback Settings
+    DEFAULT_PLAYBACK_VOLUME,
+    # TTS Settings
+    DEFAULT_TTS_PROVIDER,
+    DEFAULT_TTS_SPEED,
+    DEFAULT_TTS_VOICE,
+    ENABLE_CACHE,
+    ENABLE_ERROR_REPORTING,
+    # Feature Flags
+    ENABLE_SESSION_PERSISTENCE,
+    LOG_BACKUP_COUNT,
+    LOG_FILE_SIZE_MB,
+    LOG_FORMAT,
+    # Logging Settings
+    LOG_LEVEL,
+    MAX_CACHE_SIZE_MB,
+    # Memory Settings
+    MAX_MEMORY_MB,
+    MAX_PLAYBACK_SPEED,
+    MAX_TEXT_LENGTH,
+    MIN_PLAYBACK_SPEED,
+    MIN_TEXT_LENGTH,
+    # Performance Settings
+    PERFORMANCE_TARGETS,
+    # Browser Settings
+    SUPPORTED_BROWSERS,
     TEST_MODE,
+    # Extraction Settings
+    TEXT_EXTRACTION_TIMEOUT,
+    TTS_CACHE_ENABLED,
+    TTS_CACHE_TTL_HOURS,
 )
 
 
@@ -254,7 +253,4 @@ class TestConfigurationConsistency:
         """At least one browser should be supported."""
         assert len(SUPPORTED_BROWSERS) >= 1
         # Common browsers should be included
-        assert any(
-            b in SUPPORTED_BROWSERS
-            for b in ["chrome", "edge", "firefox"]
-        )
+        assert any(b in SUPPORTED_BROWSERS for b in ["chrome", "edge", "firefox"])

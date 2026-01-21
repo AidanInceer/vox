@@ -159,9 +159,7 @@ class TestHotkeyManagerLifecycle:
         assert manager.is_listening
 
     @patch("src.hotkey.manager.keyboard.Listener")
-    def test_start_raises_when_already_listening(
-        self, mock_listener_class: MagicMock
-    ) -> None:
+    def test_start_raises_when_already_listening(self, mock_listener_class: MagicMock) -> None:
         """start should raise RuntimeError if already listening."""
         manager = HotkeyManager()
         manager.start()
@@ -194,9 +192,7 @@ class TestHotkeyManagerLifecycle:
         assert not manager.is_listening
 
     @patch("src.hotkey.manager.keyboard.Listener")
-    def test_stop_is_safe_to_call_multiple_times(
-        self, mock_listener_class: MagicMock
-    ) -> None:
+    def test_stop_is_safe_to_call_multiple_times(self, mock_listener_class: MagicMock) -> None:
         """stop should be safe to call multiple times."""
         manager = HotkeyManager()
         manager.start()
@@ -214,9 +210,7 @@ class TestHotkeyManagerCallback:
     """Tests for hotkey callback triggering."""
 
     @patch("src.hotkey.manager.keyboard.Listener")
-    def test_callback_invoked_when_hotkey_pressed(
-        self, mock_listener_class: MagicMock
-    ) -> None:
+    def test_callback_invoked_when_hotkey_pressed(self, mock_listener_class: MagicMock) -> None:
         """Callback should be invoked when hotkey combination is pressed."""
         from pynput import keyboard
 
@@ -237,14 +231,13 @@ class TestHotkeyManagerCallback:
 
         # Give thread time to execute callback
         import time
+
         time.sleep(0.1)
 
         callback.assert_called_once()
 
     @patch("src.hotkey.manager.keyboard.Listener")
-    def test_callback_not_invoked_for_partial_match(
-        self, mock_listener_class: MagicMock
-    ) -> None:
+    def test_callback_not_invoked_for_partial_match(self, mock_listener_class: MagicMock) -> None:
         """Callback should not be invoked for partial hotkey match."""
         from pynput import keyboard
 
@@ -260,14 +253,13 @@ class TestHotkeyManagerCallback:
         on_press(keyboard.KeyCode.from_char("a"))
 
         import time
+
         time.sleep(0.1)
 
         callback.assert_not_called()
 
     @patch("src.hotkey.manager.keyboard.Listener")
-    def test_key_release_clears_pressed_keys(
-        self, mock_listener_class: MagicMock
-    ) -> None:
+    def test_key_release_clears_pressed_keys(self, mock_listener_class: MagicMock) -> None:
         """Key release should clear the key from pressed set."""
         from pynput import keyboard
 
@@ -287,6 +279,7 @@ class TestHotkeyManagerCallback:
         on_press(keyboard.KeyCode.from_char("a"))
 
         import time
+
         time.sleep(0.1)
 
         callback.assert_not_called()

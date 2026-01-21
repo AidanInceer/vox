@@ -142,9 +142,7 @@ class TestHistoryItemDisplay:
         record = history[0]
 
         # Truncate logic from _create_history_item
-        text_preview = (
-            record.text[:100] + "..." if len(record.text) > 100 else record.text
-        )
+        text_preview = record.text[:100] + "..." if len(record.text) > 100 else record.text
 
         assert len(text_preview) <= 103  # 100 chars + "..."
         assert text_preview.endswith("...")
@@ -158,9 +156,7 @@ class TestHistoryItemDisplay:
         record = history[0]
 
         # Truncate logic from _create_history_item
-        text_preview = (
-            record.text[:100] + "..." if len(record.text) > 100 else record.text
-        )
+        text_preview = record.text[:100] + "..." if len(record.text) > 100 else record.text
 
         assert text_preview == short_text
         assert not text_preview.endswith("...")

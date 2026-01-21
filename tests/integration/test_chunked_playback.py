@@ -241,8 +241,7 @@ class TestPerformanceChunkTransitions:
 
                 # 95th percentile should be <50ms
                 assert percentile_95 < 50.0, (
-                    f"95th percentile transition time was {percentile_95:.2f}ms, "
-                    f"expected <50ms"
+                    f"95th percentile transition time was {percentile_95:.2f}ms, expected <50ms"
                 )
 
             chunker.stop()

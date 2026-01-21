@@ -113,9 +113,7 @@ class TestErrorRecoveryFlow:
             nonlocal error_count
             error_count += 1
 
-        controller = VoiceInputController(
-            database=self.database, on_error=count_error
-        )
+        controller = VoiceInputController(database=self.database, on_error=count_error)
         controller.start()
 
         # Multiple failed attempts
@@ -142,9 +140,7 @@ class TestErrorRecoveryFlow:
         def bad_callback(msg: str) -> None:
             raise ValueError("Callback error!")
 
-        controller = VoiceInputController(
-            database=self.database, on_error=bad_callback
-        )
+        controller = VoiceInputController(database=self.database, on_error=bad_callback)
         controller.start()
 
         # Should not crash despite callback exception
@@ -183,9 +179,7 @@ class TestErrorIndicatorIntegration:
         mock_indicator = MagicMock()
         mock_indicator.is_visible = False
 
-        controller = VoiceInputController(
-            database=self.database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=self.database, indicator=mock_indicator)
         controller.start()
 
         controller.trigger_recording()
@@ -219,9 +213,7 @@ class TestErrorIndicatorIntegration:
 
         mock_indicator.update_state.side_effect = track_update_state
 
-        controller = VoiceInputController(
-            database=self.database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=self.database, indicator=mock_indicator)
         controller.start()
 
         controller.trigger_recording()
@@ -268,9 +260,7 @@ class TestTranscriptionErrorHandling:
 
         errors: list[str] = []
 
-        controller = VoiceInputController(
-            database=self.database, on_error=lambda e: errors.append(e)
-        )
+        controller = VoiceInputController(database=self.database, on_error=lambda e: errors.append(e))
         controller.start()
 
         # Start and stop recording
@@ -306,16 +296,12 @@ class TestTranscriptionErrorHandling:
         mock_recorder_class.return_value = mock_recorder
 
         mock_stt = MagicMock()
-        mock_stt.transcribe_audio.side_effect = TranscriptionError(
-            "Model failed", error_code="MODEL_ERROR"
-        )
+        mock_stt.transcribe_audio.side_effect = TranscriptionError("Model failed", error_code="MODEL_ERROR")
         mock_stt_class.return_value = mock_stt
 
         errors: list[str] = []
 
-        controller = VoiceInputController(
-            database=self.database, on_error=lambda e: errors.append(e)
-        )
+        controller = VoiceInputController(database=self.database, on_error=lambda e: errors.append(e))
         controller.start()
 
         controller._start_recording()

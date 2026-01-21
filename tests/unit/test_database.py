@@ -6,13 +6,10 @@ Tests cover:
 - Transcription history operations (CRUD)
 """
 
-import pytest
-from pathlib import Path
 from datetime import datetime
-import time
+from pathlib import Path
 
 from src.persistence.database import VoxDatabase, init_default_settings
-from src.persistence.models import TranscriptionRecord, UserSettings
 
 
 class TestVoxDatabaseInit:

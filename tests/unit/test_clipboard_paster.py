@@ -34,9 +34,7 @@ class TestClipboardPasterBasicOperations:
         mock_pyperclip.copy.assert_called_once_with("你好世界 🌍")
 
     @patch("src.clipboard.paster.pyperclip")
-    def test_copy_to_clipboard_handles_empty_string(
-        self, mock_pyperclip: MagicMock
-    ) -> None:
+    def test_copy_to_clipboard_handles_empty_string(self, mock_pyperclip: MagicMock) -> None:
         """copy_to_clipboard should handle empty strings."""
         paster = ClipboardPaster()
         paster.copy_to_clipboard("")
@@ -44,9 +42,7 @@ class TestClipboardPasterBasicOperations:
         mock_pyperclip.copy.assert_called_once_with("")
 
     @patch("src.clipboard.paster.pyperclip")
-    def test_copy_to_clipboard_raises_on_error(
-        self, mock_pyperclip: MagicMock
-    ) -> None:
+    def test_copy_to_clipboard_raises_on_error(self, mock_pyperclip: MagicMock) -> None:
         """copy_to_clipboard should raise PasteError on failure."""
         mock_pyperclip.copy.side_effect = Exception("Clipboard error")
 
@@ -66,9 +62,7 @@ class TestClipboardPasterBasicOperations:
         assert result == "clipboard content"
 
     @patch("src.clipboard.paster.pyperclip")
-    def test_get_clipboard_returns_empty_for_none(
-        self, mock_pyperclip: MagicMock
-    ) -> None:
+    def test_get_clipboard_returns_empty_for_none(self, mock_pyperclip: MagicMock) -> None:
         """get_clipboard should return empty string for None."""
         mock_pyperclip.paste.return_value = None
 
@@ -78,9 +72,7 @@ class TestClipboardPasterBasicOperations:
         assert result == ""
 
     @patch("src.clipboard.paster.pyperclip")
-    def test_get_clipboard_returns_empty_on_error(
-        self, mock_pyperclip: MagicMock
-    ) -> None:
+    def test_get_clipboard_returns_empty_on_error(self, mock_pyperclip: MagicMock) -> None:
         """get_clipboard should return empty string on error."""
         mock_pyperclip.paste.side_effect = Exception("Clipboard error")
 

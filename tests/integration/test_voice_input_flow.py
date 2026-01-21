@@ -70,9 +70,7 @@ def mock_components():
 class TestVoiceInputEndToEnd:
     """Integration tests for the complete voice input flow."""
 
-    def test_complete_voice_input_flow(
-        self, temp_db_path: Path, mock_components: dict
-    ) -> None:
+    def test_complete_voice_input_flow(self, temp_db_path: Path, mock_components: dict) -> None:
         """Test complete flow: hotkey → record → transcribe → paste."""
         from src.persistence.database import VoxDatabase
 
@@ -118,9 +116,7 @@ class TestVoiceInputEndToEnd:
         controller.stop()
         db.close()
 
-    def test_cancel_recording_flow(
-        self, temp_db_path: Path, mock_components: dict
-    ) -> None:
+    def test_cancel_recording_flow(self, temp_db_path: Path, mock_components: dict) -> None:
         """Test cancel flow: hotkey → record → cancel (no transcription)."""
         from src.persistence.database import VoxDatabase
 
@@ -147,9 +143,7 @@ class TestVoiceInputEndToEnd:
         controller.stop()
         db.close()
 
-    def test_hotkey_callback_integration(
-        self, temp_db_path: Path, mock_components: dict
-    ) -> None:
+    def test_hotkey_callback_integration(self, temp_db_path: Path, mock_components: dict) -> None:
         """Test that hotkey callback is properly registered and wired."""
         from src.persistence.database import VoxDatabase
 
@@ -173,9 +167,7 @@ class TestVoiceInputEndToEnd:
         controller.stop()
         db.close()
 
-    def test_settings_persistence(
-        self, temp_db_path: Path, mock_components: dict
-    ) -> None:
+    def test_settings_persistence(self, temp_db_path: Path, mock_components: dict) -> None:
         """Test that settings are loaded and persisted correctly."""
         from src.persistence.database import VoxDatabase
 
@@ -192,9 +184,7 @@ class TestVoiceInputEndToEnd:
         assert hotkey is not None
         db.close()
 
-    def test_hotkey_update_integration(
-        self, temp_db_path: Path, mock_components: dict
-    ) -> None:
+    def test_hotkey_update_integration(self, temp_db_path: Path, mock_components: dict) -> None:
         """Test hotkey update with re-registration."""
         from src.persistence.database import VoxDatabase
 
@@ -220,9 +210,7 @@ class TestVoiceInputEndToEnd:
 class TestVoiceInputErrorRecovery:
     """Tests for error handling and recovery."""
 
-    def test_microphone_error_recovery(
-        self, temp_db_path: Path, mock_components: dict
-    ) -> None:
+    def test_microphone_error_recovery(self, temp_db_path: Path, mock_components: dict) -> None:
         """Test that microphone errors are handled gracefully."""
         from src.persistence.database import VoxDatabase
         from src.utils.errors import MicrophoneError
@@ -238,12 +226,8 @@ class TestVoiceInputErrorRecovery:
         controller.start()
 
         # Make recorder raise error
-        with patch(
-            "src.voice_input.controller.MicrophoneRecorder"
-        ) as mock_recorder_class:
-            mock_recorder_class.side_effect = MicrophoneError(
-                "No microphone", error_code="NO_MIC"
-            )
+        with patch("src.voice_input.controller.MicrophoneRecorder") as mock_recorder_class:
+            mock_recorder_class.side_effect = MicrophoneError("No microphone", error_code="NO_MIC")
 
             controller.trigger_recording()
 
@@ -255,9 +239,7 @@ class TestVoiceInputErrorRecovery:
         controller.stop()
         db.close()
 
-    def test_transcription_error_recovery(
-        self, temp_db_path: Path, mock_components: dict
-    ) -> None:
+    def test_transcription_error_recovery(self, temp_db_path: Path, mock_components: dict) -> None:
         """Test that transcription errors are handled gracefully."""
         from src.persistence.database import VoxDatabase
         from src.utils.errors import TranscriptionError

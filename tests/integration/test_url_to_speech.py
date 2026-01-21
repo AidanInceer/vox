@@ -1,17 +1,16 @@
 """Integration tests for URL and file-based reading workflows."""
 
-import pytest
-from unittest.mock import patch, Mock, MagicMock
-from pathlib import Path
-import tempfile
 import os
+import tempfile
+from unittest.mock import Mock, patch
 
+import pytest
+
+from src.extraction.file_loader import load_file
 from src.extraction.text_extractor import ConcreteTextExtractor
 from src.extraction.url_fetcher import fetch_url
-from src.extraction.file_loader import load_file
 from src.tts.synthesizer import PiperSynthesizer
-from src.tts.playback import AudioPlayback
-from src.utils.errors import URLFetchError, FileLoadError
+from src.utils.errors import FileLoadError, URLFetchError
 
 
 class TestURLToSpeechIntegration:
@@ -79,7 +78,7 @@ class TestURLToSpeechIntegration:
             # Load file
             loaded_content = load_file(tmp_path)
             # Normalize line endings for comparison (Windows uses \r\n)
-            assert loaded_content.replace('\r\n', '\n') == html_content.replace('\r\n', '\n')
+            assert loaded_content.replace("\r\n", "\n") == html_content.replace("\r\n", "\n")
 
             # Extract text
             extractor = ConcreteTextExtractor()

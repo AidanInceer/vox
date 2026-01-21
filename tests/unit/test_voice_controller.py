@@ -159,9 +159,7 @@ class TestVoiceInputControllerStateTransitions:
         """State change callback should be invoked on transitions."""
         state_callback = MagicMock()
 
-        controller = VoiceInputController(
-            database=mock_database, on_state_change=state_callback
-        )
+        controller = VoiceInputController(database=mock_database, on_state_change=state_callback)
         controller.start()
 
         controller.trigger_recording()
@@ -341,14 +339,10 @@ class TestVoiceInputControllerErrorHandling:
         """Microphone error should trigger error callback."""
         from src.utils.errors import MicrophoneError
 
-        mock_recorder_class.side_effect = MicrophoneError(
-            "No microphone", error_code="NO_MIC"
-        )
+        mock_recorder_class.side_effect = MicrophoneError("No microphone", error_code="NO_MIC")
 
         error_callback = MagicMock()
-        controller = VoiceInputController(
-            database=mock_database, on_error=error_callback
-        )
+        controller = VoiceInputController(database=mock_database, on_error=error_callback)
         controller.start()
 
         controller.trigger_recording()
@@ -374,9 +368,7 @@ class TestVoiceInputControllerIndicatorIntegration:
         mock_indicator = MagicMock()
         mock_indicator.is_visible = False
 
-        controller = VoiceInputController(
-            database=mock_database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=mock_database, indicator=mock_indicator)
         controller.start()
         controller.trigger_recording()
 
@@ -412,9 +404,7 @@ class TestVoiceInputControllerIndicatorIntegration:
         mock_indicator = MagicMock()
         mock_indicator.is_visible = True
 
-        controller = VoiceInputController(
-            database=mock_database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=mock_database, indicator=mock_indicator)
         controller.start()
         controller.trigger_recording()  # Start
         controller.trigger_recording()  # Stop and process
@@ -433,9 +423,7 @@ class TestVoiceInputControllerIndicatorIntegration:
         """Indicator should be hidden when returning to IDLE state."""
         mock_indicator = MagicMock()
 
-        controller = VoiceInputController(
-            database=mock_database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=mock_database, indicator=mock_indicator)
         controller.start()
 
         # Force a state change to IDLE
@@ -456,16 +444,12 @@ class TestVoiceInputControllerIndicatorIntegration:
         """Indicator should show error state on failure."""
         from src.utils.errors import MicrophoneError
 
-        mock_recorder_class.side_effect = MicrophoneError(
-            "No microphone", error_code="NO_MIC"
-        )
+        mock_recorder_class.side_effect = MicrophoneError("No microphone", error_code="NO_MIC")
 
         mock_indicator = MagicMock()
         mock_indicator.is_visible = False
 
-        controller = VoiceInputController(
-            database=mock_database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=mock_database, indicator=mock_indicator)
         controller.start()
         controller.trigger_recording()
 
@@ -483,17 +467,13 @@ class TestVoiceInputControllerIndicatorIntegration:
         """Indicator should be hidden when controller is stopped."""
         mock_indicator = MagicMock()
 
-        controller = VoiceInputController(
-            database=mock_database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=mock_database, indicator=mock_indicator)
         controller.start()
         controller.stop()
 
         mock_indicator.hide.assert_called()
 
-    def test_controller_works_without_indicator(
-        self, mock_database: MagicMock
-    ) -> None:
+    def test_controller_works_without_indicator(self, mock_database: MagicMock) -> None:
         """Controller should work correctly without an indicator."""
         controller = VoiceInputController(database=mock_database)
         # Should not raise even without indicator
@@ -522,9 +502,7 @@ class TestErrorStateTransitions:
         def capture_state(state: AppState) -> None:
             states_captured.append(state)
 
-        controller = VoiceInputController(
-            database=mock_database, on_state_change=capture_state
-        )
+        controller = VoiceInputController(database=mock_database, on_state_change=capture_state)
         controller.start()
         controller.trigger_recording()
 
@@ -550,9 +528,7 @@ class TestErrorStateTransitions:
         def capture_error(message: str) -> None:
             error_messages.append(message)
 
-        controller = VoiceInputController(
-            database=mock_database, on_error=capture_error
-        )
+        controller = VoiceInputController(database=mock_database, on_error=capture_error)
         controller.start()
         controller.trigger_recording()
 
@@ -575,9 +551,7 @@ class TestErrorStateTransitions:
         from src.utils.errors import MicrophoneError
 
         mock_check_mic.return_value = (True, None)
-        mock_recorder_class.side_effect = MicrophoneError(
-            "Device disconnected", error_code="DEVICE_ERROR"
-        )
+        mock_recorder_class.side_effect = MicrophoneError("Device disconnected", error_code="DEVICE_ERROR")
 
         controller = VoiceInputController(database=mock_database)
         controller.start()
@@ -619,9 +593,7 @@ class TestErrorStateTransitions:
         def capture_error(msg: str) -> None:
             error_messages.append(msg)
 
-        controller = VoiceInputController(
-            database=mock_database, on_error=capture_error
-        )
+        controller = VoiceInputController(database=mock_database, on_error=capture_error)
         controller.start()
 
         # Start recording
@@ -644,9 +616,7 @@ class TestErrorStateTransitions:
         mock_indicator = MagicMock()
         mock_indicator.is_visible = True
 
-        controller = VoiceInputController(
-            database=mock_database, indicator=mock_indicator
-        )
+        controller = VoiceInputController(database=mock_database, indicator=mock_indicator)
         controller.start()
 
         # Manually trigger error notification
