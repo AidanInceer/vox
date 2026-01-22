@@ -126,6 +126,7 @@ class TestVoiceInputControllerStartStop:
 class TestVoiceInputControllerStateTransitions:
     """Tests for state machine transitions."""
 
+    @patch("src.voice_input.controller.check_microphone_available")
     @patch("src.voice_input.controller.MicrophoneRecorder")
     @patch("src.voice_input.controller.HotkeyManager")
     @patch("src.voice_input.controller.ClipboardPaster")
@@ -134,9 +135,13 @@ class TestVoiceInputControllerStateTransitions:
         mock_paster_class: MagicMock,
         mock_hotkey_class: MagicMock,
         mock_recorder_class: MagicMock,
+        mock_check_mic: MagicMock,
         mock_database: MagicMock,
     ) -> None:
         """trigger_recording should transition from IDLE to RECORDING."""
+        # Mock microphone availability
+        mock_check_mic.return_value = (True, None)
+
         controller = VoiceInputController(database=mock_database)
         controller.start()
 
@@ -146,6 +151,7 @@ class TestVoiceInputControllerStateTransitions:
 
         assert controller.state == AppState.RECORDING
 
+    @patch("src.voice_input.controller.check_microphone_available")
     @patch("src.voice_input.controller.MicrophoneRecorder")
     @patch("src.voice_input.controller.HotkeyManager")
     @patch("src.voice_input.controller.ClipboardPaster")
@@ -154,9 +160,13 @@ class TestVoiceInputControllerStateTransitions:
         mock_paster_class: MagicMock,
         mock_hotkey_class: MagicMock,
         mock_recorder_class: MagicMock,
+        mock_check_mic: MagicMock,
         mock_database: MagicMock,
     ) -> None:
         """State change callback should be invoked on transitions."""
+        # Mock microphone availability
+        mock_check_mic.return_value = (True, None)
+
         state_callback = MagicMock()
 
         controller = VoiceInputController(database=mock_database, on_state_change=state_callback)
@@ -170,6 +180,7 @@ class TestVoiceInputControllerStateTransitions:
 class TestVoiceInputControllerToggle:
     """Tests for toggle behavior (hotkey press to start/stop)."""
 
+    @patch("src.voice_input.controller.check_microphone_available")
     @patch("src.voice_input.controller.MicrophoneRecorder")
     @patch("src.voice_input.controller.HotkeyManager")
     @patch("src.voice_input.controller.ClipboardPaster")
@@ -178,9 +189,13 @@ class TestVoiceInputControllerToggle:
         mock_paster_class: MagicMock,
         mock_hotkey_class: MagicMock,
         mock_recorder_class: MagicMock,
+        mock_check_mic: MagicMock,
         mock_database: MagicMock,
     ) -> None:
         """trigger_recording from IDLE should start recording."""
+        # Mock microphone availability
+        mock_check_mic.return_value = (True, None)
+
         mock_recorder = MagicMock()
         mock_recorder_class.return_value = mock_recorder
 

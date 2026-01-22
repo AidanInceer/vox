@@ -23,6 +23,7 @@ class TestFullTabToSpeechFlow:
             patch("src.extraction.text_extractor.ConcreteTextExtractor.extract_html") as mock_extract,
             patch("src.tts.synthesizer.synthesize_piper") as mock_synth,
             patch("src.tts.playback.AudioPlayback.play_audio") as mock_play,
+            patch("pygame.mixer.init") as mock_pygame_init,
         ):
             # Setup mock tab
             test_tab = TabInfo(
@@ -70,6 +71,7 @@ class TestFullTabToSpeechFlow:
             patch("src.extraction.text_extractor.ConcreteTextExtractor.extract_html") as mock_extract,
             patch("src.tts.synthesizer.synthesize_piper") as mock_synth,
             patch("src.tts.playback.AudioPlayback.play_audio") as mock_play,
+            patch("pygame.mixer.init") as mock_pygame_init,
         ):
             # Setup tab list with background tab
             background_tab = TabInfo(
