@@ -207,6 +207,7 @@ class TestVoiceInputControllerToggle:
         assert controller.state == AppState.RECORDING
         mock_recorder.start_recording.assert_called_once()
 
+    @patch("src.voice_input.controller.check_microphone_available")
     @patch("src.voice_input.controller.STTEngine")
     @patch("src.voice_input.controller.MicrophoneRecorder")
     @patch("src.voice_input.controller.HotkeyManager")
@@ -217,10 +218,14 @@ class TestVoiceInputControllerToggle:
         mock_hotkey_class: MagicMock,
         mock_recorder_class: MagicMock,
         mock_stt_class: MagicMock,
+        mock_check_mic: MagicMock,
         mock_database: MagicMock,
     ) -> None:
         """trigger_recording from RECORDING should stop and transcribe."""
         import numpy as np
+
+        # Mock microphone availability
+        mock_check_mic.return_value = (True, None)
 
         mock_recorder = MagicMock()
         mock_recorder.get_audio_data.return_value = np.zeros(1000, dtype=np.int16)
@@ -252,6 +257,7 @@ class TestVoiceInputControllerToggle:
 class TestVoiceInputControllerCancel:
     """Tests for cancel functionality."""
 
+    @patch("src.voice_input.controller.check_microphone_available")
     @patch("src.voice_input.controller.MicrophoneRecorder")
     @patch("src.voice_input.controller.HotkeyManager")
     @patch("src.voice_input.controller.ClipboardPaster")
@@ -260,9 +266,13 @@ class TestVoiceInputControllerCancel:
         mock_paster_class: MagicMock,
         mock_hotkey_class: MagicMock,
         mock_recorder_class: MagicMock,
+        mock_check_mic: MagicMock,
         mock_database: MagicMock,
     ) -> None:
         """cancel_recording should return to IDLE without transcribing."""
+        # Mock microphone availability
+        mock_check_mic.return_value = (True, None)
+
         mock_recorder = MagicMock()
         mock_recorder_class.return_value = mock_recorder
 
@@ -369,6 +379,7 @@ class TestVoiceInputControllerErrorHandling:
 class TestVoiceInputControllerIndicatorIntegration:
     """Tests for RecordingIndicator integration."""
 
+    @patch("src.voice_input.controller.check_microphone_available")
     @patch("src.voice_input.controller.MicrophoneRecorder")
     @patch("src.voice_input.controller.HotkeyManager")
     @patch("src.voice_input.controller.ClipboardPaster")
@@ -377,9 +388,13 @@ class TestVoiceInputControllerIndicatorIntegration:
         mock_paster_class: MagicMock,
         mock_hotkey_class: MagicMock,
         mock_recorder_class: MagicMock,
+        mock_check_mic: MagicMock,
         mock_database: MagicMock,
     ) -> None:
         """Indicator should show with recording state when recording starts."""
+        # Mock microphone availability
+        mock_check_mic.return_value = (True, None)
+
         mock_indicator = MagicMock()
         mock_indicator.is_visible = False
 
@@ -389,6 +404,7 @@ class TestVoiceInputControllerIndicatorIntegration:
 
         mock_indicator.show.assert_called_with("recording")
 
+    @patch("src.voice_input.controller.check_microphone_available")
     @patch("src.voice_input.controller.STTEngine")
     @patch("src.voice_input.controller.MicrophoneRecorder")
     @patch("src.voice_input.controller.HotkeyManager")
@@ -399,10 +415,14 @@ class TestVoiceInputControllerIndicatorIntegration:
         mock_hotkey_class: MagicMock,
         mock_recorder_class: MagicMock,
         mock_stt_class: MagicMock,
+        mock_check_mic: MagicMock,
         mock_database: MagicMock,
     ) -> None:
         """Indicator should update to processing during transcription."""
         import numpy as np
+
+        # Mock microphone availability
+        mock_check_mic.return_value = (True, None)
 
         mock_recorder = MagicMock()
         mock_recorder.stop_recording.return_value = np.zeros(1000, dtype=np.int16)
