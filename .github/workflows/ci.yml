@@ -175,11 +175,11 @@ jobs:
 
       - name: Bump version (auto)
         if: env.SKIP_BUMP == 'false' && (github.event_name == 'push' || github.event.inputs.bump_type == 'auto')
-        run: cz bump --yes --changelog
+        run: cz bump --yes --changelog || cz bump --yes
 
       - name: Bump version (manual)
         if: github.event.inputs.bump_type != 'auto' && github.event_name == 'workflow_dispatch'
-        run: cz bump --increment ${{ github.event.inputs.bump_type }} --yes --changelog
+        run: cz bump --increment ${{ github.event.inputs.bump_type }} --yes --changelog || cz bump --increment ${{ github.event.inputs.bump_type }} --yes
 
       - name: Get new version
         id: version
