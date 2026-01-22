@@ -15,14 +15,14 @@ repos:
       - id: ruff-format
         name: ruff format
         description: Format Python code with ruff
-        args: [--line-length=100]
+        args: [--config=pyproject.toml]
         stages: [pre-commit]
 
       # Lint code (after formatting, catches logical issues)
       - id: ruff
         name: ruff lint
         description: Lint Python code with ruff
-        args: [--line-length=100, --fix]
+        args: [--config=pyproject.toml, --fix]
         stages: [pre-commit]
 
   # Trailing whitespace and end-of-file-fixer
@@ -57,16 +57,6 @@ repos:
       - id: mixed-line-ending
         name: Fix mixed line ending
         description: Normalize line endings
-
-  # YAML formatting
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        name: Prettier (YAML/Markdown)
-        description: Format YAML and Markdown with Prettier
-        types_or: [yaml, markdown]
-        exclude: '^(\.github/|\.specify/)'
 
   # Commitizen: Enforce conventional commits
   - repo: https://github.com/commitizen-tools/commitizen
