@@ -9,18 +9,20 @@ import threading
 import tkinter as tk
 from typing import Literal, Optional
 
+from src.ui.styles import COLORS_LIGHT
+
 logger = logging.getLogger(__name__)
 
 # Type alias for indicator states
 IndicatorState = Literal["recording", "processing", "success", "error"]
 
-# Visual state configurations - Updated for light mode visibility
-# Uses darker, more saturated colors with good contrast on light backgrounds
+# Visual state configurations - Uses COLORS from styles for theme consistency
+# These are fixed semantic colors that work across light/dark backgrounds
 STATE_COLORS = {
-    "recording": {"bg": "#dc3545", "fg": "#FFFFFF", "text": "● Recording..."},  # Bootstrap danger red
-    "processing": {"bg": "#4582ec", "fg": "#FFFFFF", "text": "⟳ Processing..."},  # Primary blue
-    "success": {"bg": "#02b875", "fg": "#FFFFFF", "text": "✓ Done"},  # Bootstrap success green
-    "error": {"bg": "#f0ad4e", "fg": "#000000", "text": "⚠ Error"},  # Warning orange with dark text
+    "recording": {"bg": COLORS_LIGHT["danger"], "fg": "#FFFFFF", "text": "● Recording..."},  # Danger red for recording
+    "processing": {"bg": COLORS_LIGHT["accent"], "fg": "#FFFFFF", "text": "⟳ Processing..."},  # Primary accent blue
+    "success": {"bg": COLORS_LIGHT["success"], "fg": "#FFFFFF", "text": "✓ Done"},  # Success green
+    "error": {"bg": COLORS_LIGHT["warning"], "fg": "#000000", "text": "⚠ Error"},  # Warning orange with dark text
 }
 
 # Default indicator dimensions

@@ -25,13 +25,25 @@ from ttkbootstrap.constants import (
 
 from src.persistence.database import VoxDatabase
 from src.persistence.models import AppState
+from src.ui.components import (
+    EmptyState,
+    FluentCard,
+    HistoryItemCard,
+    KeyCapLabel,
+    ModelSlider,
+    SpeedSlider,
+    ThemeToggle,
+)
 from src.ui.indicator import RecordingIndicator
 from src.ui.styles import (
     FONTS,
-    PADDING,
-    THEME_NAME,
+    ICONS,
+    SPACING,
+    THEMES,
     WINDOW_SIZE,
+    configure_fluent_overrides,
     configure_styles,
+    switch_theme,
 )
 from src.ui.system_tray import SystemTrayManager
 from src.voice_input.controller import VoiceInputController
@@ -107,16 +119,26 @@ class VoxMainWindow:
         self._captured_keys: set[str] = set()
         self._keyboard_listener: Optional[Any] = None
 
-        # Create the main window
+        # Auto-save debounce timer
+        self._save_timer_id: Optional[str] = None
+        self._save_debounce_ms = 500
+
+        # Load theme preference from database
+        saved_theme = database.get_setting("theme", "light")
+        self._current_theme = saved_theme if saved_theme in THEMES else "light"
+        theme_name = THEMES.get(self._current_theme, THEMES["light"])
+
+        # Create the main window with saved theme
         self._root = ttk.Window(
             title="Vox - Voice Input",
-            themename=THEME_NAME,
+            themename=theme_name,
             size=(WINDOW_SIZE["width"], WINDOW_SIZE["height"]),
             minsize=(WINDOW_SIZE["min_width"], WINDOW_SIZE["min_height"]),
         )
 
-        # Configure custom styles
-        configure_styles(self._root.style)
+        # Configure Fluent styles and overrides
+        configure_styles(self._root.style, self._current_theme)
+        configure_fluent_overrides(self._root.style, self._current_theme)
 
         # Center window on screen
         self._root.place_window_center()
@@ -137,11 +159,20 @@ class VoxMainWindow:
 
     def _build_ui(self) -> None:
         """Build the main window UI components."""
-        # Create notebook (tabbed interface) - default style for light theme
+        # Create notebook (tabbed interface) with Fluent styling
         self._notebook = ttk.Notebook(self._root)
-        self._notebook.pack(fill=BOTH, expand=True, padx=PADDING["medium"], pady=PADDING["medium"])
+        self._notebook.pack(
+            fill=BOTH,
+            expand=True,
+            padx=SPACING["md"],
+            pady=SPACING["md"],
+        )
 
-        # Create tabs
+        # Enable keyboard navigation for tabs (Left/Right arrow keys)
+        self._notebook.bind("<Left>", self._on_tab_key_left)
+        self._notebook.bind("<Right>", self._on_tab_key_right)
+
+        # Create tabs with icons
         self._build_status_tab()
         self._build_settings_tab()
         self._build_history_tab()
@@ -150,154 +181,228 @@ class VoxMainWindow:
         self._build_status_bar()
 
     def _build_status_tab(self) -> None:
-        """Build the main status/home tab."""
-        frame = ttk.Frame(self._notebook, padding=PADDING["large"])
-        self._notebook.add(frame, text="Status")
+        """Build the main status/home tab with Fluent Design."""
+        frame = ttk.Frame(self._notebook, padding=SPACING["lg"])
+        self._notebook.add(frame, text=f"{ICONS['status']} Status")
 
-        # App title
+        # App title with display font
         title_label = ttk.Label(
             frame,
             text="Vox Voice Input",
-            font=("Segoe UI Variable", 18, "bold"),
-            bootstyle="primary",
+            font=FONTS["title"],
+            bootstyle="primary",  # type: ignore[arg-type]
         )
-        title_label.pack(pady=(0, PADDING["large"]))
+        title_label.pack(pady=(0, SPACING["lg"]))
 
-        # Status display
-        status_frame = ttk.LabelFrame(frame, text="Current Status")
-        status_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        # Status display in FluentCard with pill-style indicator
+        status_card = FluentCard(frame, title="Current Status")
+        status_card.pack(fill=X, pady=SPACING["md"])
+
+        # Pill-style status container
+        status_pill = ttk.Frame(status_card.content)
+        status_pill.pack(pady=SPACING["sm"])
+
+        self._status_icon = ttk.Label(
+            status_pill,
+            text="✅",
+            font=FONTS["subtitle"],
+        )
+        self._status_icon.pack(side=LEFT, padx=(0, SPACING["xs"]))
 
         self._status_label = ttk.Label(
-            status_frame,
+            status_pill,
             text="Ready",
-            font=FONTS["heading"],
-            bootstyle="success",
+            font=FONTS["subtitle"],
+            bootstyle="success",  # type: ignore[arg-type]
         )
-        self._status_label.pack()
+        self._status_label.pack(side=LEFT)
 
-        # Hotkey display
-        hotkey_frame = ttk.LabelFrame(frame, text="Activation Hotkey")
-        hotkey_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        # Hotkey display in FluentCard with KeyCapLabel
+        hotkey_card = FluentCard(frame, title="Activation Hotkey")
+        hotkey_card.pack(fill=X, pady=SPACING["md"])
 
         current_hotkey = self._database.get_setting("hotkey", "<ctrl>+<alt>+space") or "<ctrl>+<alt>+space"
-        self._hotkey_display = ttk.Label(
-            hotkey_frame,
-            text=self._format_hotkey_display(current_hotkey),
-            font=FONTS["mono"],
-            bootstyle="info",
-        )
+
+        # Use KeyCapLabel for visual hotkey display
+        hotkey_container = ttk.Frame(hotkey_card.content)
+        hotkey_container.pack(pady=SPACING["sm"])
+        self._hotkey_display = KeyCapLabel(hotkey_container)
+        self._hotkey_display.set_hotkey(current_hotkey)
         self._hotkey_display.pack()
 
-        # Instructions
+        # Instructions with caption styling
         instructions = ttk.Label(
             frame,
             text="Press the hotkey to start recording.\nPress again to stop and transcribe.",
-            font=FONTS["body"],
-            bootstyle="secondary",
+            font=FONTS["caption"],
+            bootstyle="secondary",  # type: ignore[arg-type]
             justify="center",
         )
-        instructions.pack(pady=PADDING["large"])
+        instructions.pack(pady=SPACING["lg"])
 
-        # Manual trigger button
+        # Manual trigger button - PRIMARY ACCENT FOCAL POINT
+        # Large, prominent button with extra padding
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(pady=SPACING["lg"])
+
         self._record_btn = ttk.Button(
-            frame,
-            text="Start Recording",
+            btn_frame,
+            text=f"{ICONS['record']} Start Recording",
             command=self._on_record_button,
-            bootstyle="primary-outline",
-            width=20,
+            bootstyle="primary",  # type: ignore[arg-type]
+            width=30,
+            padding=(SPACING["lg"], SPACING["md"]),
         )
-        self._record_btn.pack(pady=PADDING["medium"])
+        self._record_btn.pack()
 
     def _build_settings_tab(self) -> None:
-        """Build the settings configuration tab."""
-        frame = ttk.Frame(self._notebook, padding=PADDING["large"])
-        self._notebook.add(frame, text="Settings")
+        """Build the settings configuration tab with Fluent Design."""
+        frame = ttk.Frame(self._notebook, padding=SPACING["lg"])
+        self._notebook.add(frame, text=f"{ICONS['settings']} Settings")
 
-        # Hotkey configuration section
-        hotkey_frame = ttk.LabelFrame(frame, text="Hotkey Configuration")
-        hotkey_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        # Model & Voice Settings in FluentCard
+        voice_card = FluentCard(frame, title="Model & Voice")
+        voice_card.pack(fill=X, pady=SPACING["md"])
 
-        # Current hotkey
-        current_label = ttk.Label(hotkey_frame, text="Current Hotkey:", font=FONTS["body"])
-        current_label.grid(row=0, column=0, sticky=W, pady=PADDING["small"])
+        # Model selection label
+        model_label = ttk.Label(
+            voice_card.content,
+            text="Speech Recognition Model",
+            font=FONTS["body"],
+        )
+        model_label.pack(anchor=W, pady=(0, SPACING["xs"]))
+
+        # Model slider
+        current_model = self._database.get_setting("stt_model", "medium")
+        self._model_slider = ModelSlider(
+            voice_card.content,
+            on_change=self._on_model_change,
+        )
+        self._model_slider.set_model(current_model)
+        self._model_slider.pack(fill=X, pady=SPACING["sm"])
+
+        # TTS Speed label
+        speed_label = ttk.Label(
+            voice_card.content,
+            text="Text-to-Speech Speed",
+            font=FONTS["body"],
+        )
+        speed_label.pack(anchor=W, pady=(SPACING["md"], SPACING["xs"]))
+
+        # Speed slider
+        current_speed = float(self._database.get_setting("tts_speed", "1.0"))
+        self._speed_slider = SpeedSlider(
+            voice_card.content,
+            on_change=self._on_speed_change,
+        )
+        self._speed_slider.set_speed(current_speed)
+        self._speed_slider.pack(fill=X, pady=SPACING["sm"])
+
+        # Appearance Settings in FluentCard
+        appearance_card = FluentCard(frame, title="Appearance")
+        appearance_card.pack(fill=X, pady=SPACING["md"])
+
+        # Theme toggle
+        theme_label = ttk.Label(
+            appearance_card.content,
+            text="Theme",
+            font=FONTS["body"],
+        )
+        theme_label.pack(anchor=W, pady=(0, SPACING["xs"]))
+
+        self._theme_toggle = ThemeToggle(
+            appearance_card.content,
+            on_change=self._on_theme_change,
+        )
+        self._theme_toggle.set_theme(self._current_theme)
+        self._theme_toggle.pack(anchor=W)
+
+        # Hotkey configuration in FluentCard
+        hotkey_card = FluentCard(frame, title="Hotkey Configuration")
+        hotkey_card.pack(fill=X, pady=SPACING["md"])
+
+        # Current hotkey row - aligned grid
+        hotkey_row = ttk.Frame(hotkey_card.content)
+        hotkey_row.pack(fill=X, pady=SPACING["sm"])
+        hotkey_row.columnconfigure(1, weight=1)
+
+        current_label = ttk.Label(
+            hotkey_row,
+            text="Current:",
+            font=FONTS["body"],
+            width=10,
+        )
+        current_label.grid(row=0, column=0, sticky=W, padx=(0, SPACING["sm"]))
 
         current_hotkey = self._database.get_setting("hotkey", "<ctrl>+<alt>+space")
         self._settings_hotkey_var = ttk.StringVar(value=current_hotkey)
         self._settings_hotkey_entry = ttk.Entry(
-            hotkey_frame,
+            hotkey_row,
             textvariable=self._settings_hotkey_var,
             font=FONTS["mono"],
-            width=30,
+            width=25,
         )
-        self._settings_hotkey_entry.grid(row=0, column=1, padx=PADDING["medium"], pady=PADDING["small"])
+        self._settings_hotkey_entry.grid(row=0, column=1, sticky=W, padx=SPACING["sm"])
 
         # Capture hotkey button
         capture_btn = ttk.Button(
-            hotkey_frame,
+            hotkey_row,
             text="Capture",
             command=self._on_capture_hotkey,
-            bootstyle="info-outline",
-            width=10,
+            bootstyle="info-outline",  # type: ignore[arg-type]
+            width=12,
         )
-        capture_btn.grid(row=0, column=2, pady=PADDING["small"])
+        capture_btn.grid(row=0, column=2, padx=(SPACING["sm"], 0))
 
-        # Clipboard settings section
-        clipboard_frame = ttk.LabelFrame(frame, text="Clipboard Options")
-        clipboard_frame.pack(fill=X, pady=PADDING["medium"], ipadx=PADDING["medium"], ipady=PADDING["medium"])
+        # Clipboard settings in FluentCard
+        clipboard_card = FluentCard(frame, title="Clipboard Options")
+        clipboard_card.pack(fill=X, pady=SPACING["md"])
 
         restore_setting = self._database.get_setting("restore_clipboard", "true")
-        self._restore_clipboard_var = ttk.BooleanVar(value=restore_setting == "true")
+        is_restore_enabled = restore_setting == "true"
+        self._restore_clipboard_var = ttk.BooleanVar(value=is_restore_enabled)
         restore_check = ttk.Checkbutton(
-            clipboard_frame,
+            clipboard_card.content,
             text="Restore clipboard after paste",
             variable=self._restore_clipboard_var,
-            bootstyle="round-toggle",
+            command=self._on_clipboard_setting_change,
+            bootstyle="round-toggle",  # type: ignore[arg-type]
         )
-        restore_check.pack(anchor=W)
-
-        # Save button
-        save_btn = ttk.Button(
-            frame,
-            text="Save Settings",
-            command=self._on_save_settings,
-            bootstyle="success",
-            width=15,
-        )
-        save_btn.pack(pady=PADDING["large"])
+        restore_check.pack(anchor=W, pady=SPACING["sm"])
 
     def _build_history_tab(self) -> None:
-        """Build the transcription history tab."""
-        frame = ttk.Frame(self._notebook, padding=PADDING["large"])
-        self._notebook.add(frame, text="History")
+        """Build the transcription history tab with Fluent Design."""
+        frame = ttk.Frame(self._notebook, padding=SPACING["lg"])
+        self._notebook.add(frame, text=f"{ICONS['history']} History")
 
         # Header with refresh button
         header_frame = ttk.Frame(frame)
-        header_frame.pack(fill=X, pady=(0, PADDING["medium"]))
+        header_frame.pack(fill=X, pady=(0, SPACING["md"]))
 
         header_label = ttk.Label(
             header_frame,
             text="Transcription History",
-            font=FONTS["heading"],
+            font=FONTS["subtitle"],
         )
         header_label.pack(side=LEFT)
 
         refresh_btn = ttk.Button(
             header_frame,
-            text="Refresh",
+            text=f"{ICONS['refresh']} Refresh",
             command=self.refresh_history,
-            bootstyle="info-outline",
-            width=10,
+            bootstyle="info-outline",  # type: ignore[arg-type]
+            width=12,
         )
         refresh_btn.pack(side=RIGHT)
 
         clear_btn = ttk.Button(
             header_frame,
-            text="Clear All",
+            text=f"{ICONS['delete']} Clear All",
             command=self._on_clear_history,
-            bootstyle="danger-outline",
-            width=10,
+            bootstyle="danger-outline",  # type: ignore[arg-type]
+            width=12,
         )
-        clear_btn.pack(side=RIGHT, padx=PADDING["small"])
+        clear_btn.pack(side=RIGHT, padx=SPACING["sm"])
 
         # Scrollable history list
         list_frame = ttk.Frame(frame)
@@ -305,7 +410,11 @@ class VoxMainWindow:
 
         # Create canvas with scrollbar for history items
         self._history_canvas = ttk.Canvas(list_frame, highlightthickness=0)
-        scrollbar = ttk.Scrollbar(list_frame, orient=VERTICAL, command=self._history_canvas.yview)
+        scrollbar = ttk.Scrollbar(
+            list_frame,
+            orient=VERTICAL,
+            command=self._history_canvas.yview,
+        )
         self._history_inner_frame = ttk.Frame(self._history_canvas)
 
         self._history_inner_frame.bind(
@@ -313,7 +422,11 @@ class VoxMainWindow:
             lambda e: self._history_canvas.configure(scrollregion=self._history_canvas.bbox("all")),
         )
 
-        self._history_canvas.create_window((0, 0), window=self._history_inner_frame, anchor=NW)
+        self._history_canvas.create_window(
+            (0, 0),
+            window=self._history_inner_frame,
+            anchor=NW,
+        )
         self._history_canvas.configure(yscrollcommand=scrollbar.set)
 
         self._history_canvas.pack(side=LEFT, fill=BOTH, expand=True)
@@ -328,21 +441,26 @@ class VoxMainWindow:
     def _build_status_bar(self) -> None:
         """Build the status bar at the bottom of the window."""
         status_frame = ttk.Frame(self._root)
-        status_frame.pack(fill=X, side=BOTTOM, padx=PADDING["small"], pady=PADDING["small"])
+        status_frame.pack(
+            fill=X,
+            side=BOTTOM,
+            padx=SPACING["sm"],
+            pady=SPACING["sm"],
+        )
 
         self._status_bar_label = ttk.Label(
             status_frame,
             text="Ready",
-            font=FONTS["small"],
-            bootstyle="secondary",
+            font=FONTS["caption"],
+            bootstyle="secondary",  # type: ignore[arg-type]
         )
         self._status_bar_label.pack(side=LEFT)
 
         version_label = ttk.Label(
             status_frame,
             text="Vox v0.1.0",
-            font=FONTS["small"],
-            bootstyle="secondary",
+            font=FONTS["caption"],
+            bootstyle="secondary",  # type: ignore[arg-type]
         )
         version_label.pack(side=RIGHT)
 
@@ -432,11 +550,23 @@ class VoxMainWindow:
         # Update status label (thread-safe)
         self._root.after(0, lambda: self._update_status(message, style))
 
-        # Update record button state
+        # Update record button state with icons
         if state == AppState.IDLE:
-            self._root.after(0, lambda: self._record_btn.configure(text="Start Recording", state=NORMAL))
+            self._root.after(
+                0,
+                lambda: self._record_btn.configure(
+                    text=f"{ICONS['record']} Start Recording",
+                    state=NORMAL,
+                ),
+            )
         elif state == AppState.RECORDING:
-            self._root.after(0, lambda: self._record_btn.configure(text="Stop Recording", state=NORMAL))
+            self._root.after(
+                0,
+                lambda: self._record_btn.configure(
+                    text=f"{ICONS['stop']} Stop Recording",
+                    state=NORMAL,
+                ),
+            )
         else:
             self._root.after(0, lambda: self._record_btn.configure(state=DISABLED))
 
@@ -445,14 +575,53 @@ class VoxMainWindow:
             self._root.after(100, self.refresh_history)
 
     def _update_status(self, message: str, style: str) -> None:
-        """Update the status display.
+        """Update the status display with pill-style icon.
 
         Args:
             message: Status message to display
             style: ttkbootstrap style name
         """
+        # Map style to icon
+        status_icons = {
+            "success": "✅",
+            "danger": "🔴",
+            "info": "🔄",
+            "warning": "⏳",
+        }
+        icon = status_icons.get(style, "⚪")
+
+        self._status_icon.configure(text=icon)
         self._status_label.configure(text=message, bootstyle=style)
-        self._status_bar_label.configure(text=message)
+        self._status_bar_label.configure(text=f"{icon} {message}")
+
+    def _on_tab_key_left(self, event: Any) -> str:
+        """Handle Left arrow key for tab navigation.
+
+        Args:
+            event: Key event
+
+        Returns:
+            "break" to prevent default handling
+        """
+        current = self._notebook.index(self._notebook.select())
+        if current > 0:
+            self._notebook.select(current - 1)
+        return "break"
+
+    def _on_tab_key_right(self, event: Any) -> str:
+        """Handle Right arrow key for tab navigation.
+
+        Args:
+            event: Key event
+
+        Returns:
+            "break" to prevent default handling
+        """
+        current = self._notebook.index(self._notebook.select())
+        tab_count = self._notebook.index("end")
+        if current < tab_count - 1:
+            self._notebook.select(current + 1)
+        return "break"
 
     def _format_hotkey_display(self, hotkey: str) -> str:
         """Format hotkey string for display.
@@ -651,13 +820,75 @@ class VoxMainWindow:
             self._settings_hotkey_var.set(current)
             self._status_bar_label.configure(text="Hotkey capture cancelled")
 
+    def _on_model_change(self, model: str) -> None:
+        """Handle model slider change with debounced save.
+
+        Args:
+            model: New model name
+        """
+        self._schedule_save("stt_model", model)
+
+    def _on_speed_change(self, speed: float) -> None:
+        """Handle speed slider change with debounced save.
+
+        Args:
+            speed: New speed value
+        """
+        self._schedule_save("tts_speed", str(speed))
+
+    def _on_theme_change(self, theme: str) -> None:
+        """Handle theme toggle change.
+
+        Args:
+            theme: "light" or "dark"
+        """
+        self._current_theme = theme
+        switch_theme(self._root, theme)
+        self._database.set_setting("theme", theme)
+        self._show_save_confirmation(f"Theme changed to {theme}")
+
+    def _on_clipboard_setting_change(self) -> None:
+        """Handle clipboard setting change with auto-save."""
+        restore_value = "true" if self._restore_clipboard_var.get() else "false"
+        self._database.set_setting("restore_clipboard", restore_value)
+        self._show_save_confirmation("Clipboard setting saved")
+
+    def _schedule_save(self, setting_key: str, value: str) -> None:
+        """Schedule a debounced save operation.
+
+        Args:
+            setting_key: Database setting key
+            value: Value to save
+        """
+        # Cancel any pending save
+        if self._save_timer_id:
+            self._root.after_cancel(self._save_timer_id)
+
+        # Schedule new save after debounce delay
+        def do_save() -> None:
+            self._database.set_setting(setting_key, value)
+            self._show_save_confirmation(f"Saved {setting_key}")
+            self._save_timer_id = None
+
+        self._save_timer_id = self._root.after(self._save_debounce_ms, do_save)
+
+    def _show_save_confirmation(self, message: str) -> None:
+        """Show a brief save confirmation in the status bar.
+
+        Args:
+            message: Confirmation message to display
+        """
+        self._status_bar_label.configure(text=f"✅ {message}")
+        # Reset to "Ready" after 2 seconds
+        self._root.after(2000, lambda: self._status_bar_label.configure(text="Ready"))
+
     def _on_save_settings(self) -> None:
         """Handle save settings button click."""
         # Save hotkey
         new_hotkey = self._settings_hotkey_var.get()
         try:
             self._controller.update_hotkey(new_hotkey)
-            self._hotkey_display.configure(text=self._format_hotkey_display(new_hotkey))
+            self._hotkey_display.set_hotkey(new_hotkey)
         except ValueError as e:
             logger.error(f"Invalid hotkey: {e}")
             # Show error - TODO: add toast notification
@@ -695,83 +926,60 @@ class VoxMainWindow:
         records = self._database.get_history(limit=100)
 
         if not records:
-            empty_label = ttk.Label(
+            empty_state = EmptyState(
                 self._history_inner_frame,
-                text="No transcriptions yet.\nUse the hotkey to start recording!",
-                font=FONTS["body"],
-                bootstyle="secondary",
-                justify="center",
+                icon=ICONS["history"],
+                message="No transcriptions yet",
+                description="Use the hotkey to start recording!",
             )
-            empty_label.pack(pady=PADDING["xlarge"])
+            empty_state.pack(fill=BOTH, expand=True, pady=SPACING["xxl"])
             return
 
-        # Create history items
+        # Create history items using HistoryItemCard
         for record in records:
             self._create_history_item(record)
 
     def _create_history_item(self, record) -> None:
-        """Create a history item widget.
+        """Create a history item widget using HistoryItemCard.
 
         Args:
             record: TranscriptionRecord to display
         """
-        from src.clipboard.paster import ClipboardPaster
-
-        item_frame = ttk.Frame(self._history_inner_frame, padding=PADDING["small"])
-        item_frame.pack(fill=X, pady=PADDING["small"])
-
-        # Text preview (truncated)
-        text_preview = record.text[:100] + "..." if len(record.text) > 100 else record.text
-        text_label = ttk.Label(
-            item_frame,
-            text=text_preview,
-            font=FONTS["body"],
-            wraplength=400,
+        item = HistoryItemCard(
+            self._history_inner_frame,
+            record=record,
+            on_copy=self._on_copy_history_item,
+            on_delete=self._on_delete_history_item,
         )
-        text_label.pack(anchor=W)
-
-        # Metadata row
-        meta_frame = ttk.Frame(item_frame)
-        meta_frame.pack(fill=X, pady=(PADDING["small"], 0))
-
-        # Timestamp
-        timestamp_str = record.created_at.strftime("%Y-%m-%d %H:%M")
-        timestamp_label = ttk.Label(
-            meta_frame,
-            text=timestamp_str,
-            font=FONTS["small"],
-            bootstyle="secondary",
-        )
-        timestamp_label.pack(side=LEFT)
-
-        # Word count
-        word_count = len(record.text.split())
-        word_label = ttk.Label(
-            meta_frame,
-            text=f"{word_count} words",
-            font=FONTS["small"],
-            bootstyle="secondary",
-        )
-        word_label.pack(side=LEFT, padx=PADDING["medium"])
-
-        # Copy button
-        def copy_text() -> None:
-            paster = ClipboardPaster()
-            paster.copy_to_clipboard(record.text)
-            self._status_bar_label.configure(text="Copied to clipboard")
-
-        copy_btn = ttk.Button(
-            meta_frame,
-            text="Copy",
-            command=copy_text,
-            bootstyle="info-outline",
-            width=8,
-        )
-        copy_btn.pack(side=RIGHT)
+        item.pack(fill=X, pady=SPACING["xs"])
 
         # Separator
         sep = ttk.Separator(self._history_inner_frame, orient=HORIZONTAL)
-        sep.pack(fill=X, pady=PADDING["small"])
+        sep.pack(fill=X, pady=SPACING["xs"])
+
+    def _on_copy_history_item(self, record_id: int) -> None:
+        """Handle copy action for a history item.
+
+        Args:
+            record_id: ID of the record to copy
+        """
+        from src.clipboard.paster import ClipboardPaster
+
+        record = self._database.get_transcription(record_id)
+        if record:
+            paster = ClipboardPaster()
+            paster.copy_to_clipboard(record.text)
+            self._show_save_confirmation("Copied to clipboard")
+
+    def _on_delete_history_item(self, record_id: int) -> None:
+        """Handle delete action for a history item.
+
+        Args:
+            record_id: ID of the record to delete
+        """
+        self._database.delete_transcription(record_id)
+        self.refresh_history()
+        self._show_save_confirmation("Item deleted")
 
     def show(self) -> None:
         """Show and focus the main window.

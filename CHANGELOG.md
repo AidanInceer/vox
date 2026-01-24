@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Fluent UI Redesign** - Windows 11 Fluent Design system overhaul
+  - New `FluentCard` component with subtle shadow and rounded corners for visual hierarchy
+  - `ModelSlider` component for STT model selection (7-position discrete scale: tiny → large-v3)
+  - `SpeedSlider` component for TTS playback speed (0.5x - 2.0x)
+  - `ThemeToggle` component with sun/moon icons for light/dark mode switching
+  - `EmptyState` component with centered icon and message for empty lists
+  - `HistoryItemCard` component with hover-reveal Copy/Delete actions
+  - `KeyCapLabel` component for keyboard shortcut visualization
+
+- **Modern Type Scale** - 5-level typography system
+  - `heading` (20px bold), `subheading` (14px semibold), `body` (12px regular)
+  - `caption` (11px regular), `small` (10px regular)
+  - Segoe UI Variable font with proper font weights
+
+- **8px Spacing Grid** - Consistent spacing tokens
+  - `xs` (4px), `sm` (8px), `md` (16px), `lg` (24px), `xl` (32px), `xxl` (48px)
+
+- **Semantic Color Palette** - Light and dark theme colors
+  - Primary accent (#0078d4 light / #60cdff dark)
+  - Semantic colors: success, warning, danger, info
+  - Background, surface, foreground with proper contrast ratios
+  - All colors WCAG AA compliant (4.5:1 minimum contrast)
+
+- **Accessibility Improvements**
+  - 2px accent focus rings on all interactive elements
+  - Clear disabled state styling (muted colors, cursor changes)
+  - Keyboard navigation support throughout UI
+  - Tab order follows logical flow
+
+- **Settings Tab Enhancements**
+  - "Model & Voice" card with STT model and TTS speed controls
+  - "Appearance" card with theme toggle
+  - Debounced auto-save (500ms) for all settings changes
+  - Visual save confirmation feedback
+  - Removed explicit Save button (auto-save on change)
+
+- **History Tab Enhancements**
+  - Modern history item cards with hover-reveal actions
+  - Copy and Delete buttons appear on hover
+  - Empty state placeholder when no history exists
+  - Consistent 80px item height
+
+- **Theme Persistence** - Theme preference saved to database and restored on restart
+
+### Changed
+
+- Migrated all UI components from `LabelFrame` to `FluentCard` for consistent styling
+- Recording indicator now uses centralized `COLORS` dict for theme consistency
+- Updated all exports in `src/ui/__init__.py` to include new components
+
 ## [3.0.0] - 2026-01-19
 
 ### ⚠️ BREAKING CHANGES
@@ -20,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Version bump**: MAJOR version increment from 1.1.0 → 3.0.0
 
 **Migration Guide for Existing Users**:
+
 ```bash
 # 1. Uninstall old package
 pip uninstall vox
@@ -134,6 +187,7 @@ vox --version
   - Rebranding notice: "Previously known as vox (versions ≤2.0.0)"
 
 ### Changed
+
 - Project name in pyproject.toml: `vox` → `vox`
 - Version in pyproject.toml: `1.1.0` → `3.0.0`
 - Entry point in pyproject.toml: `vox` → `vox`
@@ -146,13 +200,15 @@ vox --version
 - Enhanced error classes in src/utils/errors.py for STT
 
 ### Dependencies
-- **Added**: 
+
+- **Added**:
   - `faster-whisper>=1.0.0` (Whisper speech-to-text)
   - `sounddevice>=0.4.6` (microphone capture)
   - `scipy>=1.11.0` (WAV file handling)
 - **Existing**: Pillow, NumPy, Pandas, pytest, piper-tts, pywinauto, pygame, colorama
 
 ### Configuration
+
 - New constants in src/config.py:
   - `STT_MODEL_CACHE = APPDATA / "vox" / "models"`
   - `DEFAULT_STT_MODEL = "medium"`
@@ -160,6 +216,7 @@ vox --version
   - `SAMPLE_RATE = 16000`
 
 ### Performance
+
 - STT transcription: <10 seconds for 1 minute audio (Whisper medium)
 - First audio chunk (TTS): <3 seconds (unchanged)
 - Whisper model download: one-time 1.5GB for medium model
@@ -167,6 +224,7 @@ vox --version
 - Silence detection: 5-second threshold with 100ms granularity
 
 ### Technical
+
 - Python 3.13 compatibility maintained
 - Test coverage: >80% for all new STT modules (>95% for critical paths)
 - TDD approach: 60+ new tests for STT functionality
@@ -178,6 +236,7 @@ vox --version
 - Migration utility with backup and rollback support
 
 ### Security
+
 - Microphone access requires Windows privacy permissions
 - No cloud API calls - all processing offline
 - User config stored in user-scoped APPDATA directory
@@ -185,18 +244,21 @@ vox --version
 - No network access during transcription
 
 ### Breaking Changes Summary
+
 1. **CLI command**: `vox` → `vox` (reinstall required)
 2. **Config directory**: `%APPDATA%/vox/` → `%APPDATA%/vox/` (auto-migrated)
 3. **Entry point**: `vox` → `vox` in scripts and automation
 4. **Subcommands**: Existing TTS commands now under `vox read`
 
 **Backward Compatibility Notes**:
+
 - Old sessions and config files automatically migrated
 - TTS functionality unchanged (just moved under `vox read`)
 - Session format compatible (no breaking changes to session data)
 - All existing TTS flags and options work identically
 
 ### Known Limitations
+
 - STT English language only (multi-language in future release)
 - Windows-only microphone support (macOS/Linux planned)
 - No real-time streaming transcription (full audio recorded first)
@@ -206,6 +268,7 @@ vox --version
 ## [1.1.0] - 2026-01-18
 
 ### Added
+
 - **Session Management** (User Story 1)
   - Save reading sessions with custom names using `--save-session` flag
   - `list-sessions` command to view all saved sessions with progress
@@ -236,16 +299,19 @@ vox --version
   - Progress display during synthesis ("Synthesizing chunk 3/8...")
 
 ### Changed
+
 - Updated CLI with colorized session management output
 - Enhanced `read` command with `--save-session` parameter
 - Improved playback with streaming support for long articles
 - Updated help text with session management examples
 
 ### Dependencies
+
 - Added `pygame>=2.6.0` for advanced audio playback controls
 - All dependencies maintained at latest compatible versions
 
 ### Performance
+
 - Time to first audio: <3 seconds (for articles up to 10,000 words)
 - Session save/load: <2 seconds per operation
 - Keyboard input latency: <100ms
@@ -253,6 +319,7 @@ vox --version
 - Synthesis throughput: ~150 words in 1-2 seconds per chunk
 
 ### Technical
+
 - Python 3.13 compatibility maintained
 - Test coverage: >80% for all new modules
 - TDD approach: 45+ new tests added
@@ -261,6 +328,7 @@ vox --version
 - Atomic file writes for session persistence (prevents corruption)
 
 ### Breaking Changes
+
 - None (fully backward compatible with v1.0.0)
 - Old commands continue to work as before
 - New features are opt-in via flags and subcommands
@@ -268,13 +336,14 @@ vox --version
 ## [1.0.0] - 2025-01-17
 
 ### Added
+
 - **Phase 0: Versioning & Release System**
   - Commitizen for automated version management and changelog generation
   - Conventional Commits policy documented in README.md and CONSTITUTION.md
   - Project Constitution (CONSTITUTION.md) defining core principles and standards
   - GitHub Actions workflows for automated version bumping and releases
   - Commit message guidelines and examples
-  
+
 - **Phase 2: CLI Enhancement**
   - Colorized CLI output with colorama (cyan status, green success, red error, yellow warning)
   - Progress timing indicators showing elapsed time for each operation
@@ -299,16 +368,19 @@ vox --version
   - 206 total tests passing (up from 185 baseline)
 
 ### Changed
+
 - Updated README.md with commit message policy and Commitizen usage instructions
 - Enhanced CLI error messages with helpful troubleshooting suggestions
 - Improved URL and file validation with clear error output
 
 ### Performance Improvements
+
 - Simple URL reading: <1 second total (0.22s fetch + 0.01s synthesis)
 - Complex URL (Wikipedia): 0.85s fetch for 79KB content
 - Synthesis: 342KB audio generated in 0.01s
 
 ### Technical
+
 - Python 3.13.5 compatibility verified
 - All dependencies updated to latest versions
 - Coverage: 50% (baseline maintained, gaps in deferred v2.0 features)
@@ -316,6 +388,7 @@ vox --version
 ## [1.0.0] - Not Yet Released
 
 ### Added
+
 - Initial project setup with Python 3.13
 - Core application structure:
   - Browser tab detection module (`src/browser/`)
@@ -341,6 +414,7 @@ vox --version
   - Specification (specs/001-web-reader-ai/spec.md)
 
 ### Technical Details
+
 - **Language**: Python 3.13
 - **TTS Engine**: Piper (open-source, offline-capable neural TTS)
 - **HTML Parsing**: BeautifulSoup4
@@ -348,6 +422,7 @@ vox --version
 - **Platform**: Windows 11 (initial release)
 
 ### Known Limitations (v1.0 Scope)
+
 - URL-only input (browser tab detection deferred to v1.1)
 - File path input removed (may return in v1.1)
 - Basic playback controls (OS volume controls recommended)
@@ -356,11 +431,13 @@ vox --version
 - Windows-only (macOS/Linux support planned for v2.0)
 
 ### Performance
+
 - URL fetch + text extraction + synthesis: <5 seconds for simple pages
 - Memory footprint: <500 MB during synthesis
 - Supports pages up to 100 MB
 
 ### Breaking Changes
+
 - N/A (initial release)
 
 ---
@@ -368,6 +445,7 @@ vox --version
 ## Release Process
 
 ### Automated Version Bumping
+
 This project uses [Commitizen](https://commitizen-tools.github.io/commitizen/) for automated version management:
 
 ```bash
@@ -382,9 +460,11 @@ cz bump --dry-run
 ```
 
 ### Changelog Generation
+
 The changelog is automatically updated when you run `cz bump`. It parses commit messages following [Conventional Commits](https://www.conventionalcommits.org/) to categorize changes.
 
 ### Release Workflow
+
 1. **Merge to main**: Pull requests are merged to `main` branch
 2. **Auto-version bump**: GitHub Actions workflow detects new commits and runs `cz bump`
 3. **Changelog update**: CHANGELOG.md is automatically updated
@@ -395,6 +475,7 @@ The changelog is automatically updated when you run `cz bump`. It parses commit 
    - Release notes generated from CHANGELOG.md
 
 ### Manual Release (Maintainers)
+
 ```bash
 # 1. Ensure you're on main branch with latest changes
 git checkout main
@@ -410,6 +491,7 @@ git push origin main --tags
 ```
 
 ### Version Numbering Guide
+
 - **MAJOR** (1.0.0 → 2.0.0): Breaking changes (API incompatibility)
   - Example: Removing a CLI command, changing function signatures
 - **MINOR** (1.0.0 → 1.1.0): New features (backward-compatible)
