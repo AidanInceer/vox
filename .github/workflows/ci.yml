@@ -129,6 +129,7 @@ jobs:
     if: |
       success() &&
       github.ref == 'refs/heads/main' &&
+      !startsWith(github.event.head_commit.message, 'bump:') &&
       !contains(github.event.head_commit.message, '[skip ci]') &&
       !contains(github.event.head_commit.message, '[skip bump]')
 
@@ -136,105 +137,33 @@ jobs:
       contents: write
 
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      bumped: ${{ steps.version.outputs.bumped }}
+      version: ${{ steps.cz.outputs.version }}
+      bumped: ${{ steps.check.outputs.bumped }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Fetch all tags
-        run: git fetch --tags --force
-
-      - name: Debug git state
-        run: |
-          echo "=== Git tags ==="
-          git tag -l
-          echo "=== Git describe ==="
-          git describe --tags --abbrev=0 || echo "No tags found"
-          echo "=== Current version in pyproject.toml ==="
-          grep 'version = ' pyproject.toml | head -1
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Bump version and create changelog
+        id: cz
+        uses: commitizen-tools/commitizen-action@master
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          changelog_increment_filename: body.md
 
-      - name: Install Commitizen
-        run: pip install commitizen
-
-      - name: Configure Git
+      - name: Check if bumped
+        id: check
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      - name: Check for existing tags
-        id: check_tags
-        run: |
-          TAG_COUNT=$(git tag -l | wc -l)
-          echo "Found $TAG_COUNT tags"
-          if [ "$TAG_COUNT" -gt 0 ]; then
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-            echo "Latest tag: $LATEST_TAG"
-            echo "has_tags=true" >> $GITHUB_OUTPUT
-            echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
-          else
-            echo "has_tags=false" >> $GITHUB_OUTPUT
-            echo "No tags found - will create initial tag"
-          fi
-
-      - name: Check for version bump
-        run: |
-          echo "Checking if version bump is needed..."
-          LAST_COMMIT=$(git log -1 --pretty=%B)
-          echo "Last commit: $LAST_COMMIT"
-
-          if [[ "$LAST_COMMIT" == "bump:"* ]]; then
-            echo "Last commit was a version bump, skipping..."
-            echo "SKIP_BUMP=true" >> $GITHUB_ENV
-          else
-            echo "Version bump needed"
-            echo "SKIP_BUMP=false" >> $GITHUB_ENV
-          fi
-
-      - name: Bump version (auto - first time without changelog)
-        if: env.SKIP_BUMP == 'false' && steps.check_tags.outputs.has_tags == 'false' && (github.event_name == 'push' || github.event.inputs.bump_type == 'auto')
-        run: |
-          cz bump --yes
-
-      - name: Bump version (auto - with changelog)
-        if: env.SKIP_BUMP == 'false' && steps.check_tags.outputs.has_tags == 'true' && (github.event_name == 'push' || github.event.inputs.bump_type == 'auto')
-        run: |
-          cz bump --yes --changelog
-
-      - name: Bump version (manual - first time without changelog)
-        if: env.SKIP_BUMP == 'false' && steps.check_tags.outputs.has_tags == 'false' && github.event.inputs.bump_type != 'auto' && github.event_name == 'workflow_dispatch'
-        run: |
-          cz bump --increment ${{ github.event.inputs.bump_type }} --yes
-
-      - name: Bump version (manual - with changelog)
-        if: env.SKIP_BUMP == 'false' && steps.check_tags.outputs.has_tags == 'true' && github.event.inputs.bump_type != 'auto' && github.event_name == 'workflow_dispatch'
-        run: |
-          cz bump --increment ${{ github.event.inputs.bump_type }} --yes --changelog
-
-      - name: Get new version
-        id: version
-        run: |
-          if [ "${{ env.SKIP_BUMP }}" == "true" ]; then
-            echo "bumped=false" >> $GITHUB_OUTPUT
-          else
-            NEW_VERSION=$(cz version -p)
-            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          if [ -n "${{ steps.cz.outputs.version }}" ]; then
             echo "bumped=true" >> $GITHUB_OUTPUT
-            echo "New version: $NEW_VERSION"
+            echo "Version bumped to ${{ steps.cz.outputs.version }}"
+          else
+            echo "bumped=false" >> $GITHUB_OUTPUT
+            echo "No version bump needed"
           fi
-
-      - name: Push changes and tags
-        if: steps.version.outputs.bumped == 'true'
-        run: git push origin main --follow-tags
 
   # Step 4: Build release EXE (only if version was bumped)
   build-release-exe:
@@ -247,8 +176,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: v${{ needs.version-bump.outputs.version }}
+          ref: main
           fetch-depth: 0
+
+      - name: Pull latest changes
+        run: git pull origin main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -296,8 +228,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: v${{ needs.version-bump.outputs.version }}
+          ref: main
           fetch-depth: 0
+
+      - name: Pull latest changes
+        run: git pull origin main
 
       - name: Download release EXE
         uses: actions/download-artifact@v4
