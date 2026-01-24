@@ -107,10 +107,15 @@ packages = ["src", "src.browser", "src.extraction", "src.tts", "src.session", "s
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "3.0.0"
+version_provider = "pep621"
 version_files = [
-    "pyproject.toml:version",
-    "src/__init__.py:__version__",
+    "pyproject.toml:^version",
+    "src/__init__.py:^__version__",
 ]
+tag_format = "v$version"
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+major_version_zero = true
 style = [
     ["qmark", "fg:#ff9d00 bold"],
     ["question", "bold"],
@@ -123,6 +128,3 @@ style = [
     ["text", ""],
     ["disabled", "fg:#858585 italic"]
 ]
-update_changelog_on_bump = false
-major_version_zero = true
-tag_format = "v$version"

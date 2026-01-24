@@ -147,6 +147,16 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      - name: Fetch all tags
+        run: |
+          git fetch --tags --force
+          echo "=== Tags found ==="
+          git tag -l
+          echo "=== Latest tag ==="
+          git describe --tags --abbrev=0 || echo "No tags"
+          echo "=== Version in pyproject.toml ==="
+          grep -E "^version" pyproject.toml | head -1
+
       - name: Bump version and create changelog
         id: cz
         uses: commitizen-tools/commitizen-action@master
