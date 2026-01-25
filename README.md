@@ -19,9 +19,9 @@ Vox is a lightweight desktop application that transcribes speech to text using O
 ## Quick Start
 
 ```
-1. Download vox.exe
-2. Run (no installation needed)
-3. Press Ctrl+Alt+Space to record
+1. Download vox.exe.
+2. Run (no installation needed).
+3. Press Ctrl+Alt+Space to record.
 ```
 
 ➡️ [**Download Latest Release**](https://github.com/AidanInceer/vox/releases/latest/download/vox.exe)
