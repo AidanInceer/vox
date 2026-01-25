@@ -185,18 +185,31 @@ jobs:
             echo "No version bump needed"
           fi
 
-  # Step 5: Build release EXE (only if version was bumped)
+  # Step 5: Build release EXE (only if version was bumped OR this is a bump commit)
   build-release-exe:
     name: Build Release EXE
     runs-on: windows-latest
-    needs: [version-bump]
-    if: needs.version-bump.outputs.bumped == 'true'
+    needs: [test]
+    if: |
+      success() &&
+      github.ref == 'refs/heads/main' &&
+      startsWith(github.event.head_commit.message, 'bump:')
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
+
+      - name: Extract version from commit
+        id: version
+        run: |
+          # Extract version from commit message like "bump: version 3.1.0 → 3.2.0"
+          VERSION=$(echo "${{ github.event.head_commit.message }}" | grep -oP '→ \K[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
+        shell: bash
 
       - name: Pull latest changes
         run: git pull origin main
@@ -232,12 +245,15 @@ jobs:
           name: vox-release-exe
           path: dist/vox.exe
 
-  # Step 6: Create GitHub Release (only if version was bumped)
+  # Step 6: Create GitHub Release (triggered by bump commit)
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [version-bump, build-release-exe]
-    if: needs.version-bump.outputs.bumped == 'true'
+    needs: [build-release-exe]
+    if: |
+      success() &&
+      github.ref == 'refs/heads/main' &&
+      startsWith(github.event.head_commit.message, 'bump:')
 
     permissions:
       contents: write
@@ -247,9 +263,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
 
-      - name: Pull latest changes
-        run: git pull origin main
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Get the latest tag (should be the one just created by commitizen)
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
 
       - name: Download release EXE
         uses: actions/download-artifact@v4
@@ -260,10 +282,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.version-bump.outputs.version }}
-          name: Vox v${{ needs.version-bump.outputs.version }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Vox v${{ steps.version.outputs.version }}
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(needs.version-bump.outputs.version, 'alpha') || contains(needs.version-bump.outputs.version, 'beta') || contains(needs.version-bump.outputs.version, 'rc') }}
+          prerelease: ${{ contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'rc') }}
           files: |
             dist/vox.exe
