@@ -20,18 +20,49 @@ on:
 
 env:
   PYTHON_VERSION: "3.13"
+  # Disable unnecessary features for faster CI
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+  PIP_NO_WARN_SCRIPT_LOCATION: 1
+  PYTHONDONTWRITEBYTECODE: 1
+  PYTHONUNBUFFERED: 1
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # Step 1: Run tests and linting
+  # Step 1: Run linting first (fast fail)
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff linting
+        run: ruff check src/ tests/
+
+      - name: Run ruff formatting check
+        run: ruff format --check src/ tests/
+
+  # Step 2: Run tests (parallel with lint on ubuntu for speed)
   test:
-    name: Tests & Linting
+    name: Tests
     runs-on: windows-latest
+    needs: [lint]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
@@ -42,61 +73,43 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Run ruff linting
-        run: ruff check src/ tests/
-        continue-on-error: false
-
-      - name: Run ruff formatting check
-        run: ruff format --check src/ tests/
-        continue-on-error: false
+          pip install -e ".[test]"
 
       - name: Run pytest with coverage
-        run: pytest --cov=src --cov-report=term-missing --cov-report=xml
-
-      - name: Check coverage threshold
-        run: |
-          coverage report
+        run: pytest --cov=src --cov-report=term-missing --cov-report=xml -x --tb=short
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           flags: unittests
-          name: codecov-umbrella
           fail_ci_if_error: false
 
-      - name: Archive coverage reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: htmlcov/
-          retention-days: 7
-
-  # Step 2: Build EXE (on all branches to verify build works)
+  # Step 3: Build EXE (only on main/develop or PRs to main)
   build-exe:
     name: Build EXE
     runs-on: windows-latest
     needs: [test]
-    if: success()
+    if: |
+      success() && (
+        github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/develop' ||
+        github.event_name == 'pull_request'
+      )
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
 
       - name: Install dependencies
         run: |
           pip install -e .[dev]
-          pip install pyinstaller
 
       - name: Build executable
         run: python scripts/build_exe.py
@@ -119,9 +132,9 @@ jobs:
         with:
           name: vox-exe-${{ github.sha }}
           path: dist/vox.exe
-          retention-days: 7
+          retention-days: 5
 
-  # Step 3: Version bump (only on main branch)
+  # Step 4: Version bump (only on main branch)
   version-bump:
     name: Version Bump
     runs-on: ubuntu-latest
@@ -147,16 +160,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Fetch all tags
-        run: |
-          git fetch --tags --force
-          echo "=== Tags found ==="
-          git tag -l
-          echo "=== Latest tag ==="
-          git describe --tags --abbrev=0 || echo "No tags"
-          echo "=== Version in pyproject.toml ==="
-          grep -E "^version" pyproject.toml | head -1
-
       - name: Bump version and create changelog
         id: cz
         uses: commitizen-tools/commitizen-action@master
@@ -175,7 +178,7 @@ jobs:
             echo "No version bump needed"
           fi
 
-  # Step 4: Build release EXE (only if version was bumped)
+  # Step 5: Build release EXE (only if version was bumped)
   build-release-exe:
     name: Build Release EXE
     runs-on: windows-latest
@@ -187,7 +190,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
 
       - name: Pull latest changes
         run: git pull origin main
@@ -196,11 +198,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install -e .[dev]
-          pip install pyinstaller
+        run: pip install -e .[dev]
 
       - name: Build executable
         run: python scripts/build_exe.py
@@ -224,7 +225,7 @@ jobs:
           name: vox-release-exe
           path: dist/vox.exe
 
-  # Step 5: Create GitHub Release (only if version was bumped)
+  # Step 6: Create GitHub Release (only if version was bumped)
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
@@ -239,7 +240,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
 
       - name: Pull latest changes
         run: git pull origin main
@@ -250,34 +250,13 @@ jobs:
           name: vox-release-exe
           path: dist/
 
-      - name: Extract changelog
-        id: changelog
-        run: |
-          VERSION="${{ needs.version-bump.outputs.version }}"
-
-          if [ -f CHANGELOG.md ]; then
-            CHANGELOG=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$ d')
-            if [ -z "$CHANGELOG" ]; then
-              CHANGELOG="See [CHANGELOG.md](CHANGELOG.md) for details."
-            fi
-          else
-            CHANGELOG="Release v$VERSION"
-          fi
-
-          echo "$CHANGELOG" > /tmp/changelog.txt
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.version-bump.outputs.version }}
           name: Vox v${{ needs.version-bump.outputs.version }}
-          body_path: /tmp/changelog.txt
+          generate_release_notes: true
           draft: false
           prerelease: ${{ contains(needs.version-bump.outputs.version, 'alpha') || contains(needs.version-bump.outputs.version, 'beta') || contains(needs.version-bump.outputs.version, 'rc') }}
           files: |
             dist/vox.exe
-
-      - name: Release summary
-        run: |
-          echo "✅ Release v${{ needs.version-bump.outputs.version }} created successfully!"
-          echo "📦 Download: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.version-bump.outputs.version }}"
