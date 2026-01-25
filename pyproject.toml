@@ -1,6 +1,6 @@
 [project]
 name = "vox"
-version = "3.1.0"
+version = "3.2.0"
 description = "Bidirectional audio-text conversion for Windows 11 - read web content aloud or transcribe your voice to text, completely offline"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -106,7 +106,7 @@ packages = ["src", "src.browser", "src.extraction", "src.tts", "src.session", "s
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "3.1.0"
+version = "3.2.0"
 version_provider = "pep621"
 version_files = [
     "pyproject.toml:^version",
